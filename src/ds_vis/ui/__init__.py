@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Desktop UI layer (PySide6).
 

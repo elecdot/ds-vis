@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 
 from PySide6.QtWidgets import QApplication, QGraphicsScene, QGraphicsView, QMainWindow
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QScreen
 
 from ds_vis.core.scene import SceneGraph
@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
     """
     Minimal main window for the visualizer.
 
-    Phase 0: only sets up a basic QGraphicsView and wires a SceneGraph + Renderer,
+    Phase 1: only sets up a basic QGraphicsView and wires a SceneGraph + Renderer,
     without any actual controls or animations.
     """
 
@@ -35,7 +35,6 @@ class MainWindow(QMainWindow):
 
         self._scene = QGraphicsScene(self)
         self._view = QGraphicsView(self._scene, self)
-        self._view.setRenderHint(self._view.renderHints())
         self._view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
         self.setCentralWidget(self._view)

@@ -1,32 +1,46 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterable, List, Sequence
+from typing import List, Optional, Sequence
 
 from .ops import AnimationOp
 
 
 @dataclass
-class Timeline:
+class AnimationStep:
     """
-    A simple container for an ordered sequence of AnimationOps.
+    A single teaching micro-step.
 
-    In later phases this may support:
-      - hierarchical grouping (sequences / parallels)
-      - time offsets and durations
-      - step-wise playback control
+    Semantics (see OPS_SPEC v1.0):
 
-    For Phase 0, this is a minimal placeholder.
+    - duration_ms: how long this step should take to play, in milliseconds.
+    - label:       optional human-readable title for UI / debugging.
+    - ops:         all AnimationOps that semantically belong to this time window.
     """
 
+    duration_ms: int = 400
+    label: Optional[str] = None
     ops: List[AnimationOp] = field(default_factory=list)
 
-    def extend(self, ops: Iterable[AnimationOp]) -> None:
-        """Append multiple operations to the timeline."""
-        self.ops.extend(ops)
 
-    def __iter__(self) -> Sequence[AnimationOp]:
-        return iter(self.ops)
+@dataclass
+class Timeline:
+    """
+    An ordered sequence of AnimationSteps.
+
+    Renderer is expected to:
+      - iterate steps in order,
+      - for each step, compute the visual end-state after applying all ops,
+      - animate from previous step's end-state to this end-state over duration_ms.
+    """
+
+    steps: List[AnimationStep] = field(default_factory=list)
+
+    def add_step(self, step: AnimationStep) -> None:
+        self.steps.append(step)
+
+    def __iter__(self) -> Sequence[AnimationStep]:
+        return iter(self.steps)
 
     def __len__(self) -> int:  # pragma: no cover - trivial
-        return len(self.ops)
+        return len(self.steps)

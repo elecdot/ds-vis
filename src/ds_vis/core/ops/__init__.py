@@ -1,9 +1,20 @@
-"""
-Animation operation types and timeline utilities.
+from __future__ import annotations
 
-The concrete op set and semantics are defined in Phase 1 (OPS_SPEC).
 """
-from .ops import AnimationOp
-from .timeline import Timeline
+Animation operation and timeline primitives.
 
-__all__ = ["AnimationOp", "Timeline"]
+This package implements the data structures specified in OPS_SPEC v1.0:
+- AnimationOp: a single semantic operation (no time attached)
+- AnimationStep: a teaching micro-step with duration and ops
+- Timeline: an ordered sequence of steps
+"""
+
+from .ops import OpCode, AnimationOp
+from .timeline import AnimationStep, Timeline
+
+__all__ = [
+    "OpCode",
+    "AnimationOp",
+    "AnimationStep",
+    "Timeline",
+]

@@ -1,9 +1,12 @@
-"""
-SceneGraph and Command layer.
+from __future__ import annotations
 
-This layer acts as the central entry point for high-level operations
-coming from UI / DSL / persistence.
 """
+SceneGraph and command layer.
+
+This is the central entry point for high-level operations, coming from
+UI / DSL / persistence, and routing them to the appropriate models.
+"""
+
 from .command import Command, CommandType
 from .scene_graph import SceneGraph
 

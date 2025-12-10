@@ -1,35 +1,38 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Sequence
+from typing import Dict
 
-from ds_vis.core.ops import AnimationOp, Timeline
+from ds_vis.core.ops import Timeline
 from .command import Command
 
 
 @dataclass
 class SceneGraph:
     """
-    Central scene/state manager.
+    Central state/scene manager.
 
     Responsibilities:
-      - Maintain all current data-structure instances (lists, trees, GitGraph, etc.).
-      - Accept high-level `Command`s from UI/DSL/persistence.
-      - Delegate to the appropriate model instance.
-      - Collect and return AnimationOps describing the visual changes.
+      - Maintain all active data-structure model instances.
+      - Accept high-level Command objects from UI/DSL.
+      - Dispatch to the appropriate model.
+      - Collect a structural Timeline (no coordinates).
+      - Pass the Timeline through layout (core.layout) before handing it to a renderer.
 
-    Phase 0: structure and API only; implementation is intentionally left as stubs.
+    Phase 1: API and responsibilities are defined; implementation is intentionally stubbed.
     """
 
-    # TODO: replace `object` with concrete model base class / protocol in later phases.
+    # TODO: replace `object` with a proper model base class / protocol in later phases.
     _structures: Dict[str, object] = field(default_factory=dict)
 
-    def apply_command(self, command: Command) -> Sequence[AnimationOp]:
+    def apply_command(self, command: Command) -> Timeline:
         """
-        Apply a high-level command to the scene and return the resulting animation ops.
+        Apply a high-level command and return a Timeline describing the animation.
 
-        For Phase 0, this method is a stub and should be implemented in later phases.
+        Current implementation is a placeholder. Future steps:
+          - look up the target model by structure_id,
+          - invoke the appropriate method on the model to get a structural Timeline,
+          - run the Timeline through the layout engine to inject SET_POS ops.
         """
-        # Placeholder implementation to be filled in Phase 2+.
-        # raise NotImplementedError("SceneGraph.apply_command is not implemented yet.")
-        return Timeline().ops
+        # TODO: implement dispatch + layout pipeline in later phases.
+        return Timeline()

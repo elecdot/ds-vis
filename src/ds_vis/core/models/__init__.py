@@ -1,6 +1,9 @@
-"""
-Data-structure models.
+from __future__ import annotations
 
-Each model encapsulates the logical state and operations of a specific
-structure (list, stack, BST, AVL, Huffman, GitGraph, etc.).
+"""
+Domain models for data structures.
+
+Each model encapsulates the logical state and exposes operations that
+return structural Timelines (no coordinates), which are later passed
+through the layout engine.
 """
