@@ -123,6 +123,51 @@ def bst_insert_7_into_root_5() -> Timeline:
 
     return timeline
 
+def bst_insert_7_with_layout_example() -> Timeline:
+    """
+    Example: the same BST insert scenario as bst_insert_7_into_root_5(),
+    but with a **very simple 'layout'** applied that injects SET_POS ops.
+    The real layout engine would do **much more complex calculations**
+    instead of hardcoding positions with `step.label` checks.
+
+    This represents the Timeline AFTER passing through a layout engine.
+    """
+
+    structural = bst_insert_7_into_root_5()
+    visual = Timeline()
+
+    for step in structural.steps:
+        # Shallow copy of existing step
+        new_step = AnimationStep(
+            duration_ms=step.duration_ms,
+            label=step.label,
+            ops=list(step.ops),
+        )
+
+        # VERY simplified layout logic for demo purposes:
+        # - root node_5 at (200, 50)
+        # - new node_7 at (300, 150)
+        if step.label == "创建结点 7 并连接到 5 的右子结点":
+            new_step.ops.append(
+                AnimationOp(
+                    op=OpCode.SET_POS,
+                    target="node_5",
+                    data={"x": 200.0, "y": 50.0},
+                )
+            )
+            new_step.ops.append(
+                AnimationOp(
+                    op=OpCode.SET_POS,
+                    target="node_7",
+                    data={"x": 300.0, "y": 150.0},
+                )
+            )
+
+        visual.add_step(new_step)
+
+    return visual
+
+
 def avl_single_left_rotation_example() -> Timeline:
     """
     Example: single left rotation at node_x with right child node_y.
