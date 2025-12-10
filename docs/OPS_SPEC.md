@@ -235,6 +235,8 @@ AnimationOps 操作的对象分为三类：
 布局算法通常由 `core.layout` 决定，
 AnimationOps 用于通知渲染器“某个 Node 应该在新位置”。
 
+> SET_POS 由核心 Layout 模块生成，Domain Model 不应直接依赖具体坐标，而是通过结构信息（如层级、序号）驱动 Layout。
+
 #### 4.2.1 `SET_POS`
 
 设置 Node 的显示位置（坐标单位由渲染器解释，通常为像素）。

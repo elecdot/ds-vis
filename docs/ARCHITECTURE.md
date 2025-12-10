@@ -15,6 +15,7 @@ UI / DSL / LLM
         ▼
      Models (数据结构：List / Stack / BST / AVL / Huffman / GitGraph ...)
         │
+     Layout 模块注入：SET_POS Ops
         │ (AnimationOps + Timeline)
         ▼
  Animation Engine
