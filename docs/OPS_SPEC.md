@@ -1,4 +1,4 @@
-# OPS_SPEC — AnimationOps 规范（v0.1）
+# OPS_SPEC — AnimationOps 规范（v1.0）
 
 本规范定义了本项目中 “动画指令层（AnimationOps）” 的统一协议，  
 用于在 **模型 / SceneGraph** 与 **渲染器** 之间传递“应该展示什么动画”。
@@ -8,6 +8,23 @@
 - 与数据结构模型、UI、DSL 解耦。
 - 与具体渲染技术解耦（PySide6 / Web / CLI）。
 - 适合序列化为 JSON（方便 DSL、Web、跨进程）。
+
+这个协议回答了三个问题：
+
+1. 要动哪些对象？
+    → 哪些 node / edge / label / 全局提示要变化？
+2. 变化成什么状态？
+    → 变成什么位置、文本、状态（normal/active/...）？
+3. 用多长时间完成这一步？
+    → 这一“教学步骤”用多少毫秒播放完？
+
+所以我们只需要设计三类东西：
+
+- AnimationOp：一个“状态变化指令”（原子操作，没有时间）
+- AnimationStep：一组属于同一个“教学微步骤”的 Ops + 时长
+- Timeline：若干 Step 的有序列表
+
+其它（并行/顺序、存储/重放、Undo 等）都是围绕这个核心协议构建的策略，留给后续设计解决。
 
 ---
 
@@ -69,7 +86,18 @@ AnimationOps 操作的对象分为三类：
 }
 ````
 
-### 2.2 Step 字段
+实现建议（Renderer 视角）：
+
+1. 维护一个内部“可视状态”（当前 node/edge 集合及其属性 + 全局消息）。
+2. 对于每个 Step：
+  - 从上一 Step 结束时的可视状态作为“起点”；
+  - 应用本 Step 的所有 Ops，得到“终态”；
+  - 在 duration_ms 内，把画面从起点插值到终态；
+3. Step 结束时的状态成为下一个 Step 的起点。
+
+### 2.2 Step 字段(AnimationStep: 时间粒度 + 一组 Ops)
+
+#### 2.2.1 结构
 
 * `duration_ms: int`
 
@@ -82,6 +110,23 @@ AnimationOps 操作的对象分为三类：
 
   * 本 Step 内要执行的所有动画操作。
 
+#### 2.2.2 语义说明：
+
+- Step 是教学上的原子步骤：UI 的“下一步 / 上一步”就是在 Step 层面跳。
+- Step 内的所有 Ops：
+  - 语义上属于同一个时间窗口；
+  - 应在 duration_ms 内全部完成效果；
+  - 允许 Renderer 顺序处理。
+
+#### 2.2.3 约束
+
+- 不允许在同一 Step 内对同一个 target 做自相矛盾操作：
+  - 比如同时 CREATE_NODE 和 DELETE_NODE。
+- 允许对同一 target 在一 Step 内做多个“兼容操作”：
+  - 如先 SET_POS 再 SET_STATE，Renderer 可以在这段时间内同时移动 + 高亮。
+- ops 可以为空：
+  - 代表“纯停顿”，只由 duration_ms 决定这一步等待多久。
+
 ---
 
 ## 3. AnimationOp 结构
@@ -90,11 +135,17 @@ AnimationOps 操作的对象分为三类：
 
 ```json
 {
-  "op": "OP_CODE",
-  "target": "object_id or null",
-  "data": { /* op-specific payload */ }
+  "op": "OP_CODE",                       /* 操作类型，例如 CREATE_NODE */
+  "target": "object_id or null",         /* 目标对象 ID（node/edge/特殊 UI 元素），全局操作可为 null */
+  "data": { /* op-specific payload */ }  /* 具体参数，由 op 类型决定 */
 }
 ```
+
+关键点：
+
+* Op 不带时间概念
+* Op 不关心“从哪里动到哪里”，只关心 终态是什么（比如最终坐标、最终状态）
+* 时间控制统一放在 Step 上
 
 ### 字段说明：
 
