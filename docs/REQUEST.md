@@ -84,7 +84,7 @@
 - Git 教学操作动画（虚拟 Git 子集）：
   - git init / commit / branch / checkout / merge 的结构变化动画
   - 支持通过 DSL 脚本执行 Git 教学序列
-  - 支持特殊的Persistence（导入.git）
+  - 支持特殊的Persistence（例如导入`.git` repo）
 - SceneGraph：多数据结构同场景
 - Persistence：保存动画历史 / 回放
 
