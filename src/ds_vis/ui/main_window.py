@@ -2,20 +2,35 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtWidgets import QApplication, QGraphicsScene, QGraphicsView, QMainWindow
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QScreen
+from PySide6.QtGui import QScreen, QAction
+from PySide6.QtWidgets import (
+    QApplication,
+    QGraphicsScene,
+    QGraphicsView,
+    QMainWindow,
+    QMenu,
+    QMenuBar,
+)
 
 from ds_vis.core.scene import SceneGraph
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer
 
+# Developer examples (structural timelines only)
+try:
+    # Optional import; if examples are missing, the Dev menu will be disabled.
+    from ds_vis.examples.timelines import bst_insert_7_into_root_5
+except ImportError:  # pragma: no cover - defensive
+    bst_insert_7_into_root_5 = None  # type: ignore[assignment]
 
 class MainWindow(QMainWindow):
     """
     Minimal main window for the visualizer.
 
-    Phase 1: only sets up a basic QGraphicsView and wires a SceneGraph + Renderer,
-    without any actual controls or animations.
+    Phase 1:
+      - Sets up a basic QGraphicsView and wires a SceneGraph + Renderer.
+      - Adds a small 'Dev' menu entry to inspect example Timelines.
+        This is a developer playground only and NOT part of the core product flow.
     """
 
     def __init__(self) -> None:
@@ -43,6 +58,63 @@ class MainWindow(QMainWindow):
         self._scene_graph = SceneGraph()
         self._renderer = PySide6Renderer(self._scene)
 
+        # Developer playground menu
+        self._init_menubar()
+
+    # --------------------------------------------------------------------- #
+    # UI setup
+    # --------------------------------------------------------------------- #
+
+    def _init_menubar(self) -> None:
+        """Initialize a minimal menubar with a 'Dev' menu."""
+        menubar: QMenuBar = self.menuBar()
+
+        dev_menu: QMenu = menubar.addMenu("Dev")
+
+        # Dev -> Run BST Insert Example
+        self._act_run_bst_example = QAction(
+            "Run BST Insert Example (print to console)", self
+        )
+        self._act_run_bst_example.triggered.connect(self._run_bst_example)
+        self._act_run_bst_example.setEnabled(bst_insert_7_into_root_5 is not None)
+
+        dev_menu.addAction(self._act_run_bst_example)
+
+    # --------------------------------------------------------------------- #
+    # Developer playground hooks (for manual testing only)
+    # --------------------------------------------------------------------- #
+
+    def _run_bst_example(self) -> None:
+        """
+        Developer-only hook to inspect an example Timeline.
+
+        Behavior:
+          - builds the example Timeline,
+          - prints its structure to stdout.
+        This does NOT perform real rendering logic yet and is NOT part
+        of the core application flow.
+        """
+        if bst_insert_7_into_root_5 is None:
+            print("Example function bst_insert_7_into_root_5() not available.")
+            return
+
+        timeline = bst_insert_7_into_root_5()
+
+        print("\n=== Dev: BST insert example timeline ===")
+        for i, step in enumerate(timeline.steps, start=1):
+            print(f"Step {i}: duration={step.duration_ms} ms, label={step.label!r}")
+            for op in step.ops:
+                # AnimationOp is a dataclass, so its repr is readable enough for dev.
+                print("   ", op)
+        print("=== End of example ===\n")
+
+        # In future phases, we may forward this to the renderer:
+        #   self._renderer.render_timeline(timeline)
+        # For now, we keep this function as a pure inspection tool.
+
+    # --------------------------------------------------------------------- #
+    # Entry point
+    # --------------------------------------------------------------------- #
 
 def main() -> None:
     """
