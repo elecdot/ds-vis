@@ -22,6 +22,7 @@
 - `docs/ARCHITECTURE.md`
 - `docs/ANIMATION_REQUIREMENTS.md`
 - `docs/ENVIRONMENT.md`
+- `docs/OPS_SPEC.md`
 
 ---
 
@@ -46,7 +47,7 @@ uv run python -m ds_vis.ui.main_window
 
 # 运行测试
 uv run pytest
-````
+```
 
 任何 Agent 在修改代码前，应先阅读 `docs/ENVIRONMENT.md` 并确保在本地能够完成上述命令。
 
@@ -66,11 +67,17 @@ uv run pytest
 │   ├─ ENVIRONMENT.md
 │   ├─ ARCHITECTURE.md
 │   ├─ ANIMATION_REQUIREMENTS.md
-│   └─ （未来：OPS_SPEC.md, DSL_SPEC.md 等）
+│   ├─ OPS_SPEC.md
+│   └─ (未来的DSL_SPEC.md 等)
 ├─ src/
 │   └─ ds_vis/
 │       ├─ __init__.py
-│       ├─ core/           # 模型、场景、动画指令等“引擎核心”
+│       ├─ core/           # 引擎核心（模型、布局、动画指令、场景图）
+│       │   ├─ models/     # 数据结构模型（BST、GitGraph 等）
+│       │   ├─ layout/     # 布局算法与几何计算
+│       │   ├─ ops/        # 动画指令协议（AnimationOps、Timeline）
+│       │   ├─ scene/      # 场景图与命令分发（SceneGraph、Command）
+│       ├─ examples/       # 供参考的示例展示   
 │       ├─ renderers/      # 渲染器实现（PySide6、未来 Web 等）
 │       ├─ ui/             # 桌面 UI 逻辑
 │       ├─ dsl/            # 领域专用语言解析与执行
@@ -85,27 +92,67 @@ uv run pytest
 
 任何人类或 Agent 在修改代码时，必须遵守以下架构约束（详细说明见 `docs/ARCHITECTURE.md`）：
 
-1. **Model / Renderer 解耦**
+### 3.1 三层核心分离（Model / Layout / Renderer）
 
-   * `src/ds_vis/core/` 中的数据结构模型和场景管理代码 **不得依赖** PySide6 或其他 UI/渲染框架。
-   * `src/ds_vis/renderers/` 只能依赖 `core.ops` 暴露的动画指令类型，**不得直接依赖**具体验证结构模型实现。
+**Model 层**不得依赖：
+- Renderer、UI、DSL、Layout、SceneGraph
+- 任何 UI 框架（PySide6、Tkinter 等）
+- 坐标、位置等视觉属性
 
-2. **Command & SceneGraph 为唯一入口**
+**Layout 层**不得依赖：
+- Renderer、UI、DSL、SceneGraph
+- 修改结构类 Ops（CREATE_NODE、DELETE_NODE 等）
+- 推测或依赖数据结构的业务逻辑
 
-   * UI / DSL / Persistence 不应直接调用模型内部方法。
-   * 所有高层操作必须经过 `SceneGraph`，以 `Command` 形式下发，再由模型产生 AnimationOps。
+**Renderer 层**不得依赖：
+- Model 内部实现细节
+- UI、DSL、SceneGraph
+- 直接操纵核心数据结构（只能通过 Ops）
 
-3. **Renderer 只消费 AnimationOps**
+### 3.2 单向依赖流向
 
-   * 渲染器收到的输入是 `AnimationOps` 和时间线，不能绕过 Ops 直接操作核心数据结构。
+所有依赖必须遵循自上而下的单向流向：
 
-4. **禁止跨层“偷懒依赖”**
+```
+UI / DSL / Persistence
+        ↓
+    SceneGraph
+        ↓
+     Models (生成结构 Ops)
+        ↓
+     Layout (注入 SET_POS Ops)
+        ↓
+    Renderer (消费 Ops)
+```
 
-   * `ui` 不得 import `renderers.pyside6` 以外的具体渲染实现。
-   * `dsl` 不得 import PySide6 或任何 UI 组件。
-   * `persistence` 不得依赖 UI 或渲染器。
+**反向依赖是绝对禁止的**（如 Renderer 不得调用 Model 的方法）。
 
-如需突破上述规则，必须先更新 `docs/ARCHITECTURE.md` 并在 PR 中解释原因。
+### 3.3 Command & SceneGraph 为唯一高层入口
+
+- UI / DSL / Persistence **不应直接调用**模型内部方法
+- 所有高层操作必须经过 `SceneGraph`，以 `Command` 形式下发
+- SceneGraph 负责路由：Models（生成 Ops）→ Layout（注入坐标）→ Renderer（播放）
+
+### 3.4 Ops 作为唯一的跨层通信协议
+
+- Models 只生成**结构 Ops**（CREATE_NODE、SET_STATE、SET_LABEL 等）
+- Layout 注入**位置 Ops**（SET_POS）
+- Renderer 消费完整的 **Ops 序列**，不得绕过 Ops 层直接修改状态
+- Ops 定义见 `docs/OPS_SPEC.md`
+
+### 3.5 禁止跨层"偷懒依赖"
+
+- `ui` 不得直接 import `core.models` 内部（只通过 SceneGraph）
+- `dsl` 不得 import PySide6 或任何 UI 组件
+- `persistence` 不得直接修改 Model 内部状态
+- 任何"为了快速开发"而违反此规则的代码，必须在 PR 中明确说明并通过审查
+
+若需突破上述规则，必须：
+
+1. 先更新 `docs/ARCHITECTURE.md` 解释例外情况
+2. 在 PR 中详细说明原因和替代方案研究
+3. 经过代码审查同意
+4. 考虑未来的重构计划消除这个耦合
 
 ---
 
@@ -125,19 +172,44 @@ uv run pytest
 
 ### 4.2 Core Implementation Agent（核心引擎实现）
 
-* 目标：实现或修改核心引擎（模型、动画指令、SceneGraph）。
+* 目标：实现或修改核心引擎中的**模型层和场景图**（不包括布局引擎）。
 * 修改范围：
 
-  * `src/ds_vis/core/**`
-  * `tests/**`（添加或更新与核心逻辑相关的测试）
+  * `src/ds_vis/core/models/**`（数据结构模型）
+  * `src/ds_vis/core/ops/**`（动画指令定义）
+  * `src/ds_vis/core/scene/**`（SceneGraph 与 Command）
+  * `tests/**`（添加或更新与模型逻辑相关的测试）
 * 必须先阅读：
 
   * `docs/ENVIRONMENT.md`
-  * `docs/ARCHITECTURE.md`
+  * `docs/ARCHITECTURE.md`（第 4 部分：Model 层责任）
   * `docs/ANIMATION_REQUIREMENTS.md`
-  * （未来）`docs/OPS_SPEC.md`
+  * `docs/OPS_SPEC.md`（Ops 协议定义）
 
-### 4.3 Renderer Implementation Agent（渲染器实现）
+### 4.3 Layout Implementation Agent（布局引擎实现）
+
+* 目标：实现布局算法和几何计算引擎。
+* 修改范围：
+
+  * `src/ds_vis/core/layout/**`
+  * `tests/**`（与布局相关的测试）
+* 必须先阅读：
+
+  * `docs/ENVIRONMENT.md`
+  * `docs/ARCHITECTURE.md`（第 5 部分：Layout 层责任）
+  * `docs/OPS_SPEC.md`（SET_POS Ops 规范）
+* 约束：
+
+  * 不得依赖 Model 的具体实现；
+  * 不得修改结构 Ops（CREATE_NODE、DELETE_NODE 等）；
+  * 只能注入 SET_POS Ops；
+  * 不得推测数据结构的业务逻辑，仅基于以下两种方式获取信息：
+    1. **从 AnimationOps 序列推断拓扑结构**
+    2. **查询 Model 的公开拓扑接口**
+
+---
+
+### 4.4 Renderer Implementation Agent（渲染器实现）
 
 * 目标：实现 PySide6 渲染器及相关 UI 逻辑。
 * 修改范围：
@@ -151,7 +223,7 @@ uv run pytest
   * `docs/ARCHITECTURE.md`
   * `docs/ANIMATION_REQUIREMENTS.md`
 
-### 4.4 DSL / LLM Agent（后期）
+### 4.5 DSL / LLM Agent（后期）
 
 * 目标：实现 DSL 解析与自然语言到命令/DSL 的映射。
 * 修改范围：

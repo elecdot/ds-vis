@@ -85,76 +85,201 @@ Command 是：
 
 1. 管理所有当前存在的结构实例（list / stack / bst / avl / gitgraph 等）。
 2. 接受 `Command`，路由到正确的 Model 实例与方法。
-3. 将 Model 返回的 AnimationOps 序列汇总，供 Renderer 播放。
+3. 接收 Model 返回的 Timeline 调用 Layout 完成 Timeline，供 Renderer 播放。
 4. 提供当前场景状态的导入/导出接口，供 Persistence 使用。
 
 SceneGraph **不做**：
 
 * 具体动画实现（由 AnimationOps + Renderer 负责）；
-* UI 逻辑；
-* DSL 文本解析。
+* 数据结构模型逻辑（由 Model 负责）；
+* 布局计算（由 Layout 负责）；
+* UI 逻辑（由 UI 负责）；
+* DSL 文本解析（由 DSL 负责）。
 
 ---
 
-## 4. AnimationOps 与 Renderer
+## 4. Model 层
 
-### 4.1 AnimationOps
+### 4.1 核心职责
 
-AnimationOps 是一组用于描述“动画应该如何执行”的抽象指令，例如：
+Model 层维护**真实的数据结构内部状态**，并在每次操作后生成相应的"结构 Ops"。它的核心职责是：
 
-* 结构性变化：
+1. **维护数据结构状态**：
+   - 管理真实的树、链表、栈等的内部状态（指针、值、平衡因子等）
+   - 状态驱动完全由数据结构本身的逻辑决定
 
-  * `CreateNode`
-  * `DeleteNode`
-  * `CreateEdge`
-  * `DeleteEdge`
-* 视觉效果：
+2. **生成结构 Ops**：
+   - 将每次操作拆解为一系列 AnimationOps
+   - 只关注**结构变化**（CREATE_NODE、DELETE_NODE、CREATE_EDGE、SET_STATE、SET_LABEL 等）
+   - **不得包含任何布局信息**（如坐标、位置）
 
-  * `MoveNode`
-  * `HighlightNode`
-  * `SetLabel`
-* 控制结构：
+### 4.2 Model 层的约束
 
-  * `Wait`
-  * `Sequence`
-  * `ParallelGroup`
+Model 层**禁止**：
 
-**关键原则：**
+- 依赖 Renderer、UI、DSL 或其他高层模块
+- 使用 PySide6 或任何 UI 框架 API
+- 依赖或生成 Timeline（Timeline 是上层的职责）
+- 处理或使用坐标、位置等**视觉属性**（这是 Layout 的职责）
+- 修改 SceneGraph 的内部状态
+- 进行任何 UI 逻辑判断
 
+**关键设计思想**：Model 层应该就像一个"不知道自己会被可视化"的纯数据结构库，完全独立可用。
+
+---
+
+## 5. Layout 层
+
+### 5.1 核心职责
+
+Layout 引擎是 Model 和 Renderer 之间的"几何中介"。它负责：
+
+1. **理解结构信息**：
+   - 接收 Model 层生成的结构 Ops
+   - 理解数据结构的拓扑信息（树深、链表长度、节点关系等）
+
+2. **计算几何布局**：
+   - 基于数据结构的拓扑，计算每个 Node 应该在哪里（x, y 坐标）
+   - 支持多种布局算法（树布局、线性布局、DAG 布局等）
+   - 考虑教学效果（如保持节点间距、避免重叠等）
+
+3. **注入 SET_POS Ops**：
+   - 在 Model 生成的 Ops 中的**关键步骤**插入 SET_POS Ops
+   - 保证坐标的生成时机与结构变化同步
+   - 返回完整的"可渲染 Ops 序列"（结构 Ops + SET_POS Ops）
+
+### 5.2 Layout 层的约束
+
+Layout 层**禁止**：
+
+- 修改或删除结构类 Ops（如不应改写 CREATE_NODE 的内容）
+- 推测数据结构的语义或业务逻辑（只应理解其拓扑结构）
+- 与 Model 层形成双向依赖（单向流向：Model → Layout）
+- 与 Renderer 层的双向耦合（只输出 Ops，不关心如何渲染）
+
+**关键设计思想**：Layout 是一个**纯几何计算层**，在不理解具体数据结构业务的情况下，也能为任何结构类型计算合理的坐标。
+**Layout 的信息来源**：Ops 流 + 拓扑查询接口
+
+
+---
+
+## 6. AnimationOps 与 Renderer
+
+### 6.1 AnimationOps 层次与 Timeline
+
+AnimationOps 被组织为按顺序播放的 **Timeline**，由若干 **AnimationStep** 组成：
+
+* **AnimationStep**：一个教学上的原子步骤，包含：
+  - `duration_ms`：该步骤的播放时长（毫秒）
+  - `label`：可选的人类可读标签
+  - `ops`：属于本步骤的所有 AnimationOp（并行执行）
+
+* **AnimationOp**：原子级动画指令，描述单个状态变化：
+
+  * `CREATE_NODE`、`DELETE_NODE`、`CREATE_EDGE`、`DELETE_EDGE`（结构变化）
+  * `SET_POS`（布局与位置）
+  * `SET_STATE`、`SET_LABEL`（状态与样式）
+  * `SET_MESSAGE`（全局提示）
+
+**关键设计原则：**
+
+* Op 本身不带时间概念，只描述终态；时间控制统一在 Step 层面。
+* 一个 Step 内的所有 Ops 应语义上属于同一个教学微步骤，Renderer 可顺序处理它们。
 * Model 与 SceneGraph 只需要组合这些 Ops，不关心它们在 PySide6 / Web 上如何具体实现。
-* Renderer 只消费 Ops，不知道也不关心 BST/AVL 的内部逻辑。
+* Renderer 只消费 Ops 与 Timeline，不知道也不关心 Model 的内部逻辑。
 
-详细的 Ops 规范会在后续 `OPS_SPEC.md` 中定义。
+**详细规范**见 [`OPS_SPEC.md`](./OPS_SPEC.md)，该文档定义了：
 
-### 4.2 Renderer
+- Timeline 与 Step 的完整 JSON 结构
+- 标准 Op 集合（v0.1）：`CREATE_NODE`、`DELETE_NODE`、`CREATE_EDGE`、`DELETE_EDGE`、`SET_POS`、`SET_STATE`、`SET_LABEL` 等
+- Op 的参数格式与语义
+- 对象 ID 约定与样式映射
 
-`renderers/base.py` 中定义一个抽象 Renderer 接口，例如：
+### 6.2 Renderer 接口与职责
 
-* `render(ops: Sequence[AnimationOp]) -> None`
+**核心接口**：
 
-具体实现：
+Renderer 接收一个 **Timeline**（由若干 AnimationStep 组成），并负责将其播放为可视化动画。例如:
 
-* `renderers/pyside6/`：将节点映射到 QGraphicsItem，将 Ops 映射到动画。
-* 未来 `renderers/web/`：将节点映射到 Canvas/WebGL 对象。
+* `render(self, timeline: Timeline) -> None:`
+
+**核心职责**：
+
+1. **维护可视状态**：
+   - 当前所有可见的 Node、Edge 及其属性（位置、样式、标签等）
+   - 全局消息或提示
+
+2. **步进式播放**：
+   - 对于每个 Step，从前一状态作为起点
+   - 应用本 Step 的所有 Ops，计算终态
+   - 在 `duration_ms` 内，从起点插值到终态（支持平滑过渡）
+   - Step 结束时的状态成为下一 Step 的起点
+
+3. **Ops 解释**：
+   - 根据 Op 类型（CREATE_NODE / SET_POS / SET_STATE 等）更新可视状态
+   - 具体渲染细节（颜色、形状、字体等）由 Renderer 自行决定
+
+4. **不关心**：
+   - 数据结构模型的内部逻辑
+   - 如何生成这些 Ops（那是 Model 和 SceneGraph 的职责）
+
+**具体实现**：
+
+* `renderers/pyside6/`：
+  - 使用 QGraphicsScene/QGraphicsView
+  - 将 Node 映射到 QGraphicsItem
+  - 使用 QPropertyAnimation 实现过渡动画
+  
+* 未来 `renderers/web/`：
+  - 使用 Canvas/WebGL
+  - 实现相同的 Timeline 播放协议
 
 ---
 
-## 5. 依赖方向与禁止规则
+## 7. 依赖方向与架构约束
 
-为保持架构清晰，规定以下依赖方向：
+### 7.1 依赖方向（Data Flow）
 
-* `core` 不得依赖 `renderers`、`ui`、`dsl`、`persistence`。
-* `renderers` 可以依赖 `core.ops`、`core.layout`，但不得直接依赖 `core.models` 内部细节。
-* `ui` 可以依赖 `renderers` 和 `core.scene`（通过 Command 与 SceneGraph 交互），不得直接依赖 `core.models`。
-* `dsl` 可以依赖 `core.scene.Command`，不得依赖渲染相关代码。
-    - DSL 与 Git 模块的交互方式一致：DSL 解析 Git 子域语法后仅生成 Command，不直接访问 GitGraphModel。
-* `persistence` 通过 `SceneGraph` 导入/导出结构状态，不直接操纵 Model 内部。
+代码的依赖应该严格遵循从上到下的单向流向：
 
-若需要打破上述规则，必须在文档中说明原因并经过审慎评估。
+```
+UI / DSL / Persistence
+        ↓
+    SceneGraph
+        ↓
+     Models (生成结构 Ops)
+        ↓
+     Layout (注入坐标 Ops)
+        ↓
+    Renderer (消费 Ops)
+```
+
+**反向依赖（向上依赖）是绝对禁止的。**
+
+### 7.2 具体约束规则
+
+| 层级 | 允许依赖 | 禁止依赖 |
+|------|---------|----------|
+| **Models** | 无（仅内部）| Renderer, UI, DSL, Layout, SceneGraph |
+| **Layout** | core.models（结构理解）, core.ops | Renderer, UI, DSL, SceneGraph |
+| **Renderer** | core.ops | Models（内部实现）, UI, DSL, SceneGraph |
+| **SceneGraph** | core.models, core.layout, core.ops | Renderer, UI, DSL（反向） |
+| **UI** | core.scene（通过 Command）, renderers | core.models 内部细节 |
+| **DSL** | core.scene.Command | Models, Renderer, UI（内部细节） |
+| **Persistence** | core.scene（导出/导入）| Models 内部 |
+
+### 7.3 违规处理
+
+若需要打破上述规则（如循环依赖、跨层耦合），必须：
+
+1. 在 PR 中明确说明原因
+2. 更新本文档解释例外情况  
+3. 通过代码审查
+4. 考虑是否需要重构来消除耦合
 
 ---
 
-## 6. 当前阶段的实现优先级
+## 8. 当前阶段的实现优先级
 
 按优先级排序：
 

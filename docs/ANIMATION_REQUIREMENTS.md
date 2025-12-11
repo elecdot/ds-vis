@@ -182,11 +182,14 @@ L3 作为扩展方向，不纳入当前课程设计必做范围。
 
 ## 5. 与 AnimationOps 的关系
 
-本文件描述的是“**动画应该展示什么**”的教学需求层面。
+本文件描述的是"**动画应该展示什么**"的教学需求层面。
 在实现时：
 
-- Model 与 SceneGraph 应根据这些要求，将一个高层操作拆成若干 AnimationOps 序列。
-- AnimationOps 的具体类型与字段将在 `OPS_SPEC.md` 中定义。
-- Renderer（PySide6/Web）只负责根据 AnimationOps 实际绘制，不重新决定教学粒度与流程。
+- Model 与 SceneGraph 应根据这些要求，将一个高层操作拆成若干 AnimationOps 序列，并组织为 Timeline。
+- AnimationOps 和 Timeline 的具体类型与字段定义在 `OPS_SPEC.md` 中。
+- Renderer（PySide6/Web）负责：
+  - 接收 Timeline，按 Step 顺序播放
+  - 在每个 Step 的 `duration_ms` 时间内，从当前可视状态过渡到应用所有 Ops 后的终态
+  - 不重新决定教学粒度与流程，仅负责具体的渲染与动画实现
 
-**现有如果现有的AnimationOps定义不足以支撑目前的动画要求，应该经过谨慎考虑后扩展**
+**如果现有的 AnimationOps 定义不足以支撑目前的动画要求，应该经过谨慎考虑后扩展**
