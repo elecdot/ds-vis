@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Sequence
+from typing import Iterator, List, Optional, Sequence
 
 from .ops import AnimationOp
 
@@ -39,7 +39,7 @@ class Timeline:
     def add_step(self, step: AnimationStep) -> None:
         self.steps.append(step)
 
-    def __iter__(self) -> Sequence[AnimationStep]:
+    def __iter__(self) -> Iterator[AnimationStep]:
         return iter(self.steps)
 
     def __len__(self) -> int:  # pragma: no cover - trivial

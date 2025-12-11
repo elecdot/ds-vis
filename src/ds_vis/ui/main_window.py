@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
 
         self._scene = QGraphicsScene(self)
         self._view = QGraphicsView(self._scene, self)
-        self._view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self._view.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         self.setCentralWidget(self._view)
 
