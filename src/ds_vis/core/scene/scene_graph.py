@@ -3,9 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict
 
+from ds_vis.core.exceptions import CommandError
+from ds_vis.core.models import ListModel
 from ds_vis.core.ops import Timeline
 
-from .command import Command
+from .command import Command, CommandType
 
 
 @dataclass
@@ -31,10 +33,25 @@ class SceneGraph:
         """
         Apply a high-level command and return a Timeline describing the animation.
 
-        Current implementation is a placeholder. Future steps:
-          - look up the target model by structure_id,
-          - invoke the appropriate method on the model to get a structural Timeline,
+        Current Phase: handle CREATE_STRUCTURE for list skeletons.
+        Future steps:
+          - dispatch to more structure kinds,
           - run the Timeline through the layout engine to inject SET_POS ops.
         """
-        # TODO: implement dispatch + layout pipeline in later phases.
+        if command.type is CommandType.CREATE_STRUCTURE:
+            return self._handle_create_structure(command)
+
+        # For unimplemented command types, return an empty timeline to keep
+        # the walking skeleton stable until future phases fill them in.
         return Timeline()
+
+    def _handle_create_structure(self, command: Command) -> Timeline:
+        kind = command.payload.get("kind")
+
+        if kind == "list":
+            model = ListModel(structure_id=command.structure_id)
+            self._structures[command.structure_id] = model
+            values = command.payload.get("values")
+            return model.create(values)
+
+        raise CommandError(f"Unsupported structure kind: {kind!r}")

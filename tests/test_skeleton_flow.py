@@ -1,5 +1,3 @@
-import pytest
-
 from ds_vis.core.ops import OpCode
 from ds_vis.core.scene.command import CommandType
 
@@ -19,13 +17,9 @@ def test_scene_graph_returns_timeline(scene_graph, create_cmd_factory):
     # the environment is working.
     assert hasattr(timeline, "steps")
 
-@pytest.mark.xfail(reason="Logic not implemented yet - waiting for Core Agent")
 def test_create_structure_produces_ops(scene_graph, create_cmd_factory):
     """
-    Red Test (Expected Failure):
-    This test expects that creating a structure actually produces CREATE_NODE ops.
-    It is marked as xfail because we know the implementation is currently a stub.
-    The Core Implementation Agent's job will be to make this test pass.
+    Ensures creating a structure produces structural ops (CREATE_NODE).
     """
     cmd = create_cmd_factory("list_1", CommandType.CREATE_STRUCTURE, kind="list")
     timeline = scene_graph.apply_command(cmd)

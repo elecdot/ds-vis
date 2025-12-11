@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Domain models for data structures.
 
@@ -12,3 +10,9 @@ Contract:
         1) update the internal tree structure,
         2) produce a structural Timeline that is consistent with the new state.
 """
+
+from __future__ import annotations
+
+from ds_vis.core.models.list_model import ListModel
+
+__all__ = ["ListModel"]
