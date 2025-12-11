@@ -260,6 +260,7 @@ UI / DSL / Persistence
    - 如果有 `xfail` (Expected Fail) 的测试，优先实现逻辑使其通过。
    - 如果没有相关测试，先编写一个“红灯”测试（Red Test）来定义预期行为。
 5. 编写代码，直到测试通过（Green）。
+   - 详细流程见`.github/pull_request_templates.md`
 6. 提交信息应简洁且语义清晰，例如：
 
    * `feat(core): add basic BST model`
