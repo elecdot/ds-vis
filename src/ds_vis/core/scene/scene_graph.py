@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, Optional
 
 from ds_vis.core.exceptions import CommandError
+from ds_vis.core.layout import LayoutEngine
+from ds_vis.core.layout.simple import SimpleLayoutEngine
 from ds_vis.core.models import ListModel
 from ds_vis.core.ops import Timeline
 
@@ -28,6 +30,12 @@ class SceneGraph:
 
     # TODO: replace `object` with a proper model base class / protocol in later phases.
     _structures: Dict[str, object] = field(default_factory=dict)
+    _layout_engine: Optional[LayoutEngine] = None
+
+    def __post_init__(self) -> None:
+        # Phase 1: default to a naive linear layout to keep the pipeline connected.
+        if self._layout_engine is None:
+            self._layout_engine = SimpleLayoutEngine()
 
     def apply_command(self, command: Command) -> Timeline:
         """
@@ -39,11 +47,16 @@ class SceneGraph:
           - run the Timeline through the layout engine to inject SET_POS ops.
         """
         if command.type is CommandType.CREATE_STRUCTURE:
-            return self._handle_create_structure(command)
+            structural_timeline = self._handle_create_structure(command)
+        else:
+            # For unimplemented command types, return an empty timeline to keep
+            # the walking skeleton stable until future phases fill them in.
+            structural_timeline = Timeline()
 
-        # For unimplemented command types, return an empty timeline to keep
-        # the walking skeleton stable until future phases fill them in.
-        return Timeline()
+        if self._layout_engine:
+            return self._layout_engine.apply_layout(structural_timeline)
+
+        return structural_timeline
 
     def _handle_create_structure(self, command: Command) -> Timeline:
         kind = command.payload.get("kind")

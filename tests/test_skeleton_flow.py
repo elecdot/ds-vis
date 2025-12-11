@@ -23,8 +23,19 @@ def test_create_structure_produces_ops(scene_graph, create_cmd_factory):
     """
     cmd = create_cmd_factory("list_1", CommandType.CREATE_STRUCTURE, kind="list")
     timeline = scene_graph.apply_command(cmd)
-    
+
     # We expect at least one step with CREATE_NODE op
     assert len(timeline.steps) > 0
     ops = timeline.steps[0].ops
     assert any(op.op == OpCode.CREATE_NODE for op in ops)
+
+
+def test_layout_injects_positions(scene_graph, create_cmd_factory):
+    """
+    Layout engine should inject SET_POS ops alongside structural ops.
+    """
+    cmd = create_cmd_factory("list_2", CommandType.CREATE_STRUCTURE, kind="list")
+    timeline = scene_graph.apply_command(cmd)
+
+    all_ops = [op for step in timeline.steps for op in step.ops]
+    assert any(op.op == OpCode.SET_POS for op in all_ops)
