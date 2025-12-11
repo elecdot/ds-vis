@@ -244,12 +244,17 @@ UI / DSL / Persistence
 1. 阅读相关文档（REQUEST / ARCHITECTURE / ANIMATION / ENVIRONMENT）。
 2. 确认当前任务所属角色（Core / Renderer / DSL / Docs）。
 3. 限定修改范围在该角色允许的目录内。
-4. 保持 `uv sync` 可通过，`uv run pytest` 无错误。
-5. 提交信息应简洁且语义清晰，例如：
+4. **检查测试状态**：
+   - 运行 `uv run pytest`。
+   - 如果有 `xfail` (Expected Fail) 的测试，优先实现逻辑使其通过。
+   - 如果没有相关测试，先编写一个“红灯”测试（Red Test）来定义预期行为。
+5. 编写代码，直到测试通过（Green）。
+6. 提交信息应简洁且语义清晰，例如：
 
    * `feat(core): add basic BST model`
    * `feat(renderer): implement node highlight animation`
    * `docs(animation): refine AVL rotation micro-steps`
+
 
 ---
 

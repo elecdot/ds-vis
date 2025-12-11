@@ -37,14 +37,14 @@ uv sync
 # 运行应用（暂定入口，后续可根据 ui 模块设计调整）
 uv run python -m ds_vis.ui.main_window
 
-# 运行测试
+# 运行测试（自动包含覆盖率报告）
 uv run pytest
 
-# 代码格式化（如果已在 pyproject.toml 中配置 black）
-uv run black src tests
+# 代码格式化与 Lint 修复
+uv run ruff check --fix src tests
 
-# 静态检查（如果已配置 ruff）
-uv run ruff check src tests
+# 静态类型检查
+uv run mypy src
 ```
 
 以上命令的可用性依赖于 `pyproject.toml` 中对相应工具的配置。
@@ -64,3 +64,36 @@ uv run ruff check src tests
    并提交更新后的 `pyproject.toml` / `uv.lock`。
 
 4. 文档中的命令默认在项目根目录执行。
+
+## 6. 测试与 CI 策略
+
+本项目采用 **"Walking Skeleton" (行走骨架)** 与 **TDD (测试驱动开发)** 相结合的策略。
+
+### 6.1 CI 流水线 (GitHub Actions)
+
+每次 Push 或 PR，CI 会自动执行以下检查：
+1. **Lint**: `ruff check` (代码风格与质量)
+2. **Type Check**: `mypy` (静态类型安全)
+3. **Test**: `pytest` (单元与集成测试)
+
+**任何 Agent 提交的代码必须通过 CI 检查。**
+
+### 6.2 测试分类
+
+- **Tracer Bullet Tests (曳光弹测试)**:
+  - 贯穿全链路（Command -> Scene -> Model -> Layout -> Ops）的集成测试。
+  - 用于验证架构连通性。
+  - 示例：`tests/test_skeleton_flow.py`
+
+- **Unit Tests (单元测试)**:
+  - 针对单个 Model 或算法的逻辑测试。
+  - 应 Mock 掉外部依赖。
+
+### 6.3 开发工作流 (Red-Green-Refactor)
+
+1. **Red**: 编写一个失败的测试（或利用现有的 `xfail` 测试）。
+   - 例如：`test_create_structure_produces_ops` 目前被标记为 `xfail`，因为它期望的功能尚未实现。
+2. **Green**: 编写最小实现代码，使测试通过（去掉 `xfail` 标记）。
+3. **Refactor**: 优化代码结构，确保不破坏测试。
+
+**Agent 指引**: 当你接到任务时，请首先检查 `tests/` 目录下是否有相关的失败测试或 `xfail` 测试。如果有，你的首要目标就是让它变绿。

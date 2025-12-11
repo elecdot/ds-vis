@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Layout engine for visual positioning.
 
@@ -13,6 +11,8 @@ different renderers (desktop/web) to share common layout logic.
 (Specific layout classes can be implemented here or in separate files in the future;
 currently, only roles and protocols are defined.)"
 """
+
+from __future__ import annotations
 
 from typing import Protocol
 
@@ -29,5 +29,6 @@ class LayoutEngine(Protocol):
       - return a new Timeline that includes SET_POS ops.
     """
 
-    def apply_layout(self, timeline: Timeline) -> Timeline:  # pragma: no cover - protocol
+    def apply_layout(self, timeline: Timeline) -> Timeline:
+        # pragma: no cover - protocol
         ...

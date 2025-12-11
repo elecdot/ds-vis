@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Dict
 
 from ds_vis.core.ops import Timeline
+
 from .command import Command
 
 
@@ -19,7 +20,8 @@ class SceneGraph:
       - Collect a structural Timeline (no coordinates).
       - Pass the Timeline through layout (core.layout) before handing it to a renderer.
 
-    Phase 1: API and responsibilities are defined; implementation is intentionally stubbed.
+    Phase 1: API and responsibilities are defined; implementation is intentionally
+    stubbed.
     """
 
     # TODO: replace `object` with a proper model base class / protocol in later phases.

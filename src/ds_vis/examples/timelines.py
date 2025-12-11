@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from ds_vis.core.ops import (
-    Timeline,
-    AnimationStep,
     AnimationOp,
+    AnimationStep,
     OpCode,
+    Timeline,
 )
 
 

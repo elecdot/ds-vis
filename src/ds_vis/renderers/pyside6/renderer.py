@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from PySide6.QtWidgets import QGraphicsScene
 
-from ds_vis.core.ops import Timeline, AnimationStep, AnimationOp, OpCode
+from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 from ds_vis.renderers.base import Renderer
 
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Animation operation and timeline primitives.
 
@@ -9,7 +7,9 @@ This package implements the data structures specified in OPS_SPEC v1.0:
 - Timeline: an ordered sequence of steps
 """
 
-from .ops import OpCode, AnimationOp
+from __future__ import annotations
+
+from .ops import AnimationOp, OpCode
 from .timeline import AnimationStep, Timeline
 
 __all__ = [

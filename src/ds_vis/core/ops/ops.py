@@ -44,7 +44,7 @@ class AnimationOp:
         }
 
     - `op`:       the operation code (OpCode)
-    - `target`:   primary object identifier (node_id, edge_id, etc.), or None for global ops
+    - `target`:   primary object identifier (node_id, edge_id, etc.), or None (global)
     - `data`:     operation-specific payload (keys and values are JSON-serializable)
     """
 

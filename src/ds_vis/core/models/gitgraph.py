@@ -44,7 +44,7 @@ class GitGraphModel:
         return Timeline()
 
     def branch(self, name: str) -> Timeline:
-        """Create a new branch pointing to the current commit (structural Timeline stub)."""
+        """Create a new branch pointing to current commit (structural Timeline stub)."""
         return Timeline()
 
     def checkout(self, target: str) -> Timeline:
