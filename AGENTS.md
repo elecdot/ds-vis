@@ -18,6 +18,7 @@
 
 详细需求与架构说明见：
 
+- `docs/INDEX.md` (文档版本注册表 - **Agent 必读**)
 - `docs/REQUEST.md`
 - `docs/ARCHITECTURE.md`
 - `docs/ANIMATION_REQUIREMENTS.md`
@@ -255,6 +256,15 @@ UI / DSL / Persistence
    * `feat(renderer): implement node highlight animation`
    * `docs(animation): refine AVL rotation micro-steps`
 
+
+## 6. 文档版本控制 (Doc-Code Binding)
+
+本项目实行严格的“文档-代码绑定”策略，以防止设计与实现脱节。
+
+**规则：**
+1. **Registry Check**: 在修改任何代码前，检查 `docs/INDEX.md` 中的 "Bound Code Paths"。
+2. **Co-evolution**: 如果你修改了某个模块（例如 `src/ds_vis/core/ops`），你必须检查并更新对应的文档（`docs/OPS_SPEC.md`）。
+3. **Version Bump**: 如果文档内容发生了实质性变更（如接口修改），请在 `docs/INDEX.md` 中更新该文档的版本号和日期。
 
 ---
 
