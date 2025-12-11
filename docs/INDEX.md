@@ -9,7 +9,7 @@ This file tracks the current version of design documents and their binding to so
 | Document | Version | Status | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- |
 | [REQUEST.md](./REQUEST.md) | v0.1 | Stable | N/A | 2025-12-11 |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | v0.1 | Stable | `src/ds_vis/` (Global Structure) | 2025-12-11 |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | v0.2 | Stable | `src/ds_vis/` (Global Structure) | 2025-12-11 |
 | [OPS_SPEC.md](./OPS_SPEC.md) | v1.0 | Stable | `src/ds_vis/core/ops/` | 2025-12-11 |
 | [ANIMATION_REQUIREMENTS.md](./ANIMATION_REQUIREMENTS.md) | v0.1 | Draft | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-11 |
 | [ENVIRONMENT.md](./ENVIRONMENT.md) | v0.2 | Stable | `pyproject.toml`, `.github/` | 2025-12-11 |

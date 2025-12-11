@@ -149,6 +149,12 @@ UI / DSL / Persistence
 - `persistence` 不得直接修改 Model 内部状态
 - 任何"为了快速开发"而违反此规则的代码，必须在 PR 中明确说明并通过审查
 
+### 3.6 错误处理规范
+
+- **Model 层禁止吞掉异常**：遇到逻辑错误（如空栈弹出）必须抛出 `ds_vis.core.exceptions` 中定义的异常。
+- **Model 层禁止直接 UI 交互**：严禁使用 `print()` 或 `QMessageBox` 报错。
+- **UI 层负责兜底**：UI 必须捕获 `DsVisError` 并友好展示，防止程序崩溃。
+
 若需突破上述规则，必须：
 
 1. 先更新 `docs/ARCHITECTURE.md` 解释例外情况

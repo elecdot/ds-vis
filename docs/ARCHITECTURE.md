@@ -26,7 +26,12 @@ UI / DSL / LLM
  Renderers
    ├─ PySide6 Renderer （当前 MVP）
    └─ 未来：Web Renderer (React + Canvas/WebGL)
-````
+```
+
+**错误处理 (Error Handling)** 贯穿全层：
+- Model 抛出逻辑异常
+- SceneGraph 抛出场景异常
+- UI/DSL 统一捕获并展示
 
 目标：
 
@@ -48,6 +53,7 @@ src/ds_vis/
     ops/          # AnimationOps 类型定义与时间线（timeline）管理
     scene/        # Command 类型与 SceneGraph（统一场景状态）
     layout/       # 布局算法（树布局、线性布局、Git DAG 布局）
+    exceptions.py # 统一异常定义
   renderers/
     base.py       # 抽象 Renderer 接口
     pyside6/      # PySide6 渲染器具体实现
@@ -98,9 +104,31 @@ SceneGraph **不做**：
 
 ---
 
-## 4. Model 层
+## 4. 错误处理 (Error Handling)
 
-### 4.1 核心职责
+为了保证系统的健壮性，我们定义了统一的异常层级：
+
+### 4.1 异常类定义 (`src/ds_vis/core/exceptions.py`)
+
+*   `DsVisError`: 所有自定义异常的基类。
+*   `SceneError`: 场景操作失败（如找不到 ID）。
+*   `ModelError`: 逻辑非法（如空栈弹出）。
+*   `LayoutError`: 布局计算失败。
+*   `CommandError`: 指令参数错误。
+
+### 4.2 处理策略
+
+1.  **Model 层**: 遇到非法操作（如 `pop` 空栈）应抛出 `ModelError`，而不是返回空 Timeline 或崩溃。
+2.  **SceneGraph 层**: 负责捕获 `ModelError` 或验证 `Command`，必要时抛出 `SceneError`。
+3.  **UI / DSL 层**: 是异常的**最终捕获者**。
+    *   UI 应捕获 `DsVisError` 并通过弹窗或状态栏提示用户（不要 Crash）。
+    *   DSL 应捕获异常并输出错误行号和原因。
+
+---
+
+## 5. Model 层
+
+### 5.1 核心职责
 
 Model 层维护**真实的数据结构内部状态**，并在每次操作后生成相应的"结构 Ops"。它的核心职责是：
 
@@ -113,7 +141,7 @@ Model 层维护**真实的数据结构内部状态**，并在每次操作后生�
    - 只关注**结构变化**（CREATE_NODE、DELETE_NODE、CREATE_EDGE、SET_STATE、SET_LABEL 等）
    - **不得包含任何布局信息**（如坐标、位置）
 
-### 4.2 Model 层的约束
+### 5.2 Model 层的约束
 
 Model 层**禁止**：
 
@@ -128,9 +156,9 @@ Model 层**禁止**：
 
 ---
 
-## 5. Layout 层
+## 6. Layout 层
 
-### 5.1 核心职责
+### 6.1 核心职责
 
 Layout 引擎是 Model 和 Renderer 之间的"几何中介"。它负责：
 
@@ -148,7 +176,7 @@ Layout 引擎是 Model 和 Renderer 之间的"几何中介"。它负责：
    - 保证坐标的生成时机与结构变化同步
    - 返回完整的"可渲染 Ops 序列"（结构 Ops + SET_POS Ops）
 
-### 5.2 Layout 层的约束
+### 6.2 Layout 层的约束
 
 Layout 层**禁止**：
 
@@ -163,9 +191,9 @@ Layout 层**禁止**：
 
 ---
 
-## 6. AnimationOps 与 Renderer
+## 7. AnimationOps 与 Renderer
 
-### 6.1 AnimationOps 层次与 Timeline
+### 7.1 AnimationOps 层次与 Timeline
 
 AnimationOps 被组织为按顺序播放的 **Timeline**，由若干 **AnimationStep** 组成：
 
@@ -195,7 +223,7 @@ AnimationOps 被组织为按顺序播放的 **Timeline**，由若干 **Animation
 - Op 的参数格式与语义
 - 对象 ID 约定与样式映射
 
-### 6.2 Renderer 接口与职责
+### 7.2 Renderer 接口与职责
 
 **核心接口**：
 
@@ -236,9 +264,9 @@ Renderer 接收一个 **Timeline**（由若干 AnimationStep 组成），并负�
 
 ---
 
-## 7. 依赖方向与架构约束
+## 8. 依赖方向与架构约束
 
-### 7.1 依赖方向（Data Flow）
+### 8.1 依赖方向（Data Flow）
 
 代码的依赖应该严格遵循从上到下的单向流向：
 
@@ -256,7 +284,7 @@ UI / DSL / Persistence
 
 **反向依赖（向上依赖）是绝对禁止的。**
 
-### 7.2 具体约束规则
+### 8.2 具体约束规则
 
 | 层级 | 允许依赖 | 禁止依赖 |
 |------|---------|----------|
@@ -268,7 +296,7 @@ UI / DSL / Persistence
 | **DSL** | core.scene.Command | Models, Renderer, UI（内部细节） |
 | **Persistence** | core.scene（导出/导入）| Models 内部 |
 
-### 7.3 违规处理
+### 8.3 违规处理
 
 若需要打破上述规则（如循环依赖、跨层耦合），必须：
 
@@ -279,7 +307,7 @@ UI / DSL / Persistence
 
 ---
 
-## 8. 当前阶段的实现优先级
+## 9. 当前阶段的实现优先级
 
 按优先级排序：
 
