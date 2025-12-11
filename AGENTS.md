@@ -25,6 +25,7 @@
 - `docs/ENVIRONMENT.md`
 - `docs/OPS_SPEC.md`
 - `docs/DEV_KNOWLEDGE_BASE.md` (FAQ / Troubleshooting / Known Issues)
+- `.github/pull_request_template.md` (项目验收最小标准)
 
 ---
 
@@ -48,7 +49,9 @@ uv sync
 uv run python -m ds_vis.ui.main_window
 
 # 运行测试
-uv run pytest
+uv run ruff check src tests # Linting
+uv run my py src            # Type check
+uv run pytest               # All tests
 ```
 
 任何 Agent 在修改代码前，应先阅读 `docs/ENVIRONMENT.md` 并确保在本地能够完成上述命令。
