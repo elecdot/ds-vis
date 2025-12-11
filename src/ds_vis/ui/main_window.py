@@ -14,14 +14,19 @@ from PySide6.QtWidgets import (
 )
 
 from ds_vis.core.scene import SceneGraph
+from ds_vis.core.scene.command import Command, CommandType
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer
 
 # Developer examples (structural timelines only)
 try:
     # Optional import; if examples are missing, the Dev menu will be disabled.
-    from ds_vis.examples.timelines import bst_insert_7_into_root_5
+    from ds_vis.examples.timelines import (
+        bst_insert_7_into_root_5,
+        bst_insert_7_with_layout_example,
+    )
 except ImportError:  # pragma: no cover - defensive
     bst_insert_7_into_root_5 = None  # type: ignore[assignment]
+    bst_insert_7_with_layout_example = None  # type: ignore[assignment]
 
 class MainWindow(QMainWindow):
     """
@@ -29,7 +34,8 @@ class MainWindow(QMainWindow):
 
     Phase 1:
       - Sets up a basic QGraphicsView and wires a SceneGraph + Renderer.
-      - Adds a small 'Dev' menu entry to inspect example Timelines.
+      - Adds a small 'Dev' menu entry to inspect example Timelines and
+        run a list creation through the full stack.
         This is a developer playground only and NOT part of the core product flow.
     """
 
@@ -71,7 +77,7 @@ class MainWindow(QMainWindow):
 
         dev_menu: QMenu = menubar.addMenu("Dev")
 
-        # Dev -> Run BST Insert Example
+        # Dev -> Run BST Insert Example (with layout injection)
         self._act_run_bst_example = QAction(
             "Run BST Insert Example (print to console)", self
         )
@@ -79,6 +85,14 @@ class MainWindow(QMainWindow):
         self._act_run_bst_example.setEnabled(bst_insert_7_into_root_5 is not None)
 
         dev_menu.addAction(self._act_run_bst_example)
+
+        # Dev -> Create List via full pipeline
+        # (Command -> SceneGraph -> Layout -> Renderer)
+        self._act_create_list = QAction(
+            "Create List (render)", self
+        )
+        self._act_create_list.triggered.connect(self._create_list_dev)
+        dev_menu.addAction(self._act_create_list)
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -98,7 +112,7 @@ class MainWindow(QMainWindow):
             print("Example function bst_insert_7_into_root_5() not available.")
             return
 
-        timeline = bst_insert_7_into_root_5()
+        timeline = bst_insert_7_with_layout_example()
 
         print("\n=== Dev: BST insert example timeline ===")
         for i, step in enumerate(timeline.steps, start=1):
@@ -108,9 +122,23 @@ class MainWindow(QMainWindow):
                 print("   ", op)
         print("=== End of example ===\n")
 
-        # In future phases, we may forward this to the renderer:
-        #   self._renderer.render_timeline(timeline)
-        # For now, we keep this function as a pure inspection tool.
+        # Forward this to the renderer for visual inspection:
+        self._renderer.render_timeline(timeline)
+
+    def _create_list_dev(self) -> None:
+        """
+        Developer-only hook: create a list structure through the full pipeline.
+
+        Command -> SceneGraph (structural ops) -> Layout (inject SET_POS) -> Renderer.
+        """
+        cmd = Command(
+            structure_id="dev_list",
+            type=CommandType.CREATE_STRUCTURE,
+            payload={"kind": "list", "values": [1, 2, 3]},
+        )
+        timeline = self._scene_graph.apply_command(cmd)
+        # Phase 1: render immediately; future phases may add animation controls.
+        self._renderer.render_timeline(timeline)
 
     # --------------------------------------------------------------------- #
     # Entry point
