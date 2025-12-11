@@ -24,6 +24,7 @@
 - `docs/ANIMATION_REQUIREMENTS.md`
 - `docs/ENVIRONMENT.md`
 - `docs/OPS_SPEC.md`
+- `docs/DEV_KNOWLEDGE_BASE.md` (FAQ / Troubleshooting / Known Issues)
 
 ---
 
