@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterator, List, Optional, Sequence
+from typing import Iterator, List, Optional
 
 from .ops import AnimationOp
 
