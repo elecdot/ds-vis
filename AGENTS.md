@@ -253,7 +253,10 @@ UI / DSL / Persistence
 建议工作流（人类 / Agent 均适用）：
 
 1. 阅读相关文档（REQUEST / ARCHITECTURE / ANIMATION / ENVIRONMENT）。
-2. 确认当前任务所属角色（Core / Renderer / DSL / Docs）。
+2. 确认当前任务所属角色（Core / Layout / Renderer / DSL / Docs）。
+   - 确认修改范围
+   - 读取所需的全部上下文信息, 并检查信息是否过时.
+   - 读取并确认活跃文档`DEV_KNOWLEDGE_BASH.md`中相关的开发信息.
 3. 限定修改范围在该角色允许的目录内。
 4. **检查测试状态**：
    - 运行 `uv run pytest`。
