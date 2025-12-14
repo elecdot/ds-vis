@@ -1,0 +1,47 @@
+site_name: DS-Vis Documentation
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.integrate
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            docstring_style: google # Use Google-style docstrings now
+
+markdown_extensions:
+  - admonition
+  # Mermaid support
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.details
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Design:
+      - Requirements: design/requirements.md
+      - Architecture: design/architecture.md
+      - Ops Spec: design/ops_spec.md
+      - Animation Requirements: design/animation.md
+  - Engineering:
+      - Environment: engineering/environment.md
+      - Dev Knowledge Base: engineering/dev_kb.md
+      #- Testing & CI: engineering/testing_ci.md
+#  - Demo:
+#      - Scenarios: demo/scenarios.md
+#      - Test Data: demo/testdata.md
+  - Diagrams: diagrams/index.md
+  - API: api/index.md
+

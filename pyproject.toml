@@ -25,6 +25,16 @@ dev = [
     "pytest-cov>=7.0.0",
     "ruff>=0.14.8",
 ]
+docs = [
+    "gprof2dot>=2025.4.14",
+    "graphviz>=0.21",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.0",
+    "mkdocstrings[python]>=1.0.0",
+    "pydeps>=3.0.1",
+    "pylint>=4.0.4",
+    "pymdown-extensions>=10.19",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
