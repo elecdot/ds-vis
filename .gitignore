@@ -27,6 +27,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Python profiling
+*.pstats
+
 # PyInstaller
 *.manifest
 *.spec
