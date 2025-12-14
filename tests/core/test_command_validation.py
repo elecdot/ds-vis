@@ -33,6 +33,13 @@ def test_create_structure_values_must_be_sequence(scene_graph):
         scene_graph.apply_command(cmd)
 
 
+def test_create_structure_requires_kind(scene_graph):
+    cmd = Command("list_schema", CommandType.CREATE_STRUCTURE, payload={})
+
+    with pytest.raises(CommandError, match="requires payload.kind"):
+        scene_graph.apply_command(cmd)
+
+
 def test_delete_node_requires_int_index(scene_graph, create_cmd_factory):
     scene_graph.apply_command(
         create_cmd_factory(
@@ -62,4 +69,24 @@ def test_delete_node_rejects_unknown_fields(scene_graph, create_cmd_factory):
     )
 
     with pytest.raises(CommandError, match="Unexpected payload fields"):
+        scene_graph.apply_command(cmd)
+
+
+def test_delete_node_requires_index_for_list(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_schema", CommandType.CREATE_STRUCTURE, kind="list", values=[1]
+        )
+    )
+    cmd = Command("list_schema", CommandType.DELETE_NODE, payload={"kind": "list"})
+
+    with pytest.raises(CommandError, match="requires 'index'"):
+        scene_graph.apply_command(cmd)
+
+
+def test_delete_node_accepts_empty_payload_for_other_structures(scene_graph):
+    cmd = Command("tree_1", CommandType.DELETE_NODE, payload={})
+    # For unknown kinds, payload validation should not block future schemas; handler
+    # will error later.
+    with pytest.raises(CommandError):
         scene_graph.apply_command(cmd)

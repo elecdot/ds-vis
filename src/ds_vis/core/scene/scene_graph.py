@@ -158,14 +158,21 @@ class SceneGraph:
             raise CommandError("DELETE_STRUCTURE kind must be a string")
 
     def _validate_delete_node_payload(self, payload: Mapping[str, Any]) -> None:
-        self._reject_unknown_fields(payload, {"kind", "index"})
-        if "kind" in payload and not isinstance(payload.get("kind"), str):
+        kind = payload.get("kind")
+        if kind is not None and not isinstance(kind, str):
             raise CommandError("DELETE_NODE kind must be a string")
-        if "index" not in payload:
-            raise CommandError("DELETE_NODE requires 'index'")
-        index = payload.get("index")
-        if not isinstance(index, int):
-            raise CommandError("DELETE_NODE index must be int")
+
+        # For list (and default/unspecified), enforce index schema strictly.
+        if kind in (None, "list"):
+            self._reject_unknown_fields(payload, {"kind", "index"})
+            if "index" not in payload:
+                raise CommandError("DELETE_NODE requires 'index' for list structures")
+            index = payload.get("index")
+            if not isinstance(index, int):
+                raise CommandError("DELETE_NODE index must be int")
+        else:
+            # Allow other structure schemas (e.g., BST/Graph) to define their fields.
+            return
 
     def _reject_unknown_fields(
         self, payload: Mapping[str, Any], allowed: Set[str]
