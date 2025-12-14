@@ -78,7 +78,7 @@ class SceneGraph:
             model = self._get_or_create_list_model(command.structure_id)
             values = command.payload.get("values")
             # Recreate if structure already exists to keep IDs monotonic.
-            if model._node_ids:
+            if model.node_count:
                 return model.recreate(values)
             return model.create(values)
 
@@ -117,7 +117,7 @@ class SceneGraph:
             index = command.payload.get("index")
             if not isinstance(index, int):
                 raise CommandError("DELETE_NODE index must be int")
-            if index < 0 or index >= len(model._node_ids):
+            if index < 0 or index >= model.node_count:
                 raise CommandError("DELETE_NODE index out of range")
             return model.delete_index(index)
 

@@ -3,11 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Optional
 
+from ds_vis.core.exceptions import ModelError
+from ds_vis.core.models.base import BaseModel
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 
 
 @dataclass
-class ListModel:
+class ListModel(BaseModel):
     """
     Minimal list model used by the walking skeleton.
 
@@ -18,10 +20,8 @@ class ListModel:
     P0.3: IDs are monotonic and never reused within the same structure instance.
     """
 
-    structure_id: str
     values: List[Any] = field(default_factory=list)
     _node_ids: List[str] = field(default_factory=list)
-    _next_node_id: int = 0
 
     @property
     def kind(self) -> str:
@@ -55,7 +55,7 @@ class ListModel:
             ops.append(
                 AnimationOp(
                     op=OpCode.DELETE_EDGE,
-                    target=self._edge_id(src, dst),
+                    target=self.edge_id("next", src, dst),
                     data={"structure_id": self.structure_id},
                 )
             )
@@ -80,7 +80,7 @@ class ListModel:
         """
         timeline = Timeline()
         if index < 0 or index >= len(self._node_ids):
-            return timeline  # Nothing to delete; caller should have validated.
+            raise ModelError("delete_index out of range")
 
         ops: List[AnimationOp] = []
         target_id = self._node_ids[index]
@@ -91,7 +91,7 @@ class ListModel:
             ops.append(
                 AnimationOp(
                     op=OpCode.DELETE_EDGE,
-                    target=self._edge_id(prev_id, target_id),
+                    target=self.edge_id("next", prev_id, target_id),
                     data={"structure_id": self.structure_id},
                 )
             )
@@ -99,7 +99,7 @@ class ListModel:
             ops.append(
                 AnimationOp(
                     op=OpCode.DELETE_EDGE,
-                    target=self._edge_id(target_id, next_id),
+                    target=self.edge_id("next", target_id, next_id),
                     data={"structure_id": self.structure_id},
                 )
             )
@@ -116,7 +116,7 @@ class ListModel:
             ops.append(
                 AnimationOp(
                     op=OpCode.CREATE_EDGE,
-                    target=self._edge_id(prev_id, next_id),
+                    target=self.edge_id("next", prev_id, next_id),
                     data={
                         "structure_id": self.structure_id,
                         "from": prev_id,
@@ -150,6 +150,13 @@ class ListModel:
             timeline.add_step(step)
         return timeline
 
+    @property
+    def node_count(self) -> int:
+        """
+        Public surface for SceneGraph to query node existence without peeking internals.
+        """
+        return len(self._node_ids)
+
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #
@@ -157,7 +164,7 @@ class ListModel:
         ops: List[AnimationOp] = []
 
         if not self.values:
-            node_id = self._allocate_node_id(prefix="sentinel")
+            node_id = self.allocate_node_id(prefix="sentinel")
             self._node_ids = [node_id]
             ops.append(
                 AnimationOp(
@@ -175,7 +182,7 @@ class ListModel:
         self._node_ids = []
         prev_node_id: Optional[str] = None
         for value in self.values:
-            node_id = self._allocate_node_id(prefix="node")
+            node_id = self.allocate_node_id(prefix="node")
             self._node_ids.append(node_id)
             ops.append(
                 AnimationOp(
@@ -187,13 +194,13 @@ class ListModel:
                         "label": str(value),
                     },
                 )
-            )
+                )
 
             if prev_node_id is not None:
                 ops.append(
                     AnimationOp(
                         op=OpCode.CREATE_EDGE,
-                        target=self._edge_id(prev_node_id, node_id),
+                        target=self.edge_id("next", prev_node_id, node_id),
                         data={
                             "structure_id": self.structure_id,
                             "from": prev_node_id,
@@ -206,11 +213,3 @@ class ListModel:
             prev_node_id = node_id
 
         return ops
-
-    def _allocate_node_id(self, prefix: str) -> str:
-        node_id = f"{self.structure_id}_{prefix}_{self._next_node_id}"
-        self._next_node_id += 1
-        return node_id
-
-    def _edge_id(self, src: str, dst: str) -> str:
-        return f"{self.structure_id}|next|{src}->{dst}"
