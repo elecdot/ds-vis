@@ -1,4 +1,4 @@
-# Developer Knowledge Base (FAQ & Troubleshooting)
+# Developer Knowledge Base (FAQ & Troubleshooting) (rolling)
 
 > **Purpose**: This document serves as a shared "long-term memory" for Developers and Agents.
 > **Rule**: If you solve a tricky environment issue, clarify a confusing architectural point, or identify a persistent limitation, **record it here**.
@@ -32,8 +32,8 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 ### Q: How do I add a new Animation Operation?
 **A:**
 1. Add the enum member to `OpCode` in `src/ds_vis/core/ops/ops.py`.
-2. Update `docs/OPS_SPEC.md` to define its payload structure.
-3. Update `docs/INDEX.md` version for OPS_SPEC.
+2. Update `docs/design/ops_spec.md` to define its payload structure.
+3. Update `docs/index.md` version for OPS_SPEC.
 4. Implement handling in the Renderer.
 
 ---

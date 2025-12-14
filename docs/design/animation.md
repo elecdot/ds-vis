@@ -186,7 +186,7 @@ L3 作为扩展方向，不纳入当前课程设计必做范围。
 在实现时：
 
 - Model 与 SceneGraph 应根据这些要求，将一个高层操作拆成若干 AnimationOps 序列，并组织为 Timeline。
-- AnimationOps 和 Timeline 的具体类型与字段定义在 `OPS_SPEC.md` 中。
+- AnimationOps 和 Timeline 的具体类型与字段定义在 `ops_spec.md` 中。
 - Renderer（PySide6/Web）负责：
   - 接收 Timeline，按 Step 顺序播放
   - 在每个 Step 的 `duration_ms` 时间内，从当前可视状态过渡到应用所有 Ops 后的终态

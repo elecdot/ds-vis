@@ -216,7 +216,7 @@ AnimationOps 被组织为按顺序播放的 **Timeline**，由若干 **Animation
 * Model 与 SceneGraph 只需要组合这些 Ops，不关心它们在 PySide6 / Web 上如何具体实现。
 * Renderer 只消费 Ops 与 Timeline，不知道也不关心 Model 的内部逻辑。
 
-**详细规范**见 [`OPS_SPEC.md`](./OPS_SPEC.md)，该文档定义了：
+**详细规范**见 [`ops_spec.md`](./ops_spec.md)，该文档定义了：
 
 - Timeline 与 Step 的完整 JSON 结构
 - 标准 Op 集合（v0.1）：`CREATE_NODE`、`DELETE_NODE`、`CREATE_EDGE`、`DELETE_EDGE`、`SET_POS`、`SET_STATE`、`SET_LABEL` 等
@@ -311,7 +311,7 @@ UI / DSL / Persistence
 
 按优先级排序：
 
-1. 文档与接口设计（本文件 + REQUEST + ENVIRONMENT + ANIMATION）。
+1. 文档与接口设计（本文件 + requirements + environment + animation）。
 2. `core.scene` 中 `Command` 与 `SceneGraph` 的接口定义（可先为空实现）。
 3. `core.ops` 中 AnimationOps 类型骨架与 Timeline 接口。
 4. 一个最小的 PySide6 Renderer 与空窗口 UI（用于验证环境与依赖无误）。

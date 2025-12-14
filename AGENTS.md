@@ -18,20 +18,20 @@
 
 详细需求与架构说明见：
 
-- `docs/INDEX.md` (文档版本注册表 - **Agent 必读**)
-- `docs/REQUEST.md`
-- `docs/ARCHITECTURE.md`
-- `docs/ANIMATION_REQUIREMENTS.md`
-- `docs/ENVIRONMENT.md`
-- `docs/OPS_SPEC.md`
-- `docs/DEV_KNOWLEDGE_BASE.md` (FAQ / Troubleshooting / Known Issues)
+- `docs/index.md` (文档版本注册表, 优先阅读 - **Agent 必读**)
+- `docs/design/requirements.md`
+- `docs/design/architecture.md`
+- `docs/design/animation.md`
+- `docs/engineering/environment.md`
+- `docs/design/ops_spec.md`
+- `docs/engineering/dev_kb.md` (FAQ / Troubleshooting / Known Issues)
 - `.github/pull_request_template.md` (项目验收最小标准)
 
 ---
 
 ## 1. 环境与工具栈（简要）
 
-完整环境说明见 `docs/ENVIRONMENT.md`，这里只给简要约定：
+完整环境说明见 `docs/engineering/environment.md`，这里只给简要约定：
 
 - 语言：Python 3.11
 - 依赖管理：[`uv`](https://github.com/astral-sh/uv)
@@ -54,7 +54,7 @@ uv run my py src            # Type check
 uv run pytest               # All tests
 ```
 
-任何 Agent 在修改代码前，应先阅读 `docs/ENVIRONMENT.md` 并确保在本地能够完成上述命令。
+任何 Agent 在修改代码前，应先阅读 `docs/engineering/environment.md` 并确保在本地能够完成上述命令。
 
 ---
 
@@ -68,13 +68,17 @@ uv run pytest               # All tests
 ├─ README.md                # 面向用户/评审的项目说明（后期完善）
 ├─ pyproject.toml           # 项目配置（uv 使用）
 ├─ docs/                    # 设计与规范文档
-│   ├─ INDEX.md             # Doc-Code Binding 文档
-│   ├─ REQUEST.md
-│   ├─ ENVIRONMENT.md
-│   ├─ ARCHITECTURE.md
-│   ├─ ANIMATION_REQUIREMENTS.md
-│   ├─ OPS_SPEC.md
-│   └─ (未来的DSL_SPEC.md 等)
+│   ├─ index.md             # Doc-Code Binding 文档
+│   ├─ quickstart.md
+│   ├─ design/              # 设计文档
+│   │   ├─ requirements.md
+│   │   ├─ architecture.md
+│   │   ├─ animation.md
+│   │   ├─ ops_spec.md
+│   │   └─ (未来的DSL_SPEC.md 等)
+│   └─ engineering/         # 工程文档
+│       ├─ environment.md
+│       └─ dev_kb.md
 ├─ src/
 │   └─ ds_vis/
 │       ├─ __init__.py
@@ -96,7 +100,7 @@ uv run pytest               # All tests
 
 ## 3. 架构红线（必须遵守）
 
-任何人类或 Agent 在修改代码时，必须遵守以下架构约束（详细说明见 `docs/ARCHITECTURE.md`）：
+任何人类或 Agent 在修改代码时，必须遵守以下架构约束（详细说明见 `docs/design/architecture.md`）：
 
 ### 3.1 三层核心分离（Model / Layout / Renderer）
 
@@ -144,7 +148,7 @@ UI / DSL / Persistence
 - Models 只生成**结构 Ops**（CREATE_NODE、SET_STATE、SET_LABEL 等）
 - Layout 注入**位置 Ops**（SET_POS）
 - Renderer 消费完整的 **Ops 序列**，不得绕过 Ops 层直接修改状态
-- Ops 定义见 `docs/OPS_SPEC.md`
+- Ops 定义见 `docs/design/ops_spec.md`
 
 ### 3.5 禁止跨层"偷懒依赖"
 
@@ -161,7 +165,7 @@ UI / DSL / Persistence
 
 若需突破上述规则，必须：
 
-1. 先更新 `docs/ARCHITECTURE.md` 解释例外情况
+1. 先更新 `docs/design/architecture.md` 解释例外情况
 2. 在 PR 中详细说明原因和替代方案研究
 3. 经过代码审查同意
 4. 考虑未来的重构计划消除这个耦合
@@ -175,7 +179,9 @@ UI / DSL / Persistence
 * 目标：修改或补充 `docs/*.md` 中的设计文档与规范。
 * 允许修改：
 
-  * `docs/`
+  * `docs/design/`
+  * `docs/engineering/`
+  * `docs/index.md`
   * `README.md`
   * `AGENTS.md`
 * 禁止修改：
@@ -193,10 +199,10 @@ UI / DSL / Persistence
   * `tests/**`（添加或更新与模型逻辑相关的测试）
 * 必须先阅读：
 
-  * `docs/ENVIRONMENT.md`
-  * `docs/ARCHITECTURE.md`（第 4 部分：Model 层责任）
-  * `docs/ANIMATION_REQUIREMENTS.md`
-  * `docs/OPS_SPEC.md`（Ops 协议定义）
+  * `docs/engineering/environment.md`
+  * `docs/design/architecture.md`（第 4 部分：Model 层责任）
+  * `docs/design/animation.md`
+  * `docs/design/ops_spec.md`（Ops 协议定义）
 
 ### 4.3 Layout Implementation Agent（布局引擎实现）
 
@@ -207,9 +213,9 @@ UI / DSL / Persistence
   * `tests/**`（与布局相关的测试）
 * 必须先阅读：
 
-  * `docs/ENVIRONMENT.md`
-  * `docs/ARCHITECTURE.md`（第 5 部分：Layout 层责任）
-  * `docs/OPS_SPEC.md`（SET_POS Ops 规范）
+  * `docs/engineering/environment.md`
+  * `docs/design/architecture.md`（第 5 部分：Layout 层责任）
+  * `docs/design/ops_spec.md`（SET_POS Ops 规范）
 * 约束：
 
   * 不得依赖 Model 的具体实现；
@@ -231,9 +237,9 @@ UI / DSL / Persistence
   * `tests/**`（与渲染层相关的测试）
 * 必须先阅读：
 
-  * `docs/ENVIRONMENT.md`
-  * `docs/ARCHITECTURE.md`
-  * `docs/ANIMATION_REQUIREMENTS.md`
+  * `docs/engineering/environment.md`
+  * `docs/design/architecture.md`
+  * `docs/design/animation.md`
 
 ### 4.5 DSL / LLM Agent（后期）
 
@@ -253,11 +259,11 @@ UI / DSL / Persistence
 
 建议工作流（人类 / Agent 均适用）：
 
-1. 阅读相关文档（REQUEST / ARCHITECTURE / ANIMATION / ENVIRONMENT）。
+1. 阅读相关文档（requirements / architecture / animation / environment）。
 2. 确认当前任务所属角色（Core / Layout / Renderer / DSL / Docs）。
    - 确认修改范围
    - 读取所需的全部上下文信息, 并检查信息是否过时.
-   - 读取并确认活跃文档`DEV_KNOWLEDGE_BASH.md`中相关的开发信息.
+   - 读取并确认活跃文档 `docs/engineering/dev_kb.md` 中相关的开发信息.
 3. 限定修改范围在该角色允许的目录内。
 4. **检查测试状态**：
    - 运行 `uv run pytest`。
@@ -277,9 +283,9 @@ UI / DSL / Persistence
 本项目实行严格的“文档-代码绑定”策略，以防止设计与实现脱节。
 
 **规则：**
-1. **Registry Check**: 在修改任何代码前，检查 `docs/INDEX.md` 中的 "Bound Code Paths"。
-2. **Co-evolution**: 如果你修改了某个模块（例如 `src/ds_vis/core/ops`），你必须检查并更新对应的文档（`docs/OPS_SPEC.md`）。
-3. **Version Bump**: 如果文档内容发生了实质性变更（如接口修改），请在 `docs/INDEX.md` 中更新该文档的版本号和日期。
+1. **Registry Check**: 在修改任何代码前，检查 `docs/index.md` 中的 "Bound Code Paths"。
+2. **Co-evolution**: 如果你修改了某个模块（例如 `src/ds_vis/core/ops`），你必须检查并更新对应的文档（`docs/design/ops_spec.md`）。
+3. **Version Bump**: 如果文档内容发生了实质性变更（如接口修改），请在 `docs/index.md` 中更新该文档的版本号和日期。
 
 ---
 
