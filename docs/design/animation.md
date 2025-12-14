@@ -1,4 +1,11 @@
-# ANIMATION_REQUIREMENTS — 动画要求与教学规范（v0.1）
+---
+bound_phase: P0.2
+version: v0.1
+status: Draft
+last_updated: 2025-12-14
+---
+
+# ANIMATION_REQUIREMENTS — 动画要求与教学规范
 
 ## 1. 动画目标
 

@@ -22,6 +22,7 @@
 ## 4. Documentation
 - [ ] `AGENTS.md` updated (if architectural changes were made)
 - [ ] `docs/` updated (if design specs were changed)
+- [ ] `project_state` / `bound_phase` impacted? (yes/no)
 
 ## 5. Architecture Compliance
 <!-- Refer to AGENTS.md Section 3 -->

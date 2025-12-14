@@ -1,4 +1,11 @@
-# ARCHITECTURE — 架构设计说明（v0.1）
+---
+bound_phase: P0.2
+version: v0.2
+status: Stable
+last_updated: 2025-12-14
+---
+
+# ARCHITECTURE — 架构设计说明
 
 ## 1. 顶层分层结构
 

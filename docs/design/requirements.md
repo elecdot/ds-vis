@@ -1,4 +1,11 @@
-# REQUEST — 项目需求与目标说明（v0.1）
+---
+bound_phase: P0.2
+version: v0.1
+status: Stable
+last_updated: 2025-12-14
+---
+
+# REQUIREMENTS — 项目需求与目标说明
 
 ## 1. 课程设计题目摘要
 

@@ -1,4 +1,11 @@
-# OPS_SPEC — AnimationOps 规范（v1.0）
+---
+bound_phase: P0.2
+version: v1.0
+status: Stable
+last_updated: 2025-12-14
+---
+
+# OPS_SPEC — AnimationOps 规范
 
 本规范定义了本项目中 “动画指令层（AnimationOps）” 的统一协议，  
 用于在 **模型 / SceneGraph** 与 **渲染器** 之间传递“应该展示什么动画”。

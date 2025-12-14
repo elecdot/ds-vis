@@ -30,6 +30,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Quickstart: quickstart.md
+  - Project State: project_state.md
   - Design:
       - Requirements: design/requirements.md
       - Architecture: design/architecture.md

@@ -1,4 +1,11 @@
-# Developer Knowledge Base (FAQ & Troubleshooting) (rolling)
+---
+bound_phase: P0.2
+version: rolling
+status: Living
+last_updated: 2025-12-14
+---
+
+# Developer Knowledge Base (FAQ & Troubleshooting)
 
 > **Purpose**: This document serves as a shared "long-term memory" for Developers and Agents.
 > **Rule**: If you solve a tricky environment issue, clarify a confusing architectural point, or identify a persistent limitation, **record it here**.
@@ -42,6 +49,9 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 
 > Agents: Before attempting to "fix" a bug, check if it's a known limitation.
 
-- **[Stub] Layout Engine**: The `LayoutEngine` is currently a protocol with no concrete implementation.
-- **[Stub] Renderer**: `PySide6Renderer` exists but `render_timeline` is empty.
-- **[Test] xfail**: `tests/test_skeleton_flow.py::test_create_structure_produces_ops` is marked `xfail`. This is **intentional** until the Core Implementation Agent fills in the Model logic.
+- **[Limitation][Layout]** SimpleLayout is single-row, append-only; no delete/reflow; hardcoded strategy. Needs pluggable layouts and state refresh.
+- **[Limitation][Renderer]** PySide6 renderer hardcodes colors/shapes and ignores `duration_ms`; timing/skins need design before widening scope.
+- **[Risk][IDs]** Models use index-derived IDs; deletes/inserts will rename nodes/edges, breaking animation continuity. Define stable monotonic IDs per structure.
+- **[Limitation][Commands]** Unsupported commands return empty timelines; Command enum/routing are rigid. Introduce handler registry + payload validation.
+- **[Limitation][UI]** Main window is a dev playground; lacks play/pause/step/speed to surface timing bugs and manage multiple structures.
+- **[Gap][Tests]** Coverage thin beyond walking skeleton; missing delete/reinsert reflow, timing semantics, BST/GitGraph ops, and error-path checks.

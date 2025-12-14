@@ -279,15 +279,17 @@ UI / DSL / Persistence
    * `feat(renderer): implement node highlight animation`
    * `docs(animation): refine AVL rotation micro-steps`
 
+## 6. 文档体系与合规要求（强制）
+- **Registry**: [docs/index.md](docs/index.md) 是版本注册表，记录每个文档的 version、bound_phase、status、Bound Code Paths、last_updated。任何设计或接口改动必须同步更新注册表条目（版本号与日期）。
+- **SSOT**: [docs/project_state.md](docs/project_state.md) 是项目状态单一事实来源，声明当前活跃阶段、已完成内容、关键假设/限制、下一阶段规划。若状态或假设变更，先更新此文件再更新其它文档的 bound_phase/version。
+- **Rolling log**: [docs/engineering/dev_kb.md](docs/engineering/dev_kb.md) 记录环境/已知问题/临时决策，保持“Living”。解决疑难或引入限制后应追加条目。
+- **Front matter**: 所有设计/工程文档需维护 YAML 头部字段：`bound_phase`、`version`、`status`、`last_updated`，其值必须与注册表一致。
 
-## 6. 文档版本控制 (Doc-Code Binding)
+### 6.1 文档使用和记录流程
 
-本项目实行严格的“文档-代码绑定”策略，以防止设计与实现脱节。
-
-**规则：**
-1. **Registry Check**: 在修改任何代码前，检查 `docs/index.md` 中的 "Bound Code Paths"。
-2. **Co-evolution**: 如果你修改了某个模块（例如 `src/ds_vis/core/ops`），你必须检查并更新对应的文档（`docs/design/ops_spec.md`）。
-3. **Version Bump**: 如果文档内容发生了实质性变更（如接口修改），请在 `docs/index.md` 中更新该文档的版本号和日期。
+1. 变更代码前查阅 Registry + SSOT + dev_kb，确认最新状态与约束。
+2. 变更涉及的文档同步更新正文、前置元数据与 Registry；状态/假设变更同步写入 project_state。
+3. 提交前自查：注册表、前置元数据、SSOT 是否一致；如引入新已知问题，在 dev_kb 追加说明。
 
 ---
 

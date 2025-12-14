@@ -1,4 +1,11 @@
-# Documentation Registry & Version Control (v0.1)
+---
+bound_phase: P0.2
+version: v0.2
+status: Stable
+last_updated: 2025-12-14
+---
+
+# Documentation Registry & Version Control
 
 This file tracks the current version of design documents and their binding to source code.
 
@@ -6,15 +13,16 @@ This file tracks the current version of design documents and their binding to so
 > 1. **Check**: Before writing code, check this table. If you are modifying a "Bound Path", read the corresponding document.
 > 2. **Update**: If your code changes the design (e.g., new OpCode, new Model method), you **MUST** update the document and increment the version here.
 
-| Document | Version | Status | Bound Code Paths | Last Updated |
-| :--- | :--- | :--- | :--- | :--- |
-| [index.md](./index.md) | v0.1 | Stable | Documentation Registry System | 2025-12-14 |
-| [requirements.md](./design/requirements.md) | v0.1 | Stable | N/A | 2025-12-11 |
-| [architecture.md](./design/architecture.md) | v0.2 | Stable | `src/ds_vis/` (Global Structure) | 2025-12-11 |
-| [ops_spec.md](./design/ops_spec.md) | v1.0 | Stable | `src/ds_vis/core/ops/` | 2025-12-11 |
-| [animation.md](./design/animation.md) | v0.1 | Draft | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-11 |
-| [environment.md](./engineering/environment.md) | v0.2 | Stable | `pyproject.toml`, `.github/` | 2025-12-11 |
-| [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | N/A | Always Current |
+| Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| [index.md](./index.md) | v0.2 | Stable | P0.2 | Documentation Registry System | 2025-12-14 |
+| [project_state.md](./project_state.md) | v0.1 | Stable | P0.2 | Project phase SSOT | 2025-12-14 |
+| [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
+| [architecture.md](./design/architecture.md) | v0.2 | Stable | P0.2 | `src/ds_vis/` (Global Structure) | 2025-12-14 |
+| [ops_spec.md](./design/ops_spec.md) | v1.0 | Stable | P0.2 | `src/ds_vis/core/ops/` | 2025-12-14 |
+| [animation.md](./design/animation.md) | v0.1 | Draft | P0.2 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-14 |
+| [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
+| [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.2 | N/A | Always Current |
 
 ## Documentation Reorganization (v0.1 — 2025-12-14)
 
@@ -32,7 +40,18 @@ As of December 14, 2025, the documentation structure has been reorganized for be
 - `ENVIRONMENT.md` → `engineering/environment.md`
 - `DEV_KNOWLEDGE_BASE.md` → `engineering/dev_kb.md`
 
-**Impact:** All internal document links and external references must use the new paths. If you encounter a reference to an old path, update it to point to the new location. This change is tracked in the registry table above (version v0.1, updated 2025-12-14).
+**Impact:** All internal document links and external references must use the new paths. If you encounter a reference to an old path, update it to point to the new location. This change is tracked in the registry table above (version v0.2, updated 2025-12-14).
+
+## Front Matter Metadata (Phase-Bound)
+
+Every design/engineering document carries a YAML front matter block with:
+
+- `bound_phase`: active delivery phase this document is aligned to (e.g., P0.2).
+- `version`: document version per registry above.
+- `status`: Stable / Draft / Living.
+- `last_updated`: ISO date for the latest substantive touch.
+
+This metadata is authoritative for doc status and should match the registry table. Update both when a document’s phase alignment or version changes.
 
 ## Versioning Convention
 - **v0.x**: Draft / Prototype phase.
