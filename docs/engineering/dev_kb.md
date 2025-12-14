@@ -56,5 +56,5 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Limitation][UI]** Main window is a dev playground; lacks play/pause/step/speed to surface timing bugs and manage multiple structures.
 - **[Gap][Tests]** Coverage thin beyond walking skeleton; timing semantics, BST/GitGraph ops, and error-path checks still missing.
 - **[Stub][Models]** BST/GitGraph models are skeletons emitting empty timelines; only list `CREATE_STRUCTURE` is implemented.
-- **[Limitation][CommandCoverage]** Supported command surface is minimal (list create/delete-all); other operations raise `CommandError` and are unimplemented.
+- **[Limitation][CommandCoverage]** Supported命令面仍极小（list create + delete index/all）；其他操作均抛 `CommandError`。
 - **[Limitation][AnimationDepth]** List animations are L1（结果态）级别，仅覆盖 create/delete/recreate；缺少细化的教学步骤（L2+）。

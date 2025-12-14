@@ -16,7 +16,7 @@ This document captures the active delivery phase, what is complete, current assu
   - Simple linear layout injects `SET_POS` and renderer places nodes/edges.
   - PySide6 renderer interprets ops (no timing yet) and supports state/label updates.
 - Active assumptions/limitations:
-  - Supported command surface remains minimal: `CREATE_STRUCTURE` and `DELETE` (delete-all) for `list`; other commands raise `CommandError` and are unimplemented; command routing is hardcoded (no handler registry).
+  - Supported command surface remains minimal: `CREATE_STRUCTURE` 和 `DELETE`（index/all）仅限 `list`; 其他命令抛 `CommandError`，路由仍硬编码（无 handler registry）。
   - UI controls: dev-only menu; single-scene, single-shot render; messages stored but not displayed.
   - Qt tests rely on `QT_QPA_PLATFORM=offscreen` for headless runs.
   - Layout: single row with global `start_y`; no multi-structure spacing; always emits SET_POS for tracked nodes (no dirty check).
