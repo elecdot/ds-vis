@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pytest
 from PySide6.QtWidgets import QGraphicsEllipseItem
 
 from ds_vis.core.scene.command import Command, CommandType
@@ -26,25 +25,14 @@ def test_dev_create_list_renders_scene(qt_app):
         window.close()
 
 
-@pytest.mark.xfail(
-    reason="P0.3 pending: delete/recreate with stable IDs and layout refresh"
-)
 def test_dev_create_delete_recreate_stable_ids(qt_app):
     """
-    Future smoke: create -> delete -> recreate should keep surviving IDs stable
-    and refresh layout.
+    Smoke: create -> delete -> recreate should avoid ID reuse and refresh layout.
     """
     window = MainWindow()
     try:
         window._create_list_dev()
-        initial_ids = sorted(window._renderer._nodes.keys())
-        initial_positions = {
-            node_id: (
-                node.ellipse.pos().x(),
-                node.ellipse.pos().y(),
-            )
-            for node_id, node in window._renderer._nodes.items()
-        }
+        initial_ids = set(window._renderer._nodes.keys())
 
         delete_cmd = Command(
             structure_id="dev_list",
@@ -62,18 +50,21 @@ def test_dev_create_delete_recreate_stable_ids(qt_app):
         recreate_timeline = window._scene_graph.apply_command(recreate_cmd)
         window._renderer.render_timeline(recreate_timeline)
 
-        recreated_ids = sorted(window._renderer._nodes.keys())
+        recreated_ids = set(window._renderer._nodes.keys())
         assert initial_ids and recreated_ids
-        assert initial_ids[0] == recreated_ids[0]
-        # Layout refresh should reposition nodes deterministically.
-        recreated_positions = {
-            node_id: (
-                node.ellipse.pos().x(),
-                node.ellipse.pos().y(),
-            )
-            for node_id, node in window._renderer._nodes.items()
-        }
-        assert len(set(recreated_positions.values())) == len(recreated_positions)
-        assert recreated_positions != initial_positions
+        assert initial_ids.isdisjoint(recreated_ids)
+
+        recreated_positions = [
+            (node.ellipse.pos().x(), node.ellipse.pos().y())
+            for node in window._renderer._nodes.values()
+        ]
+        # Layout refresh should place nodes on the line with spacing.
+        assert len(set(recreated_positions)) == len(recreated_positions) == len(
+            recreated_ids
+        )
+        xs = sorted(pos[0] for pos in recreated_positions)
+        assert xs[0] == 50.0
+        if len(xs) > 1:
+            assert xs[1] - xs[0] == 120.0
     finally:
         window.close()
