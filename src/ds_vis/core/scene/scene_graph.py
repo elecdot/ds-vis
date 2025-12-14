@@ -41,17 +41,17 @@ class SceneGraph:
         """
         Apply a high-level command and return a Timeline describing the animation.
 
-        Current Phase: handle CREATE_STRUCTURE for list skeletons.
-        Future steps:
-          - dispatch to more structure kinds,
-          - run the Timeline through the layout engine to inject SET_POS ops.
+        Current Phase:
+          - CREATE_STRUCTURE (list) with minimal payload validation,
+          - DELETE (list) to remove visuals but keep ID monotonicity,
+          - unsupported commands raise CommandError (no silent no-op).
         """
         if command.type is CommandType.CREATE_STRUCTURE:
             structural_timeline = self._handle_create_structure(command)
+        elif command.type is CommandType.DELETE:
+            structural_timeline = self._handle_delete(command)
         else:
-            # For unimplemented command types, return an empty timeline to keep
-            # the walking skeleton stable until future phases fill them in.
-            structural_timeline = Timeline()
+            raise CommandError(f"Unsupported command type: {command.type!s}")
 
         if self._layout_engine:
             return self._layout_engine.apply_layout(structural_timeline)
@@ -60,11 +60,36 @@ class SceneGraph:
 
     def _handle_create_structure(self, command: Command) -> Timeline:
         kind = command.payload.get("kind")
+        if not kind:
+            raise CommandError("CREATE_STRUCTURE requires payload.kind")
 
         if kind == "list":
-            model = ListModel(structure_id=command.structure_id)
-            self._structures[command.structure_id] = model
+            model = self._get_or_create_list_model(command.structure_id)
             values = command.payload.get("values")
+            # Recreate if structure already exists to keep IDs monotonic.
+            if model._node_ids:
+                return model.recreate(values)
             return model.create(values)
 
         raise CommandError(f"Unsupported structure kind: {kind!r}")
+
+    def _handle_delete(self, command: Command) -> Timeline:
+        model = self._structures.get(command.structure_id)
+        if model is None:
+            raise CommandError(f"Structure not found: {command.structure_id!r}")
+
+        if isinstance(model, ListModel):
+            return model.delete_all()
+
+        raise CommandError(
+            f"DELETE unsupported for structure: {command.structure_id!r}"
+        )
+
+    def _get_or_create_list_model(self, structure_id: str) -> ListModel:
+        existing = self._structures.get(structure_id)
+        if isinstance(existing, ListModel):
+            return existing
+
+        model = ListModel(structure_id=structure_id)
+        self._structures[structure_id] = model
+        return model
