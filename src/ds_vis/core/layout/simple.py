@@ -23,7 +23,8 @@ class SimpleLayoutEngine:
 
     def apply_layout(self, timeline: Timeline) -> Timeline:
         """
-        Inject SET_POS ops for every CREATE_NODE in the given timeline.
+        Inject SET_POS ops for current nodes after each step, refreshing when
+        nodes are created or deleted.
         """
         new_timeline = Timeline()
 
@@ -34,29 +35,33 @@ class SimpleLayoutEngine:
                 ops=list(step.ops),
             )
 
+            # Update snapshot based on structural ops in this step.
             for op in step.ops:
-                if op.op is not OpCode.CREATE_NODE:
-                    continue
-
                 structure_id = op.data.get("structure_id")
                 node_id = op.target
-                if not structure_id or not node_id:
-                    continue  # Missing metadata; skip layout for this op.
+                if op.op is OpCode.CREATE_NODE and structure_id and node_id:
+                    nodes = self._structure_nodes.setdefault(structure_id, [])
+                    if node_id not in nodes:
+                        nodes.append(node_id)
+                elif op.op is OpCode.DELETE_NODE and structure_id and node_id:
+                    nodes = self._structure_nodes.get(structure_id, [])
+                    if node_id in nodes:
+                        nodes.remove(node_id)
+                    if not nodes and structure_id in self._structure_nodes:
+                        self._structure_nodes.pop(structure_id, None)
 
-                nodes = self._structure_nodes.setdefault(structure_id, [])
-                if node_id not in nodes:
-                    nodes.append(node_id)
-
-                x = self.start_x + self.spacing * (len(nodes) - 1)
-                y = self.start_y
-
-                new_step.ops.append(
-                    AnimationOp(
-                        op=OpCode.SET_POS,
-                        target=node_id,
-                        data={"x": x, "y": y},
+            # Inject positions for the current snapshot (deterministic order).
+            for structure_id, nodes in self._structure_nodes.items():
+                for idx, node_id in enumerate(nodes):
+                    x = self.start_x + self.spacing * idx
+                    y = self.start_y
+                    new_step.ops.append(
+                        AnimationOp(
+                            op=OpCode.SET_POS,
+                            target=node_id,
+                            data={"x": x, "y": y},
+                        )
                     )
-                )
 
             new_timeline.add_step(new_step)
 
