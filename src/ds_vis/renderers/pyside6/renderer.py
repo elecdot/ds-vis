@@ -58,13 +58,17 @@ class PySide6Renderer(Renderer):
         self._nodes: Dict[str, NodeVisual] = {}
         self._edges: Dict[str, EdgeVisual] = {}
         self._message: str = ""
+        self._message_item = QGraphicsSimpleTextItem("")
+        self._message_item.setVisible(False)
+        self._message_item.setPos(10, 10)
+        self._scene.addItem(self._message_item)
 
     def render_timeline(self, timeline: Timeline) -> None:
         """Interpret the given Timeline and update the scene accordingly."""
         for step in timeline.steps:
-            self._apply_step(step)
+            self.apply_step(step)
 
-    def _apply_step(self, step: AnimationStep) -> None:
+    def apply_step(self, step: AnimationStep) -> None:
         for op in step.ops:
             self._apply_op(op)
 
@@ -94,7 +98,7 @@ class PySide6Renderer(Renderer):
             self._set_message(op)
             return
         if op.op is OpCode.CLEAR_MESSAGE:
-            self._message = ""
+            self._clear_message()
             return
 
     def _create_node(self, op: AnimationOp) -> None:
@@ -207,8 +211,14 @@ class PySide6Renderer(Renderer):
             self._update_edge_position(op.target or "")
 
     def _set_message(self, op: AnimationOp) -> None:
-        # Phase 1: store message for potential UI binding; no on-scene text yet.
         self._message = str(op.data.get("text", ""))
+        self._message_item.setText(self._message)
+        self._message_item.setVisible(bool(self._message))
+
+    def _clear_message(self) -> None:
+        self._message = ""
+        self._message_item.setText("")
+        self._message_item.setVisible(False)
 
     def _update_edges_for_node(self, node_id: str) -> None:
         for edge_id, edge in self._edges.items():

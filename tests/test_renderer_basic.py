@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsScene
+from PySide6.QtWidgets import (
+    QGraphicsEllipseItem,
+    QGraphicsLineItem,
+    QGraphicsScene,
+    QGraphicsSimpleTextItem,
+)
 
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 from ds_vis.core.scene.command import CommandType
@@ -101,3 +106,45 @@ def test_renderer_updates_edges_on_position(qt_app):
     line: QGraphicsLineItem = edge.line
     assert line.line().x1() == 10.0
     assert line.line().x2() == 110.0
+
+
+def test_renderer_sets_and_clears_message(qt_app):
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_MESSAGE,
+                        target=None,
+                        data={"text": "hello world"},
+                    )
+                ]
+            ),
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CLEAR_MESSAGE,
+                        target=None,
+                        data={},
+                    )
+                ]
+            ),
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene)
+
+    renderer.apply_step(timeline.steps[0])
+    assert renderer._message == "hello world"
+    assert renderer._message_item.isVisible()
+    assert renderer._message_item.text() == "hello world"
+    assert any(
+        isinstance(item, QGraphicsSimpleTextItem) and item.text() == "hello world"
+        for item in scene.items()
+    )
+
+    renderer.apply_step(timeline.steps[1])
+    assert renderer._message == ""
+    assert renderer._message_item.text() == ""
+    assert renderer._message_item.isVisible() is False

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from ds_vis.core.ops import Timeline
+from ds_vis.core.ops import AnimationStep, Timeline
 
 
 class Renderer(ABC):
@@ -24,5 +24,15 @@ class Renderer(ABC):
           - play the steps immediately,
           - enqueue them into an internal player,
           - support single-step playback, etc.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def apply_step(self, step: AnimationStep) -> None:
+        """
+        Apply a single animation step.
+
+        Implementations may reuse this inside render_timeline or expose it to
+        callers that want step-level control (e.g., dev UI stepper).
         """
         raise NotImplementedError
