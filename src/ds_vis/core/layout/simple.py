@@ -9,10 +9,11 @@ from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 @dataclass
 class SimpleLayoutEngine:
     """
-    Phase 1: naive linear layout.
+    P0.3: naive linear layout with refresh.
 
-    - Places nodes of the same structure on a horizontal line.
-    - Injects SET_POS ops in the same step as each CREATE_NODE.
+    - Places nodes of the same structure on a horizontal line (single start_y).
+    - Maintains per-structure node snapshot; injects SET_POS for all tracked nodes
+      each step (no dirty check).
     - Never mutates structural ops.
     """
 

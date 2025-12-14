@@ -24,8 +24,9 @@ class SceneGraph:
       - Collect a structural Timeline (no coordinates).
       - Pass the Timeline through layout (core.layout) before handing it to a renderer.
 
-    Phase 1: API and responsibilities are defined; implementation is intentionally
-    stubbed.
+    P0.3: commands are routed via a handler registry; surface-only support for list
+    CREATE_STRUCTURE / DELETE_STRUCTURE / DELETE_NODE. Unknown commands raise
+    CommandError (no silent no-op).
     """
 
     # TODO: replace `object` with a proper model base class / protocol in later phases.
@@ -36,7 +37,7 @@ class SceneGraph:
     )
 
     def __post_init__(self) -> None:
-        # Phase 1: default to a naive linear layout to keep the pipeline connected.
+        # Default to a simple linear layout to keep the pipeline connected.
         if self._layout_engine is None:
             self._layout_engine = SimpleLayoutEngine()
         self._register_handlers()
