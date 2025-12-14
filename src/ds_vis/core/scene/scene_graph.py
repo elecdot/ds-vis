@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.layout import LayoutEngine
@@ -31,27 +31,36 @@ class SceneGraph:
     # TODO: replace `object` with a proper model base class / protocol in later phases.
     _structures: Dict[str, object] = field(default_factory=dict)
     _layout_engine: Optional[LayoutEngine] = None
+    _handlers: Dict[CommandType, Callable[[Command], Timeline]] = field(
+        default_factory=dict
+    )
 
     def __post_init__(self) -> None:
         # Phase 1: default to a naive linear layout to keep the pipeline connected.
         if self._layout_engine is None:
             self._layout_engine = SimpleLayoutEngine()
+        self._register_handlers()
+
+    def _register_handlers(self) -> None:
+        self._handlers = {
+            CommandType.CREATE_STRUCTURE: self._handle_create_structure,
+            CommandType.DELETE_STRUCTURE: self._handle_delete_structure,
+            CommandType.DELETE_NODE: self._handle_delete_node,
+        }
 
     def apply_command(self, command: Command) -> Timeline:
         """
         Apply a high-level command and return a Timeline describing the animation.
 
         Current Phase:
-          - CREATE_STRUCTURE (list) with minimal payload validation,
-          - DELETE (list) to remove visuals but keep ID monotonicity,
-          - unsupported commands raise CommandError (no silent no-op).
+          - CREATE_STRUCTURE (list) with minimal payload validation.
+          - DELETE_STRUCTURE / DELETE_NODE for list (no legacy DELETE overload).
+          - Unsupported commands raise CommandError (no silent no-op).
         """
-        if command.type is CommandType.CREATE_STRUCTURE:
-            structural_timeline = self._handle_create_structure(command)
-        elif command.type is CommandType.DELETE:
-            structural_timeline = self._handle_delete(command)
-        else:
+        handler = self._handlers.get(command.type)
+        if handler is None:
             raise CommandError(f"Unsupported command type: {command.type!s}")
+        structural_timeline = handler(command)
 
         if self._layout_engine:
             return self._layout_engine.apply_layout(structural_timeline)
@@ -73,16 +82,45 @@ class SceneGraph:
 
         raise CommandError(f"Unsupported structure kind: {kind!r}")
 
-    def _handle_delete(self, command: Command) -> Timeline:
+    def _handle_delete_structure(self, command: Command) -> Timeline:
         model = self._structures.get(command.structure_id)
         if model is None:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
 
         if isinstance(model, ListModel):
+            payload_kind = command.payload.get("kind", "list")
+            if payload_kind != model.kind:
+                raise CommandError(
+                    f"DELETE kind mismatch for structure {command.structure_id!r}"
+                )
             return model.delete_all()
 
         raise CommandError(
             f"DELETE unsupported for structure: {command.structure_id!r}"
+        )
+
+    def _handle_delete_node(self, command: Command) -> Timeline:
+        model = self._structures.get(command.structure_id)
+        if model is None:
+            raise CommandError(f"Structure not found: {command.structure_id!r}")
+
+        if isinstance(model, ListModel):
+            payload_kind = command.payload.get("kind", "list")
+            if payload_kind != model.kind:
+                raise CommandError(
+                    f"DELETE_NODE kind mismatch for structure {command.structure_id!r}"
+                )
+            if "index" not in command.payload:
+                raise CommandError("DELETE_NODE requires 'index'")
+            index = command.payload.get("index")
+            if not isinstance(index, int):
+                raise CommandError("DELETE_NODE index must be int")
+            if index < 0 or index >= len(model._node_ids):
+                raise CommandError("DELETE_NODE index out of range")
+            return model.delete_index(index)
+
+        raise CommandError(
+            f"DELETE_NODE unsupported for structure: {command.structure_id!r}"
         )
 
     def _get_or_create_list_model(self, structure_id: str) -> ListModel:

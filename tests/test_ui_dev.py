@@ -36,8 +36,8 @@ def test_dev_create_delete_recreate_stable_ids(qt_app):
 
         delete_cmd = Command(
             structure_id="dev_list",
-            type=CommandType.DELETE,
-            payload={},
+            type=CommandType.DELETE_STRUCTURE,
+            payload={"kind": "list"},
         )
         delete_timeline = window._scene_graph.apply_command(delete_cmd)
         window._renderer.render_timeline(delete_timeline)

@@ -1,5 +1,6 @@
+from ds_vis.core.exceptions import CommandError
 from ds_vis.core.ops import OpCode
-from ds_vis.core.scene.command import CommandType
+from ds_vis.core.scene.command import Command, CommandType
 
 
 def test_scene_graph_returns_timeline(scene_graph, create_cmd_factory):
@@ -57,7 +58,9 @@ def test_list_ids_monotonic_and_layout_refresh(scene_graph, create_cmd_factory):
     ]
     assert node_ids_first == ["list_ids_node_0", "list_ids_node_1"]
 
-    delete_cmd = create_cmd_factory("list_ids", CommandType.DELETE)
+    delete_cmd = create_cmd_factory(
+        "list_ids", CommandType.DELETE_STRUCTURE, kind="list"
+    )
     timeline2 = scene_graph.apply_command(delete_cmd)
     delete_ops = [
         op for step in timeline2.steps for op in step.ops if op.op == OpCode.DELETE_NODE
@@ -84,3 +87,61 @@ def test_list_ids_monotonic_and_layout_refresh(scene_graph, create_cmd_factory):
     for op in set_pos_ops:
         assert op.data.get("x") == 50.0
         assert op.data.get("y") == 50.0
+
+
+def test_unknown_command_raises_command_error(scene_graph):
+    cmd = Command(structure_id="s1", type=CommandType.INSERT, payload={})
+    try:
+        scene_graph.apply_command(cmd)
+    except CommandError:
+        pass
+    else:  # pragma: no cover - safety
+        raise AssertionError("Expected CommandError for unsupported command")
+
+
+def test_list_delete_index_rewires_and_keeps_ids_monotonic(
+    scene_graph, create_cmd_factory
+):
+    """
+    Deleting a middle node removes adjacent edges and rewires neighbors with stable IDs.
+    """
+    create_cmd = create_cmd_factory(
+        "list_delete", CommandType.CREATE_STRUCTURE, kind="list", values=[1, 2, 3]
+    )
+    timeline1 = scene_graph.apply_command(create_cmd)
+    node_ids_first = [
+        op.target
+        for step in timeline1.steps
+        for op in step.ops
+        if op.op == OpCode.CREATE_NODE
+    ]
+    assert node_ids_first == [
+        "list_delete_node_0",
+        "list_delete_node_1",
+        "list_delete_node_2",
+    ]
+
+    delete_cmd = create_cmd_factory(
+        "list_delete", CommandType.DELETE_NODE, kind="list", index=1
+    )
+    timeline2 = scene_graph.apply_command(delete_cmd)
+    ops2 = [op for step in timeline2.steps for op in step.ops]
+    assert any(
+        op.op == OpCode.DELETE_NODE and op.target == "list_delete_node_1"
+        for op in ops2
+    )
+    assert any(
+        op.op == OpCode.CREATE_EDGE
+        and op.target
+        == "list_delete|next|list_delete_node_0->list_delete_node_2"
+        for op in ops2
+    )
+
+    set_pos_ops = [
+        op for step in timeline2.steps for op in step.ops if op.op == OpCode.SET_POS
+    ]
+    assert set_pos_ops
+    xs = sorted(op.data.get("x") for op in set_pos_ops)
+    assert xs[0] == 50.0
+    if len(xs) > 1:
+        assert xs[1] - xs[0] == 120.0

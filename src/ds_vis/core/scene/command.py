@@ -15,7 +15,8 @@ class CommandType(Enum):
     # Generic DS commands
     CREATE_STRUCTURE = auto()
     INSERT = auto()
-    DELETE = auto()
+    DELETE_STRUCTURE = auto()
+    DELETE_NODE = auto()
     SEARCH = auto()
 
     # Git-related commands (teaching visualization, not real git)

@@ -74,6 +74,66 @@ class ListModel:
         timeline.add_step(AnimationStep(ops=ops))
         return timeline
 
+    def delete_index(self, index: int) -> Timeline:
+        """
+        Delete a node by logical position, rewiring adjacent edges.
+        """
+        timeline = Timeline()
+        if index < 0 or index >= len(self._node_ids):
+            return timeline  # Nothing to delete; caller should have validated.
+
+        ops: List[AnimationOp] = []
+        target_id = self._node_ids[index]
+        prev_id = self._node_ids[index - 1] if index - 1 >= 0 else None
+        next_id = self._node_ids[index + 1] if index + 1 < len(self._node_ids) else None
+
+        if prev_id:
+            ops.append(
+                AnimationOp(
+                    op=OpCode.DELETE_EDGE,
+                    target=self._edge_id(prev_id, target_id),
+                    data={"structure_id": self.structure_id},
+                )
+            )
+        if next_id:
+            ops.append(
+                AnimationOp(
+                    op=OpCode.DELETE_EDGE,
+                    target=self._edge_id(target_id, next_id),
+                    data={"structure_id": self.structure_id},
+                )
+            )
+
+        ops.append(
+            AnimationOp(
+                op=OpCode.DELETE_NODE,
+                target=target_id,
+                data={"structure_id": self.structure_id},
+            )
+        )
+
+        if prev_id and next_id:
+            ops.append(
+                AnimationOp(
+                    op=OpCode.CREATE_EDGE,
+                    target=self._edge_id(prev_id, next_id),
+                    data={
+                        "structure_id": self.structure_id,
+                        "from": prev_id,
+                        "to": next_id,
+                        "directed": True,
+                        "label": "next",
+                    },
+                )
+            )
+
+        del self._node_ids[index]
+        if index < len(self.values):
+            del self.values[index]
+
+        timeline.add_step(AnimationStep(ops=ops))
+        return timeline
+
     def recreate(self, values: Optional[Iterable[Any]] = None) -> Timeline:
         """
         Delete current visuals and recreate with new values.
@@ -153,4 +213,4 @@ class ListModel:
         return node_id
 
     def _edge_id(self, src: str, dst: str) -> str:
-        return f"{src}_to_{dst}"
+        return f"{self.structure_id}|next|{src}->{dst}"
