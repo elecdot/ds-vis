@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.2
-version: v0.2
+bound_phase: P0.3
+version: v0.3
 status: Stable
 last_updated: 2025-12-14
 ---
@@ -108,6 +108,10 @@ SceneGraph **不做**：
 * 布局计算（由 Layout 负责）；
 * UI 逻辑（由 UI 负责）；
 * DSL 文本解析（由 DSL 负责）。
+
+> P0.3 约定：
+> - SceneGraph 通过 handler 注册表路由命令；未知命令抛 `CommandError`，禁止静默 no-op。
+> - 删除语义拆分为 `DELETE_STRUCTURE`（整结构删除）与 `DELETE_NODE`（按索引/ID 删除）；不再使用重载的 DELETE。
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-bound_phase: P0.2
+bound_phase: P0.3
 version: rolling
 status: Living
 last_updated: 2025-12-14
@@ -52,7 +52,7 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Limitation][Layout]** SimpleLayout is single-row with global `start_y`; no multi-structure spacing; always emits `SET_POS` for all nodes (no dirty check), inflating timelines for larger scenes.
 - **[Limitation][Renderer]** PySide6 renderer hardcodes colors/shapes and ignores `duration_ms`; timing/skins need design before widening scope.
 - **[Risk][IDs]** ID stability only implemented for list create/delete-recreate; other structures still index-derived and will rename on mutation.
-- **[Limitation][Commands]** Command handling is hardcoded per kind/type (no handler registry). `DELETE` currently maps to delete-all for list; per-item delete semantics per requirements are missing.
+- **[Limitation][Commands]** Command handler registry存在但命令面极小（list create/delete）；payload 校验为最小必填/类型检查，后续扩展需更严格 schema。
 - **[Limitation][UI]** Main window is a dev playground; lacks play/pause/step/speed to surface timing bugs and manage multiple structures.
 - **[Gap][Tests]** Coverage thin beyond walking skeleton; timing semantics, BST/GitGraph ops, and error-path checks still missing.
 - **[Stub][Models]** BST/GitGraph models are skeletons emitting empty timelines; only list `CREATE_STRUCTURE` is implemented.
