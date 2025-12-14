@@ -55,3 +55,5 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Limitation][Commands]** Unsupported commands return empty timelines; Command enum/routing are rigid. Introduce handler registry + payload validation.
 - **[Limitation][UI]** Main window is a dev playground; lacks play/pause/step/speed to surface timing bugs and manage multiple structures.
 - **[Gap][Tests]** Coverage thin beyond walking skeleton; missing delete/reinsert reflow, timing semantics, BST/GitGraph ops, and error-path checks.
+- **[Stub][Models]** BST/GitGraph models are skeletons emitting empty timelines; only list `CREATE_STRUCTURE` is implemented.
+- **[Limitation][CommandCoverage]** Supported command surface is minimal (list `CREATE_STRUCTURE`); other commands return empty timelines with no user-facing error.
