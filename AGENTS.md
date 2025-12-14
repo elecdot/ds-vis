@@ -176,7 +176,7 @@ UI / DSL / Persistence
 
 ### 4.1 Architecture / Design Agent
 
-* 目标：修改或补充 `docs/*.md` 中的设计文档与规范。
+* 目标：修改或补充 `docs/*.md` 中的设计文档与规范, 并在必要时在代码骨架中添加注释。
 * 允许修改 (必须先阅读)：
 
   * `docs/index.md`
@@ -184,9 +184,11 @@ UI / DSL / Persistence
   * `docs/engineering/`
   * `README.md`
   * `AGENTS.md`
+  * `src/` 下的注释.
+  
 * 禁止修改：
 
-  * `src/` 下任何代码（除非明确任务要求）
+  * `src/` 下任何具体代码（除非明确任务要求）
 
 ### 4.2 Core Implementation Agent（核心引擎实现）
 
