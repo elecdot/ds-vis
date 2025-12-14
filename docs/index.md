@@ -13,6 +13,8 @@ This file tracks the current version of design documents and their binding to so
 > 1. **Check**: Before writing code, check this table. If you are modifying a "Bound Path", read the corresponding document.
 > 2. **Update**: If your code changes the design (e.g., new OpCode, new Model method), you **MUST** update the document and increment the version here.
 
+Project state SSOT: see [project_state.md](./project_state.md) for the active phase, assumptions/limitations, and next-phase plan. This is declared here for discoverability; the registry below remains for doc binding.
+
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | [index.md](./index.md) | v0.2 | Stable | P0.2 | Documentation Registry System | 2025-12-14 |
