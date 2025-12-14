@@ -22,8 +22,9 @@
 - `docs/design/requirements.md`
 - `docs/design/architecture.md`
 - `docs/design/animation.md`
-- `docs/engineering/environment.md`
 - `docs/design/ops_spec.md`
+- `docs/engineering/environment.md`
+- `docs/engineering/tdd_guide.md` (TDD Workflow & Best Practices - **Mandatory**)
 - `docs/engineering/dev_kb.md` (FAQ / Troubleshooting / Known Issues)
 - `.github/pull_request_template.md` (项目验收最小标准)
 

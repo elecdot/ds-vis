@@ -2,7 +2,7 @@
 bound_phase: P0.3
 version: v0.3
 status: Stable
-last_updated: 2025-12-14
+last_updated: 2025-12-15
 ---
 
 # ARCHITECTURE — 架构设计说明

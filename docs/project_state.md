@@ -2,7 +2,7 @@
 bound_phase: P0.3
 version: v0.2
 status: Active
-last_updated: 2025-12-14
+last_updated: 2025-12-15
 ---
 
 # Project State — Single Source of Truth
@@ -15,6 +15,7 @@ This document captures the active delivery phase, what is complete, current assu
   - SceneGraph uses a handler注册表；unsupported命令抛 `CommandError`，DELETE 拆分为 DELETE_STRUCTURE / DELETE_NODE。
   - List IDs 单调不复用；支持 delete-all / delete-index，边 ID 映射包含结构/方向/端点。
   - SimpleLayout 删除/重建后刷新一行定位；PySide6 renderer 支持 step 级入口与消息显示。
+  - TDD Guide 引入并绑定到工程文档，测试目录按 core/renderers/ui 分层。
   - 测试重组按域划分（core/renderers/ui）；新增错误路径、ID/布局稳定性、消息显示用例。
 - Active assumptions/limitations:
   - Command 面极小：仅 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；payload 校验为最小必填/类型检查。

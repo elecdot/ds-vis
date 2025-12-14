@@ -74,7 +74,10 @@ uv run mypy src
 
 ## 6. 测试与 CI 策略
 
-本项目采用 **"Walking Skeleton" (行走骨架)** 与 **TDD (测试驱动开发)** 相结合的策略。
+本项目强制采用 **TDD (测试驱动开发)** 模式。
+
+详细的工作流、测试分层策略和最佳实践，请**务必阅读**：
+- [docs/engineering/tdd_guide.md](./tdd_guide.md)
 
 ### 6.1 CI 流水线 (GitHub Actions)
 
@@ -85,22 +88,6 @@ uv run mypy src
 
 **任何 Agent 提交的代码必须通过 CI 检查。**
 
-### 6.2 测试分类
+### 6.2 测试分类与开发工作流
 
-- **Tracer Bullet Tests (曳光弹测试)**:
-  - 贯穿全链路（Command -> Scene -> Model -> Layout -> Ops）的集成测试。
-  - 用于验证架构连通性。
-  - 示例：`tests/test_skeleton_flow.py`
-
-- **Unit Tests (单元测试)**:
-  - 针对单个 Model 或算法的逻辑测试。
-  - 应 Mock 掉外部依赖。
-
-### 6.3 开发工作流 (Red-Green-Refactor)
-
-1. **Red**: 编写一个失败的测试（或利用现有的 `xfail` 测试）。
-   - 例如：`test_create_structure_produces_ops` 目前被标记为 `xfail`，因为它期望的功能尚未实现。
-2. **Green**: 编写最小实现代码，使测试通过（去掉 `xfail` 标记）。
-3. **Refactor**: 优化代码结构，确保不破坏测试。
-
-**Agent 指引**: 当你接到任务时，请首先检查 `tests/` 目录下是否有相关的失败测试或 `xfail` 测试。如果有，你的首要目标就是让它变绿。
+请参阅 [TDD Guide](./tdd_guide.md) 获取关于 Unit/Integration/E2E 测试的定义以及 Red-Green-Refactor 的具体执行步骤。
