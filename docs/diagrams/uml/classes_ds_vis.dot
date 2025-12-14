@@ -1,0 +1,35 @@
+digraph "classes_ds_vis" {
+rankdir=BT
+charset="utf-8"
+"ds_vis.core.ops.ops.AnimationOp" [color="black", fontcolor="black", label=<{AnimationOp|data : Mapping[str, Any]<br ALIGN="LEFT"/>op<br ALIGN="LEFT"/>target : Optional[str]<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.ops.timeline.AnimationStep" [color="black", fontcolor="black", label=<{AnimationStep|duration_ms : int<br ALIGN="LEFT"/>label : Optional[str]<br ALIGN="LEFT"/>ops : List[AnimationOp]<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.models.bst.BstModel" [color="black", fontcolor="black", label=<{BstModel|root : Optional[BstNode]<br ALIGN="LEFT"/>|delete(key: int): Timeline<br ALIGN="LEFT"/>insert(key: int): Timeline<br ALIGN="LEFT"/>search(key: int): Timeline<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.models.bst.BstNode" [color="black", fontcolor="black", label=<{BstNode|key : int<br ALIGN="LEFT"/>left : Optional['BstNode']<br ALIGN="LEFT"/>right : Optional['BstNode']<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.scene.command.Command" [color="black", fontcolor="black", label=<{Command|payload : Mapping[str, Any]<br ALIGN="LEFT"/>structure_id : str<br ALIGN="LEFT"/>type<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.exceptions.CommandError" [color="black", fontcolor="red", label=<{CommandError|<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.scene.command.CommandType" [color="black", fontcolor="black", label=<{CommandType|name<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.models.gitgraph.CommitNode" [color="black", fontcolor="black", label=<{CommitNode|branch_labels : List[str]<br ALIGN="LEFT"/>id : str<br ALIGN="LEFT"/>message : str<br ALIGN="LEFT"/>parents : List[str]<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.exceptions.DsVisError" [color="black", fontcolor="red", label=<{DsVisError|<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.renderers.pyside6.renderer.EdgeVisual" [color="black", fontcolor="black", label=<{EdgeVisual|dst_id : str<br ALIGN="LEFT"/>label : Optional[QGraphicsSimpleTextItem]<br ALIGN="LEFT"/>line<br ALIGN="LEFT"/>src_id : str<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.models.gitgraph.GitGraphModel" [color="black", fontcolor="black", label=<{GitGraphModel|branches : Dict[str, str]<br ALIGN="LEFT"/>commits : Dict[str, CommitNode]<br ALIGN="LEFT"/>head : Optional[str]<br ALIGN="LEFT"/>head_ref : Optional[str]<br ALIGN="LEFT"/>|branch(name: str): Timeline<br ALIGN="LEFT"/>checkout(target: str): Timeline<br ALIGN="LEFT"/>commit(message: str): Timeline<br ALIGN="LEFT"/>init_repo(): Timeline<br ALIGN="LEFT"/>merge(branch: str): Timeline<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.layout.LayoutEngine" [color="black", fontcolor="black", label=<{LayoutEngine|<br ALIGN="LEFT"/>|apply_layout(timeline: Timeline): Timeline<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.exceptions.LayoutError" [color="black", fontcolor="red", label=<{LayoutError|<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.models.list_model.ListModel" [color="black", fontcolor="black", label=<{ListModel|structure_id : str<br ALIGN="LEFT"/>values : List[Any]<br ALIGN="LEFT"/>|create(values: Optional[Iterable[Any]]): Timeline<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.ui.main_window.MainWindow" [color="black", fontcolor="black", label=<{MainWindow|<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.exceptions.ModelError" [color="black", fontcolor="red", label=<{ModelError|<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.renderers.pyside6.renderer.NodeVisual" [color="black", fontcolor="black", label=<{NodeVisual|ellipse<br ALIGN="LEFT"/>label : Optional[QGraphicsSimpleTextItem]<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.ops.ops.OpCode" [color="black", fontcolor="black", label=<{OpCode|name<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.renderers.pyside6.renderer.PySide6Renderer" [color="black", fontcolor="black", label=<{PySide6Renderer|<br ALIGN="LEFT"/>|render_timeline(timeline: Timeline): None<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.renderers.base.Renderer" [color="black", fontcolor="black", label=<{Renderer|<br ALIGN="LEFT"/>|<I>render_timeline</I>(timeline: Timeline): None<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.exceptions.SceneError" [color="black", fontcolor="red", label=<{SceneError|<br ALIGN="LEFT"/>|}>, shape="record", style="solid"];
+"ds_vis.core.scene.scene_graph.SceneGraph" [color="black", fontcolor="black", label=<{SceneGraph|<br ALIGN="LEFT"/>|apply_command(command: Command): Timeline<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.layout.simple.SimpleLayoutEngine" [color="black", fontcolor="black", label=<{SimpleLayoutEngine|spacing : float<br ALIGN="LEFT"/>start_x : float<br ALIGN="LEFT"/>start_y : float<br ALIGN="LEFT"/>|apply_layout(timeline: Timeline): Timeline<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.ops.timeline.Timeline" [color="black", fontcolor="black", label=<{Timeline|steps : List[AnimationStep]<br ALIGN="LEFT"/>|add_step(step: AnimationStep): None<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+"ds_vis.core.exceptions.CommandError" -> "ds_vis.core.exceptions.DsVisError" [arrowhead="empty", arrowtail="none"];
+"ds_vis.core.exceptions.LayoutError" -> "ds_vis.core.exceptions.DsVisError" [arrowhead="empty", arrowtail="none"];
+"ds_vis.core.exceptions.ModelError" -> "ds_vis.core.exceptions.DsVisError" [arrowhead="empty", arrowtail="none"];
+"ds_vis.core.exceptions.SceneError" -> "ds_vis.core.exceptions.DsVisError" [arrowhead="empty", arrowtail="none"];
+"ds_vis.renderers.pyside6.renderer.PySide6Renderer" -> "ds_vis.renderers.base.Renderer" [arrowhead="empty", arrowtail="none"];
+"ds_vis.core.ops.ops.AnimationOp" -> "ds_vis.core.ops.ops.OpCode" [arrowhead="vee", arrowtail="none", fontcolor="green", label="op", style="solid"];
+"ds_vis.core.scene.command.Command" -> "ds_vis.core.scene.command.CommandType" [arrowhead="vee", arrowtail="none", fontcolor="green", label="type", style="solid"];
+}
