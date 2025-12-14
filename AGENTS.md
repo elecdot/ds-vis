@@ -68,6 +68,7 @@ uv run pytest               # All tests
 ├─ README.md                # 面向用户/评审的项目说明（后期完善）
 ├─ pyproject.toml           # 项目配置（uv 使用）
 ├─ docs/                    # 设计与规范文档
+│   ├─ INDEX.md             # Doc-Code Binding 文档
 │   ├─ REQUEST.md
 │   ├─ ENVIRONMENT.md
 │   ├─ ARCHITECTURE.md
