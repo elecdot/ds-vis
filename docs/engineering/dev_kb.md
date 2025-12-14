@@ -49,11 +49,12 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 
 > Agents: Before attempting to "fix" a bug, check if it's a known limitation.
 
-- **[Limitation][Layout]** SimpleLayout is single-row, append-only; no delete/reflow; hardcoded strategy. Needs pluggable layouts and state refresh.
+- **[Limitation][Layout]** SimpleLayout is single-row with global `start_y`; no multi-structure spacing; always emits `SET_POS` for all nodes (no dirty check), inflating timelines for larger scenes.
 - **[Limitation][Renderer]** PySide6 renderer hardcodes colors/shapes and ignores `duration_ms`; timing/skins need design before widening scope.
-- **[Risk][IDs]** Models use index-derived IDs; deletes/inserts will rename nodes/edges, breaking animation continuity. Define stable monotonic IDs per structure.
-- **[Limitation][Commands]** Unsupported commands return empty timelines; Command enum/routing are rigid. Introduce handler registry + payload validation.
+- **[Risk][IDs]** ID stability only implemented for list create/delete-recreate; other structures still index-derived and will rename on mutation.
+- **[Limitation][Commands]** Command handling is hardcoded per kind/type (no handler registry). `DELETE` currently maps to delete-all for list; per-item delete semantics per requirements are missing.
 - **[Limitation][UI]** Main window is a dev playground; lacks play/pause/step/speed to surface timing bugs and manage multiple structures.
-- **[Gap][Tests]** Coverage thin beyond walking skeleton; missing delete/reinsert reflow, timing semantics, BST/GitGraph ops, and error-path checks.
+- **[Gap][Tests]** Coverage thin beyond walking skeleton; timing semantics, BST/GitGraph ops, and error-path checks still missing.
 - **[Stub][Models]** BST/GitGraph models are skeletons emitting empty timelines; only list `CREATE_STRUCTURE` is implemented.
-- **[Limitation][CommandCoverage]** Supported command surface is minimal (list `CREATE_STRUCTURE`); other commands return empty timelines with no user-facing error.
+- **[Limitation][CommandCoverage]** Supported command surface is minimal (list create/delete-all); other operations raise `CommandError` and are unimplemented.
+- **[Limitation][AnimationDepth]** List animations are L1（结果态）级别，仅覆盖 create/delete/recreate；缺少细化的教学步骤（L2+）。

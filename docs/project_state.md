@@ -16,23 +16,24 @@ This document captures the active delivery phase, what is complete, current assu
   - Simple linear layout injects `SET_POS` and renderer places nodes/edges.
   - PySide6 renderer interprets ops (no timing yet) and supports state/label updates.
 - Active assumptions/limitations:
-  - Supported command: `CREATE_STRUCTURE` for `list`; others return empty timelines (no user-visible error yet).
+  - Supported command surface remains minimal: `CREATE_STRUCTURE` and `DELETE` (delete-all) for `list`; other commands raise `CommandError` and are unimplemented; command routing is hardcoded (no handler registry).
   - UI controls: dev-only menu; single-scene, single-shot render; messages stored but not displayed.
   - Qt tests rely on `QT_QPA_PLATFORM=offscreen` for headless runs.
-  - Layout: append-only, single row; delete/reflow not handled; multi-structure spacing not addressed.
+  - Layout: single row with global `start_y`; no multi-structure spacing; always emits SET_POS for tracked nodes (no dirty check).
   - Renderer: ignores `duration_ms`; no animation or playback controls; visuals hardcoded.
-  - Tests are smoke-level (rendering, no-overlap); timing, delete/reinsert ID stability, layout reflow, BST/GitGraph ops untested.
-  - Unsupported commands return empty timelines (no error surface yet).
+  - Tests are smoke-level (rendering, no-overlap); timing, per-item delete, BST/GitGraph ops, and richer error-path checks untested.
   - BST/GitGraph models are stubs emitting empty timelines.
-  - Command enum/routing are rigid; handler registry and payload validation are pending.
+  - List animations停留在 L1（结果态）粒度，未覆盖 L2+ 细化步骤；其他结构无动画。
 
 ### High-order issues (critical)
-- Silent no-op commands can mask structural bugs and cause positional drift; treat unsupported commands as errors before P0.3 or expect hard-to-debug timelines.
-- Model-generated IDs are index-based; deletes/inserts will rename nodes/edges and break animation continuity. Define stable, monotonic IDs per structure before adding more ops.
+- Command handling is rigid and DELETE 语义为 delete-all，未覆盖 per-item delete；需要 handler 注册表与严格 payload 校验，避免后续扩展时破坏语义。
+- Model-generated IDs仍主要基于索引（list 之外）；删除/插入会导致 ID 漂移，需在更多结构中落地单调 ID。
 
 ## Planned Next Phase: P0.3 — Pipeline Hardening (summary only)
 - Capability goals: surface errors for unsupported/invalid commands; adopt stable monotonic IDs for list nodes/edges; refresh single-row layout after mutations; keep renderer API accepting `duration_ms` and exposing a step-level entry; add tests that cover these contracts.
-- Design decision to lock: SceneGraph error contract — unsupported/invalid commands raise `CommandError` (no silent no-op) and are documented.
+- Design decision to lock: 
+  - SceneGraph error contract — unsupported/invalid commands raise `CommandError` (no silent no-op).
+  - Animation granularity — accept L1 (result-only) steps for `create` ops in this phase; defer L2 (algorithmic steps) to future content phases.
 
 ## Invariants
 - project_state.md is the only authority on current phase.
