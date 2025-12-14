@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Mapping, Optional, Set
 
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.layout import LayoutEngine
@@ -61,6 +61,7 @@ class SceneGraph:
         handler = self._handlers.get(command.type)
         if handler is None:
             raise CommandError(f"Unsupported command type: {command.type!s}")
+        self._validate_payload(command)
         structural_timeline = handler(command)
 
         if self._layout_engine:
@@ -123,6 +124,56 @@ class SceneGraph:
         raise CommandError(
             f"DELETE_NODE unsupported for structure: {command.structure_id!r}"
         )
+
+    # ------------------------------------------------------------------ #
+    # Payload validation helpers
+    # ------------------------------------------------------------------ #
+    def _validate_payload(self, command: Command) -> None:
+        payload = command.payload
+        if not isinstance(payload, Mapping):
+            raise CommandError("Command payload must be a mapping")
+
+        if command.type == CommandType.CREATE_STRUCTURE:
+            self._validate_create_structure_payload(payload)
+        elif command.type == CommandType.DELETE_STRUCTURE:
+            self._validate_delete_structure_payload(payload)
+        elif command.type == CommandType.DELETE_NODE:
+            self._validate_delete_node_payload(payload)
+
+    def _validate_create_structure_payload(self, payload: Mapping[str, Any]) -> None:
+        self._reject_unknown_fields(payload, {"kind", "values"})
+        kind = payload.get("kind")
+        if not kind:
+            raise CommandError("CREATE_STRUCTURE requires payload.kind")
+        if not isinstance(kind, str):
+            raise CommandError("CREATE_STRUCTURE kind must be a string")
+        if "values" in payload:
+            values = payload.get("values")
+            if values is not None and not isinstance(values, (list, tuple)):
+                raise CommandError("values must be a list or tuple")
+
+    def _validate_delete_structure_payload(self, payload: Mapping[str, Any]) -> None:
+        self._reject_unknown_fields(payload, {"kind"})
+        if "kind" in payload and not isinstance(payload.get("kind"), str):
+            raise CommandError("DELETE_STRUCTURE kind must be a string")
+
+    def _validate_delete_node_payload(self, payload: Mapping[str, Any]) -> None:
+        self._reject_unknown_fields(payload, {"kind", "index"})
+        if "kind" in payload and not isinstance(payload.get("kind"), str):
+            raise CommandError("DELETE_NODE kind must be a string")
+        if "index" not in payload:
+            raise CommandError("DELETE_NODE requires 'index'")
+        index = payload.get("index")
+        if not isinstance(index, int):
+            raise CommandError("DELETE_NODE index must be int")
+
+    def _reject_unknown_fields(
+        self, payload: Mapping[str, Any], allowed: Set[str]
+    ) -> None:
+        unknown = set(payload.keys()) - allowed
+        if unknown:
+            unknown_list = ", ".join(sorted(unknown))
+            raise CommandError(f"Unexpected payload fields: {unknown_list}")
 
     def _get_or_create_list_model(self, structure_id: str) -> ListModel:
         existing = self._structures.get(structure_id)
