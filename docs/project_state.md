@@ -2,7 +2,7 @@
 bound_phase: P0.3
 version: v0.2
 status: Active
-last_updated: 2025-12-15
+last_updated: 2025-12-14
 ---
 
 # Project State — Single Source of Truth
@@ -15,7 +15,6 @@ This document captures the active delivery phase, what is complete, current assu
   - SceneGraph uses a handler注册表；unsupported命令抛 `CommandError`，DELETE 拆分为 DELETE_STRUCTURE / DELETE_NODE。
   - List IDs 单调不复用；支持 delete-all / delete-index，边 ID 映射包含结构/方向/端点。
   - SimpleLayout 删除/重建后刷新一行定位；PySide6 renderer 支持 step 级入口与消息显示。
-  - TDD Guide 引入并绑定到工程文档，测试目录按 core/renderers/ui 分层。
   - 测试重组按域划分（core/renderers/ui）；新增错误路径、ID/布局稳定性、消息显示用例。
 - Active assumptions/limitations:
   - Command 面极小：仅 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；payload 校验为最小必填/类型检查。
@@ -32,10 +31,11 @@ This document captures the active delivery phase, what is complete, current assu
 - Layout 简化策略在多结构/动态场景下会错位或发膨胀的 SET_POS；需脏检查与多行/分组布局。
 - Renderer 忽略时序，UI 无播放控制，难以暴露 timing/动画问题。
 
-## Planned Next Phase: P0.4 — Feature Expansion (sketch)
-- 扩展命令与模型：BST/GitGraph 逻辑与稳定 IDs；完善 EdgeKey 映射。
-- 引入命令 payload schema/验证与 handler 注册表扩展；支持 INSERT/SEARCH 等。
-- Layout 多结构间距/脏检查与更丰富的布局策略；Renderer/ UI 暴露时序与控制。
+## Planned Next Phase: P0.4 — Infrastructure & Scaffolding
+- **Command Schema**: 引入 Payload 验证层，建立明确的命令契约，消除隐式依赖。
+- **Model Standardization**: 提炼 Model 基类/协议；将 ListModel 打造为标准模板（完善错误处理、ID & EdgeKey管理、加入L2动画支持）。
+- **Layout Engine 2.0**: 重构为支持多结构堆叠、间距管理与脏检查的健壮引擎，为未来扩展铺路。
+- *注：Renderer/UI Controls 显式移出本阶段，待 Model/Layout 稳定后再实现，以避免架构漂移。*
 
 ## Invariants
 - project_state.md is the only authority on current phase.
