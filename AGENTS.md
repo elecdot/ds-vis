@@ -177,11 +177,11 @@ UI / DSL / Persistence
 ### 4.1 Architecture / Design Agent
 
 * 目标：修改或补充 `docs/*.md` 中的设计文档与规范。
-* 允许修改：
+* 允许修改 (必须先阅读)：
 
+  * `docs/index.md`
   * `docs/design/`
   * `docs/engineering/`
-  * `docs/index.md`
   * `README.md`
   * `AGENTS.md`
 * 禁止修改：
