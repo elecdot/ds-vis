@@ -119,3 +119,18 @@ def test_insert_requires_index_and_value(scene_graph, create_cmd_factory):
 
 def test_model_op_registry_includes_insert():
     assert MODEL_OP_REGISTRY[(CommandType.INSERT, "list")] == "insert"
+
+
+def test_insert_requires_value(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_schema", CommandType.CREATE_STRUCTURE, kind="list", values=[1]
+        )
+    )
+    missing_value = Command(
+        "list_schema",
+        CommandType.INSERT,
+        payload={"kind": "list", "index": 0},
+    )
+    with pytest.raises(CommandError, match="Missing required field: value"):
+        scene_graph.apply_command(missing_value)

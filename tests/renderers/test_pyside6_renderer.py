@@ -90,6 +90,45 @@ def test_renderer_applies_highlight_state(qt_app):
     assert node.ellipse.brush().color() == COLOR_MAP["highlight"]
 
 
+def test_renderer_applies_edge_highlight(qt_app):
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "1"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n2",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "2"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_EDGE,
+                        target="e1",
+                        data={"structure_id": "s1", "from": "n1", "to": "n2"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.SET_STATE,
+                        target="e1",
+                        data={"state": "highlight"},
+                    ),
+                ]
+            )
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene)
+    renderer.render_timeline(timeline)
+
+    edge = renderer._edges.get("e1")
+    assert edge is not None
+    assert edge.line.pen().color() == COLOR_MAP["highlight"]
+
+
 def test_renderer_updates_edges_on_position(qt_app):
     timeline = Timeline(
         steps=[
