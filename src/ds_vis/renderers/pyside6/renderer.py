@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 from PySide6.QtGui import QColor, QPen
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
     QGraphicsLineItem,
@@ -172,7 +173,9 @@ class PySide6Renderer(Renderer):
             if edge:
                 delete_opacity[target] = edge.line.opacity()
 
-        # Run interpolation frames synchronously.
+        # Run interpolation frames synchronously (with a small wait per frame
+        # so the UI can present motion when running in the main loop).
+        delay_per_frame = int(step.duration_ms / frames) if frames > 0 else 0
         for i in range(1, frames + 1):
             t = i / frames
             # positions
@@ -221,6 +224,8 @@ class PySide6Renderer(Renderer):
                     edge.line.setOpacity(max(0.0, start_opacity * (1 - t)))
                     if edge.label:
                         edge.label.setOpacity(max(0.0, start_opacity * (1 - t)))
+            if delay_per_frame > 0:
+                QTest.qWait(delay_per_frame)
 
         # Finalize state: apply labels, final set_state/set_label/pos just in case.
         for op in set_label_ops:
