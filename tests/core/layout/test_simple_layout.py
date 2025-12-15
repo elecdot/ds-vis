@@ -120,3 +120,45 @@ def test_delete_repositions_remaining_nodes():
     assert step1_pos["n2"] == (layout.start_x + layout.spacing, layout.start_y)
     # After deleting n1, n2 shifts to the first slot and should be marked dirty.
     assert step2_pos["n2"] == (layout.start_x, layout.start_y)
+
+
+def test_create_node_with_index_inserts_order():
+    layout = SimpleLayoutEngine()
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n0",
+                        data={"structure_id": "s"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s"},
+                    ),
+                ]
+            ),
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n2",
+                        data={"structure_id": "s", "index": 1},
+                    ),
+                ]
+            ),
+        ]
+    )
+
+    laid_out = layout.apply_layout(timeline)
+    step2_pos = {
+        op.target: (op.data.get("x"), op.data.get("y"))
+        for op in laid_out.steps[1].ops
+        if op.op is OpCode.SET_POS
+    }
+
+    assert step2_pos["n0"] == (layout.start_x, layout.start_y)
+    assert step2_pos["n2"] == (layout.start_x + layout.spacing, layout.start_y)
+    assert step2_pos["n1"] == (layout.start_x + 2 * layout.spacing, layout.start_y)

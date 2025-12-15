@@ -32,10 +32,14 @@ This document captures the active delivery phase, what is complete, current assu
 - Layout 仍是有状态的顺序引擎，不支持 seek；对齐策略和可变尺寸未实现，需在后续迭代扩展。
 - Renderer 忽略时序，UI 无播放控制，难以暴露 timing/动画问题。
 
-## Planned Next Phase: P0.5 — Timing & Renderer Controls (draft)
-- 定义/实现时序与播放控制（播放/暂停/seek 方案），并评估布局/渲染的状态重建需求。
-- 拓展命令面（至少 list INSERT，树/BST 基础操作）并同步 schema/注册表。
-- 视情况推进 Renderer/UI 控制以暴露 timing/seek 问题，形成最小可操作的播放体验。
+## Planned Next Phase: P0.5 — L2 Animation Infrastructure
+- 核心目标：突破 L1（结果态）限制，实现 L2（微步骤）动画生成的底层能力。
+- Scope:
+  - **Layout 增强**: 改造 `SimpleLayout` 支持非追加式布局（即支持 `INSERT` 到指定位置），修复 append-only 缺陷。
+  - **Model 升级**: 实现 `ListModel.insert`，并将其拆解为微步骤（Highlight -> Move -> Insert -> Restore）。
+  - **Visual Ops**: 落地 `SET_STATE` (Highlight/Normal) 在 Renderer 中的视觉表现。
+  - **Timeline 验证**: 确保生成的 Timeline 包含多个有序 Step，且 Renderer 能正确按序执行（暂不需 UI 播放控制）。
+- 延迟项：UI 播放控制（Play/Pause/Seek）顺延至 P0.6，优先保证有“内容”可播。
 
 ## Invariants
 - project_state.md is the only authority on current phase.
