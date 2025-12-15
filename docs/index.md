@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.4
-version: v0.4
+bound_phase: P0.5
+version: v0.5
 status: Stable
 last_updated: 2025-12-15
 ---
@@ -17,15 +17,15 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| [index.md](./index.md) | v0.4 | Stable | P0.4 | Documentation Registry System | 2025-12-15 |
-| [project_state.md](./project_state.md) | v0.3 | Stable | P0.4 | Project phase SSOT | 2025-12-15 |
+| [index.md](./index.md) | v0.5 | Stable | P0.5 | Documentation Registry System | 2025-12-15 |
+| [project_state.md](./project_state.md) | v0.4 | Active | P0.5 | Project phase SSOT | 2025-12-15 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.4 | Stable | P0.4 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
 | [ops_spec.md](./design/ops_spec.md) | v1.1 | Stable | P0.5 | `src/ds_vis/core/ops/` | 2025-12-15 |
 | [animation.md](./design/animation.md) | v0.1 | Draft | P0.2 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-14 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
-| [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.4 | N/A | 2025-12-15 |
+| [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.5 | N/A | 2025-12-15 |
 
 ## Documentation Reorganization (v0.1 — 2025-12-14)
 

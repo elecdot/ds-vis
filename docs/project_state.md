@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.4
-version: v0.3
+bound_phase: P0.5
+version: v0.4
 status: Active
 last_updated: 2025-12-15
 ---
@@ -9,37 +9,34 @@ last_updated: 2025-12-15
 
 This document captures the active delivery phase, what is complete, current assumptions/limitations, and the next planned phase. It is the canonical status reference (SSOT) and should stay minimal.
 
-## Active Phase: P0.4 — Infrastructure & Scaffolding
-- Scope: hardened path Command → SceneGraph → Layout → Renderer with list create/delete and dev UI hooks.
+## Active Phase: P0.5 — L2 Animation Skeleton (List Insert)
+- Scope: L2 微步骤落地（链表插入）、非追加式布局、基本可视高亮与 Dev 播放入口。
 - Completion highlights:
-  - Command schema + 模型 op 注册表落地（list），SceneGraph 通过注册表校验/路由，避免跨层访问模型内部。
-  - BaseModel 抽象化（kind/node_count/apply_operation + 可插拔 ID 生成），ListModel 对齐并保持 ID/EdgeKey 单调。
-  - SimpleLayout 升级：多结构垂直堆叠、脏检查、删除后行压缩；仍假设固定节点尺寸、左对齐。
-  - List 命令流稳定：CREATE/DELETE_STRUCTURE/DELETE_NODE 覆盖，布局级联更新正确 rewiring。
-  - 测试扩充覆盖 schema 校验、注册表映射、布局多结构/脏检查与删除重排。
+  - `ListModel.insert` 拆解为 Highlight → Delete old edge → New node born (highlight) → Rewire → Restore；ID/EdgeKey 单调；增补越界/头尾/空表插入测试。
+  - SceneGraph/schema 现支持 INSERT（list），并进行 index 范围校验；Command 验证覆盖缺失 value 等错误路径。
+  - `SimpleLayout` 支持 `data.index` 插入顺序，删除/插入后整体重排；多结构堆叠与脏检查保留。
+  - PySide6 renderer 支持 `SET_STATE`（含 `highlight`）作用于节点与边；视觉管线可播放 Step 序列。
+  - UI Dev 菜单新增链表插入演示，基于 QTimer 按 Step 播放；保留快速创建/删除/重建钩子。
+  - 测试补齐：插入边界、布局头插右移、边高亮、Dev 插入 demo 烟测，全套 pytest/ruff/mypy 通过。
 - Active assumptions/limitations:
-  - Command 面极小：仅 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；schema/映射注册表仅覆盖 list，其他结构未注册。
-  - UI controls: dev-only menu; single-scene、单次播放；消息呈现仅在 renderer 内部文本项，未与状态栏联动。
-  - Qt tests rely on `QT_QPA_PLATFORM=offscreen` for headless runs.
-  - Layout: stateful 顺序执行，不支持 seek/倒播；默认固定尺寸、左对齐；对齐策略单一，未支持树/DAG 居中。
-  - Renderer: 仍忽略 `duration_ms`；无播放控制；视觉硬编码。
-  - Tests：覆盖 list 创建/删除/布局刷新、schema 校验；但 timing、BST/GitGraph、细粒度动画仍缺。
-  - BST/GitGraph models 仍为空壳；List 动画停留在 L1（结果态）。
+  - 支持的结构/命令仍仅 list 的 create/delete/insert；其他结构模型为空壳，ID 稳定性未落地。
+  - Renderer 仍按 Step 结果跳变，忽略 `duration_ms`，无缓入/缓出/插值；颜色/形状硬编码。
+  - UI 播放控制极简：仅 Dev 菜单串行播放，无暂停/seek/速度控制；单场景。
+  - Layout 仍为有状态顺序执行，不支持 seek/回放；固定节点尺寸与左对齐假设未改。
+  - Qt 测试依赖 `QT_QPA_PLATFORM=offscreen`；运行 `uv run` 时可能需设置 `UV_CACHE_DIR` 避免全局缓存权限问题。
 
 ### High-order issues (critical)
-- Command 面与注册表仅覆盖 list；扩展 INSERT/BST/GitGraph 时需同步 schema/映射与文档。
-- 除 list 外的 ID 仍基于索引；删除/插入会导致漂移，需在其他结构落地单调 ID 与 EdgeKey。
-- Layout 仍是有状态的顺序引擎，不支持 seek；对齐策略和可变尺寸未实现，需在后续迭代扩展。
-- Renderer 忽略时序，UI 无播放控制，难以暴露 timing/动画问题。
+- 命令/模型覆盖面有限：仅 list create/delete/insert；扩展 BST/GitGraph 需补注册表、模型与测试。
+- 时间语义缺失：renderer 无插值/时间控制，UI 无播放控制；难以暴露 timing/动画问题。
+- 结构 ID 稳定性仅在 list 覆盖，其他结构仍为索引派生。
 
-## Planned Next Phase: P0.5 — L2 Animation Infrastructure
-- 核心目标：突破 L1（结果态）限制，实现 L2（微步骤）动画生成的底层能力。
-- Scope:
-  - **Layout 增强**: 改造 `SimpleLayout` 支持非追加式布局（即支持 `INSERT` 到指定位置），修复 append-only 缺陷。
-  - **Model 升级**: 实现 `ListModel.insert`，并将其拆解为微步骤（Highlight -> Move -> Insert -> Restore）。
-  - **Visual Ops**: 落地 `SET_STATE` (Highlight/Normal) 在 Renderer 中的视觉表现。
-  - **Timeline 验证**: 确保生成的 Timeline 包含多个有序 Step，且 Renderer 能正确按序执行（暂不需 UI 播放控制）。
-- 延迟项：UI 播放控制（Play/Pause/Seek）顺延至 P0.6，优先保证有“内容”可播。
+## Planned Next Phase: P0.6 — Timed Animation & Playback Controls
+- 核心目标：在保持 Step 粒度的基础上加入“真动画”与基础播放控制。
+- Scope（初版）:
+  - Renderer 内对 `SET_POS`/`SET_STATE`/CREATE/DELETE 做插值或淡入淡出，使用 Step `duration_ms`（提供跳过动画开关）。
+  - UI 播放控制：最小集的 play/pause/step/速度倍率，驱动 Step 播放而非结果跳变。
+  - 设计与文档：更新 animation.md 说明默认缓动/节奏策略；评估 ops_spec 是否需要可选的动画 hint（优先保持协议稳定）。
+- 延迟项：seek/倒播、多结构并行播放、皮肤/主题切换。
 
 ## Invariants
 - project_state.md is the only authority on current phase.
