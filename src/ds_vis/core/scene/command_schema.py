@@ -31,7 +31,8 @@ class CommandSchema:
                 value = payload.get(key)
                 if not isinstance(value, expected_types):
                     raise CommandError(
-                        f"Field {key!r} must be a {self._type_names(expected_types)} when present"
+                        f"Field {key!r} must be a "
+                        f"{self._type_names(expected_types)} when present"
                     )
 
         if not self.allow_extra:
