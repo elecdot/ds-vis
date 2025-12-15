@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.2
-version: v1.0
+bound_phase: P0.5
+version: v1.1
 status: Stable
-last_updated: 2025-12-14
+last_updated: 2025-12-15
 ---
 
 # OPS_SPEC — AnimationOps 规范
@@ -194,6 +194,7 @@ AnimationOps 操作的对象分为三类：
   "structure_id": "tree_1",
   "kind": "bst_node",     // 由渲染器/皮肤系统解释，比如 bst_node / array_cell / git_commit
   "label": "42",          // 显示在节点上的文本
+  "index": 1,             // 可选，布局提示：在当前行的插入位置（用于非追加式插入）
   "meta": {               // 可选，模型附带信息
     "key": 42
   }
@@ -283,6 +284,7 @@ AnimationOps 用于通知渲染器“某个 Node 应该在新位置”。
 
 * `normal`：默认状态
 * `active`：当前操作焦点节点
+* `highlight`：短时强调（例如插入/删除的邻接节点）
 * `secondary`：辅助高亮（如查找路径中的非当前节点）
 * `to_delete`：即将被删除的节点
 * `faded`：弱化显示

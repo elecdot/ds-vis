@@ -21,7 +21,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | [project_state.md](./project_state.md) | v0.3 | Stable | P0.4 | Project phase SSOT | 2025-12-15 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.4 | Stable | P0.4 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
-| [ops_spec.md](./design/ops_spec.md) | v1.0 | Stable | P0.2 | `src/ds_vis/core/ops/` | 2025-12-14 |
+| [ops_spec.md](./design/ops_spec.md) | v1.1 | Stable | P0.5 | `src/ds_vis/core/ops/` | 2025-12-15 |
 | [animation.md](./design/animation.md) | v0.1 | Draft | P0.2 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-14 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
