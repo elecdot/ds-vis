@@ -19,6 +19,7 @@ NODE_RADIUS = 20.0
 COLOR_MAP: Dict[str, QColor] = {
     "normal": QColor("#6b7280"),     # gray
     "active": QColor("#2563eb"),     # blue
+    "highlight": QColor("#f59e0b"),  # amber
     "secondary": QColor("#059669"),  # green
     "to_delete": QColor("#dc2626"),  # red
     "faded": QColor("#9ca3af"),      # light gray
