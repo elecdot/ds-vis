@@ -176,6 +176,104 @@ def test_renderer_updates_edges_on_position(qt_app):
     assert line.line().x2() == 110.0
 
 
+def test_renderer_animates_position(qt_app):
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                duration_ms=200,
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "1"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.SET_POS,
+                        target="n1",
+                        data={"x": 100.0, "y": 50.0},
+                    ),
+                ],
+            )
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene)
+    renderer.render_timeline(timeline)
+
+    node = renderer._nodes.get("n1")
+    assert node is not None
+    pos = node.ellipse.pos()
+    assert pos.x() == 100.0
+    assert pos.y() == 50.0
+
+
+def test_renderer_fade_out_delete(qt_app):
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "1"},
+                    ),
+                ]
+            ),
+            AnimationStep(
+                duration_ms=200,
+                ops=[
+                    AnimationOp(
+                        op=OpCode.DELETE_NODE,
+                        target="n1",
+                        data={"structure_id": "s1"},
+                    )
+                ],
+            ),
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene)
+    renderer.render_timeline(timeline)
+
+    assert "n1" not in renderer._nodes
+
+
+def test_renderer_color_interpolation_reaches_target(qt_app):
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "1"},
+                    )
+                ]
+            ),
+            AnimationStep(
+                duration_ms=200,
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_STATE,
+                        target="n1",
+                        data={"state": "highlight"},
+                    )
+                ],
+            ),
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene)
+    renderer.render_timeline(timeline)
+
+    node = renderer._nodes.get("n1")
+    assert node is not None
+    assert node.ellipse.brush().color() == COLOR_MAP["highlight"]
+
+
 def test_renderer_sets_and_clears_message(qt_app):
     timeline = Timeline(
         steps=[

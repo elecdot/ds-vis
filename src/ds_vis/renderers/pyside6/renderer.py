@@ -50,7 +50,8 @@ class PySide6Renderer(Renderer):
     PySide6-based renderer using QGraphicsScene/QGraphicsView.
 
     Phase 1:
-      - No animation timing; apply final state of each step immediately.
+      - Supports basic timing-aware playback: SET_POS interpolation,
+        SET_STATE color interpolation, fade-in on create and fade-out on delete.
       - Minimal visuals: circles for nodes, straight lines for edges, simple labels.
     """
 
@@ -63,6 +64,7 @@ class PySide6Renderer(Renderer):
         self._message_item.setVisible(False)
         self._message_item.setPos(10, 10)
         self._scene.addItem(self._message_item)
+        self._animations_enabled: bool = True
 
     def render_timeline(self, timeline: Timeline) -> None:
         """Interpret the given Timeline and update the scene accordingly."""
@@ -70,8 +72,180 @@ class PySide6Renderer(Renderer):
             self.apply_step(step)
 
     def apply_step(self, step: AnimationStep) -> None:
+        if self._animations_enabled and step.duration_ms > 0:
+            self._apply_step_animated(step)
+        else:
+            for op in step.ops:
+                self._apply_op(op)
+
+    # ------------------------------------------------------------------ #
+    # Animation helpers
+    # ------------------------------------------------------------------ #
+    def _apply_step_animated(self, step: AnimationStep) -> None:
+        """
+        Basic synchronous animation:
+          - SET_POS interpolated linearly
+          - SET_STATE color interpolation
+          - CREATE_* fade-in; DELETE_* fade-out then remove
+        """
+        frames = max(1, min(10, step.duration_ms // 50 or 1))
+        create_nodes: list[AnimationOp] = []
+        create_edges: list[AnimationOp] = []
+        delete_nodes: list[AnimationOp] = []
+        delete_edges: list[AnimationOp] = []
+        set_pos_ops: list[AnimationOp] = []
+        set_state_ops: list[AnimationOp] = []
+        set_label_ops: list[AnimationOp] = []
+        other_ops: list[AnimationOp] = []
+
         for op in step.ops:
+            if op.op is OpCode.CREATE_NODE:
+                create_nodes.append(op)
+            elif op.op is OpCode.CREATE_EDGE:
+                create_edges.append(op)
+            elif op.op is OpCode.DELETE_NODE:
+                delete_nodes.append(op)
+            elif op.op is OpCode.DELETE_EDGE:
+                delete_edges.append(op)
+            elif op.op is OpCode.SET_POS:
+                set_pos_ops.append(op)
+            elif op.op is OpCode.SET_STATE:
+                set_state_ops.append(op)
+            elif op.op is OpCode.SET_LABEL:
+                set_label_ops.append(op)
+            else:
+                other_ops.append(op)
+
+        # Apply creates up front with zero opacity for fade-in.
+        for op in create_nodes:
             self._apply_op(op)
+            node = self._nodes.get(op.target or "")
+            if node:
+                node.ellipse.setOpacity(0.0)
+                if node.label:
+                    node.label.setOpacity(0.0)
+        for op in create_edges:
+            self._apply_op(op)
+            edge = self._edges.get(op.target or "")
+            if edge:
+                edge.line.setOpacity(0.0)
+                if edge.label:
+                    edge.label.setOpacity(0.0)
+
+        # Capture start/end values.
+        pos_targets: Dict[str, tuple[float, float]] = {}
+        pos_starts: Dict[str, tuple[float, float]] = {}
+        for op in set_pos_ops:
+            target = op.target or ""
+            node = self._nodes.get(target)
+            if node:
+                pos_starts[target] = (node.ellipse.pos().x(), node.ellipse.pos().y())
+                pos_targets[target] = (
+                    float(op.data.get("x", 0.0)),
+                    float(op.data.get("y", 0.0)),
+                )
+
+        state_targets: Dict[str, QColor] = {}
+        state_starts: Dict[str, QColor] = {}
+        for op in set_state_ops:
+            target = op.target or ""
+            desired = COLOR_MAP.get(op.data.get("state", "normal"), COLOR_MAP["normal"])
+            node = self._nodes.get(target)
+            edge = self._edges.get(target)
+            if node:
+                state_starts[target] = node.ellipse.brush().color()
+                state_targets[target] = desired
+            elif edge:
+                state_starts[target] = edge.line.pen().color()
+                state_targets[target] = desired
+
+        # Fade-out start values for deletes.
+        delete_opacity: Dict[str, float] = {}
+        for op in delete_nodes:
+            target = op.target or ""
+            node = self._nodes.get(target)
+            if node:
+                delete_opacity[target] = node.ellipse.opacity()
+        for op in delete_edges:
+            target = op.target or ""
+            edge = self._edges.get(target)
+            if edge:
+                delete_opacity[target] = edge.line.opacity()
+
+        # Run interpolation frames synchronously.
+        for i in range(1, frames + 1):
+            t = i / frames
+            # positions
+            for target, end_pos in pos_targets.items():
+                start_pos = pos_starts.get(target, end_pos)
+                new_x = start_pos[0] + (end_pos[0] - start_pos[0]) * t
+                new_y = start_pos[1] + (end_pos[1] - start_pos[1]) * t
+                node = self._nodes.get(target)
+                if node:
+                    node.ellipse.setPos(new_x, new_y)
+                    self._update_edges_for_node(target)
+            # states
+            for target, end_color in state_targets.items():
+                start_color = state_starts.get(target, end_color)
+                interp = self._interpolate_color(start_color, end_color, t)
+                node = self._nodes.get(target)
+                if node:
+                    node.ellipse.setBrush(interp)
+                edge = self._edges.get(target)
+                if edge:
+                    edge.line.setPen(QPen(interp))
+            # fade in/out
+            for op in create_nodes:
+                node = self._nodes.get(op.target or "")
+                if node:
+                    node.ellipse.setOpacity(t)
+                    if node.label:
+                        node.label.setOpacity(t)
+            for op in create_edges:
+                edge = self._edges.get(op.target or "")
+                if edge:
+                    edge.line.setOpacity(t)
+                    if edge.label:
+                        edge.label.setOpacity(t)
+            for op in delete_nodes:
+                node = self._nodes.get(op.target or "")
+                if node:
+                    start_opacity = delete_opacity.get(op.target or "", 1.0)
+                    node.ellipse.setOpacity(max(0.0, start_opacity * (1 - t)))
+                    if node.label:
+                        node.label.setOpacity(max(0.0, start_opacity * (1 - t)))
+            for op in delete_edges:
+                edge = self._edges.get(op.target or "")
+                if edge:
+                    start_opacity = delete_opacity.get(op.target or "", 1.0)
+                    edge.line.setOpacity(max(0.0, start_opacity * (1 - t)))
+                    if edge.label:
+                        edge.label.setOpacity(max(0.0, start_opacity * (1 - t)))
+
+        # Finalize state: apply labels, final set_state/set_label/pos just in case.
+        for op in set_label_ops:
+            self._apply_op(op)
+        for op in set_state_ops:
+            self._apply_op(op)
+        for op in set_pos_ops:
+            self._apply_op(op)
+        # Remove deleted objects after fade-out.
+        for op in delete_edges:
+            self._delete_edge(op)
+        for op in delete_nodes:
+            self._delete_node(op)
+        # Apply any remaining ops (messages, etc.).
+        for op in other_ops:
+            self._apply_op(op)
+
+    @staticmethod
+    def _interpolate_color(start: QColor, end: QColor, t: float) -> QColor:
+        inv = 1.0 - t
+        r = int(start.red() * inv + end.red() * t)
+        g = int(start.green() * inv + end.green() * t)
+        b = int(start.blue() * inv + end.blue() * t)
+        a = int(start.alpha() * inv + end.alpha() * t)
+        return QColor(r, g, b, a)
 
     def _apply_op(self, op: AnimationOp) -> None:
         if op.op is OpCode.CREATE_NODE:
