@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QScreen
 from PySide6.QtWidgets import (
     QApplication,
@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QMenuBar,
 )
 
+from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer
@@ -63,6 +64,10 @@ class MainWindow(QMainWindow):
         # Core engine wiring (skeleton)
         self._scene_graph = SceneGraph()
         self._renderer = PySide6Renderer(self._scene)
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._advance_step)
+        self._pending_steps: list[AnimationStep] = []
+        self._current_step_index: int = 0
 
         # Developer playground menu
         self._init_menubar()
@@ -93,6 +98,12 @@ class MainWindow(QMainWindow):
         )
         self._act_create_list.triggered.connect(self._create_list_dev)
         dev_menu.addAction(self._act_create_list)
+
+        self._act_list_insert = QAction(
+            "Play List Insert (1,3 -> insert 2)", self
+        )
+        self._act_list_insert.triggered.connect(self._play_list_insert_dev)
+        dev_menu.addAction(self._act_list_insert)
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -131,6 +142,7 @@ class MainWindow(QMainWindow):
 
         Command -> SceneGraph (structural ops) -> Layout (inject SET_POS) -> Renderer.
         """
+        self._reset_engine()
         cmd = Command(
             structure_id="dev_list",
             type=CommandType.CREATE_STRUCTURE,
@@ -139,6 +151,63 @@ class MainWindow(QMainWindow):
         timeline = self._scene_graph.apply_command(cmd)
         # Phase 1: render immediately; future phases may add animation controls.
         self._renderer.render_timeline(timeline)
+
+    def _play_list_insert_dev(self) -> None:
+        """
+        Developer-only hook: demonstrate L2 list insert with highlight micro-steps.
+        """
+        self._reset_engine()
+        structure_id = "dev_list_insert"
+        create_cmd = Command(
+            structure_id=structure_id,
+            type=CommandType.CREATE_STRUCTURE,
+            payload={"kind": "list", "values": [1, 3]},
+        )
+        insert_cmd = Command(
+            structure_id=structure_id,
+            type=CommandType.INSERT,
+            payload={"kind": "list", "index": 1, "value": 2},
+        )
+        create_tl = self._scene_graph.apply_command(create_cmd)
+        insert_tl = self._scene_graph.apply_command(insert_cmd)
+
+        merged = Timeline()
+        for step in list(create_tl.steps) + list(insert_tl.steps):
+            merged.add_step(step)
+
+        self._play_timeline(merged)
+
+    def _reset_engine(self) -> None:
+        """Reset scene, renderer, and scene graph for a fresh demo run."""
+        self._timer.stop()
+        self._pending_steps = []
+        self._current_step_index = 0
+        self._scene.clear()
+        self._scene_graph = SceneGraph()
+        self._renderer = PySide6Renderer(self._scene)
+
+    def _play_timeline(self, timeline: Timeline) -> None:
+        """Play a timeline step-by-step using the renderer and a timer."""
+        self._timer.stop()
+        self._pending_steps = list(timeline.steps)
+        self._current_step_index = 0
+        if not self._pending_steps:
+            return
+        self._advance_step()
+
+    def _advance_step(self) -> None:
+        if self._current_step_index >= len(self._pending_steps):
+            self._timer.stop()
+            return
+
+        step = self._pending_steps[self._current_step_index]
+        self._renderer.apply_step(step)
+        self._current_step_index += 1
+        if self._current_step_index < len(self._pending_steps):
+            delay = max(0, step.duration_ms)
+            self._timer.start(delay)
+        else:
+            self._timer.stop()
 
     # --------------------------------------------------------------------- #
     # Entry point
