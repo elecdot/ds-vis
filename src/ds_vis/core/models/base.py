@@ -16,8 +16,10 @@ class BaseModel(ABC):
 
     Design trade-offs:
       - Use ABC to enforce public interfaces (kind, node_count, apply_operation).
-      - Pluggable ID strategy: default monotonic counting; can be injected/overridden to support custom IDs.
-      - apply_operation does not depend on Command, avoiding reverse coupling from Model to SceneGraph.
+      - Pluggable ID strategy: default monotonic counting; can be injected/overridden
+        to support custom IDs.
+      - apply_operation does not depend on Command, avoiding reverse coupling from
+        Model to SceneGraph.
     """
 
     structure_id: str
@@ -38,7 +40,8 @@ class BaseModel(ABC):
     def apply_operation(self, op: str, payload: Mapping[str, Any]) -> Timeline:
         """
         Uniform entry for model-level operations (model-scoped op, not CommandType).
-        SceneGraph is responsible for mapping Command -> op+payload, avoiding Model dependency on Command definition.
+        SceneGraph maps Command -> op+payload, avoiding Model dependency on Command
+        definition.
         """
 
     # ------------------------------------------------------------------ #
@@ -48,7 +51,8 @@ class BaseModel(ABC):
         """
         Allocate a node ID scoped to this structure.
 
-        Default monotonic counting; if customization is needed (e.g., GitGraph hash), pass id_allocator or override this method.
+        Default monotonic counting; if customization is needed (e.g., GitGraph hash),
+        pass id_allocator or override this method.
         """
         if self.id_allocator:
             node_id = self.id_allocator(self.structure_id, prefix, self._next_obj_id)
