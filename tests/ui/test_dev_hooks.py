@@ -3,6 +3,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QGraphicsEllipseItem
 
 from ds_vis.core.scene.command import Command, CommandType
+from ds_vis.renderers.pyside6.renderer import COLOR_MAP
 from ds_vis.ui.main_window import MainWindow
 
 
@@ -66,5 +67,25 @@ def test_dev_create_delete_recreate_stable_ids(qt_app):
         assert xs[0] == 50.0
         if len(xs) > 1:
             assert xs[1] - xs[0] == 120.0
+    finally:
+        window.close()
+
+
+def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
+    """
+    Ensure the dev demo for list insert plays through and leaves nodes in normal state.
+    """
+    window = MainWindow()
+    try:
+        window._play_list_insert_dev()
+        while window._current_step_index < len(window._pending_steps):
+            window._advance_step()
+
+        nodes = window._renderer._nodes
+        assert len(nodes) == 3
+        assert all(
+            visual.ellipse.brush().color() == COLOR_MAP["normal"]
+            for visual in nodes.values()
+        )
     finally:
         window.close()
