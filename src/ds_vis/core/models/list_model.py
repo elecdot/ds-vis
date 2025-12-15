@@ -168,26 +168,27 @@ class ListModel(BaseModel):
         next_id = self._node_ids[index] if index < len(self._node_ids) else None
 
         highlight_targets = [nid for nid in (prev_id, next_id) if nid is not None]
-        timeline.add_step(
-            AnimationStep(
-                ops=[
-                    AnimationOp(
-                        op=OpCode.SET_STATE,
-                        target=nid,
-                        data={
-                            "structure_id": self.structure_id,
-                            "state": "highlight",
-                        },
-                    )
-                    for nid in highlight_targets
-                ]
+        if highlight_targets:
+            timeline.add_step(
+                AnimationStep(
+                    ops=[
+                        AnimationOp(
+                            op=OpCode.SET_STATE,
+                            target=nid,
+                            data={
+                                "structure_id": self.structure_id,
+                                "state": "highlight",
+                            },
+                        )
+                        for nid in highlight_targets
+                    ]
+                )
             )
-        )
 
         new_node_id = self.allocate_node_id(prefix="node")
-        structural_ops: List[AnimationOp] = []
+        delete_ops: List[AnimationOp] = []
         if prev_id and next_id:
-            structural_ops.append(
+            delete_ops.append(
                 AnimationOp(
                     op=OpCode.DELETE_EDGE,
                     target=self.edge_id("next", prev_id, next_id),
@@ -195,7 +196,10 @@ class ListModel(BaseModel):
                 )
             )
 
-        structural_ops.append(
+        if delete_ops:
+            timeline.add_step(AnimationStep(ops=delete_ops))
+
+        node_ops: List[AnimationOp] = [
             AnimationOp(
                 op=OpCode.CREATE_NODE,
                 target=new_node_id,
@@ -206,9 +210,22 @@ class ListModel(BaseModel):
                     "index": index,
                 },
             )
+        ]
+        node_ops.append(
+            AnimationOp(
+                op=OpCode.SET_STATE,
+                target=new_node_id,
+                data={
+                    "structure_id": self.structure_id,
+                    "state": "highlight",
+                },
+            )
         )
+        timeline.add_step(AnimationStep(ops=node_ops))
+
+        rewire_ops: List[AnimationOp] = []
         if prev_id:
-            structural_ops.append(
+            rewire_ops.append(
                 AnimationOp(
                     op=OpCode.CREATE_EDGE,
                     target=self.edge_id("next", prev_id, new_node_id),
@@ -222,7 +239,7 @@ class ListModel(BaseModel):
                 )
             )
         if next_id:
-            structural_ops.append(
+            rewire_ops.append(
                 AnimationOp(
                     op=OpCode.CREATE_EDGE,
                     target=self.edge_id("next", new_node_id, next_id),
@@ -235,27 +252,29 @@ class ListModel(BaseModel):
                     },
                 )
             )
+        if rewire_ops:
+            timeline.add_step(AnimationStep(ops=rewire_ops))
 
         self._node_ids.insert(index, new_node_id)
         self.values.insert(index, value)
-        timeline.add_step(AnimationStep(ops=structural_ops))
 
-        restore_targets = highlight_targets + [new_node_id]
-        timeline.add_step(
-            AnimationStep(
-                ops=[
-                    AnimationOp(
-                        op=OpCode.SET_STATE,
-                        target=nid,
-                        data={
-                            "structure_id": self.structure_id,
-                            "state": "normal",
-                        },
-                    )
-                    for nid in restore_targets
-                ]
+        restore_targets = list(dict.fromkeys(highlight_targets + [new_node_id]))
+        if restore_targets:
+            timeline.add_step(
+                AnimationStep(
+                    ops=[
+                        AnimationOp(
+                            op=OpCode.SET_STATE,
+                            target=nid,
+                            data={
+                                "structure_id": self.structure_id,
+                                "state": "normal",
+                            },
+                        )
+                        for nid in restore_targets
+                    ]
+                )
             )
-        )
         return timeline
 
     def recreate(self, values: Optional[Iterable[Any]] = None) -> Timeline:

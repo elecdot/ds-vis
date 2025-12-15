@@ -149,7 +149,7 @@ def test_insert_routes_through_scene_graph_and_layout(scene_graph, create_cmd_fa
     )
     timeline = scene_graph.apply_command(insert_cmd)
 
-    assert len(timeline.steps) >= 3
+    assert len(timeline.steps) >= 5
 
     step0_state_ops = [
         op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE
@@ -159,12 +159,21 @@ def test_insert_routes_through_scene_graph_and_layout(scene_graph, create_cmd_fa
         "list_insert_node_1",
     }
 
-    step1_positions = {
+    pos_step = next(
+        (
+            step
+            for step in timeline.steps
+            if any(op.op is OpCode.SET_POS for op in step.ops)
+        ),
+        None,
+    )
+    assert pos_step is not None
+    step_positions = {
         op.target: (op.data.get("x"), op.data.get("y"))
-        for op in timeline.steps[1].ops
+        for op in pos_step.ops
         if op.op is OpCode.SET_POS
     }
     # New node inserted in the middle should shift the original second node.
-    assert step1_positions["list_insert_node_0"][0] == 50.0
-    assert step1_positions["list_insert_node_2"][0] == 50.0 + 120.0
-    assert step1_positions["list_insert_node_1"][0] == 50.0 + 120.0 * 2
+    assert step_positions["list_insert_node_0"][0] == 50.0
+    assert step_positions["list_insert_node_2"][0] == 50.0 + 120.0
+    assert step_positions["list_insert_node_1"][0] == 50.0 + 120.0 * 2

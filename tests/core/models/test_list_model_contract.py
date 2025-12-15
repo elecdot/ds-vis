@@ -79,38 +79,44 @@ def test_insert_emits_microsteps_and_rewires():
     timeline = model.insert(index=1, value=2)
 
     assert model.values == [1, 2, 3]
-    assert len(timeline.steps) == 3
+    assert len(timeline.steps) == 5
 
-    highlight_ops = [
-        op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE
-    ]
+    highlight_ops = [op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE]
     assert {op.target for op in highlight_ops} == {"lst_node_0", "lst_node_1"}
     assert all(op.data.get("state") == "highlight" for op in highlight_ops)
 
-    structural_ops = timeline.steps[1].ops
+    delete_ops = timeline.steps[1].ops
     assert any(
         op.op is OpCode.DELETE_EDGE
         and op.target == "lst|next|lst_node_0->lst_node_1"
-        for op in structural_ops
+        for op in delete_ops
     )
+
+    create_ops = timeline.steps[2].ops
     assert any(
         op.op is OpCode.CREATE_NODE and op.target == "lst_node_2"
-        for op in structural_ops
+        for op in create_ops
     )
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == "lst_node_2"
+        and op.data.get("state") == "highlight"
+        for op in create_ops
+    )
+
+    rewire_ops = timeline.steps[3].ops
     assert any(
         op.op is OpCode.CREATE_EDGE
         and op.target == "lst|next|lst_node_0->lst_node_2"
-        for op in structural_ops
+        for op in rewire_ops
     )
     assert any(
         op.op is OpCode.CREATE_EDGE
         and op.target == "lst|next|lst_node_2->lst_node_1"
-        for op in structural_ops
+        for op in rewire_ops
     )
 
-    restore_ops = [
-        op for op in timeline.steps[2].ops if op.op is OpCode.SET_STATE
-    ]
+    restore_ops = [op for op in timeline.steps[4].ops if op.op is OpCode.SET_STATE]
     assert {
         op.target for op in restore_ops
     } == {"lst_node_0", "lst_node_1", "lst_node_2"}
