@@ -14,10 +14,10 @@ class BaseModel(ABC):
     """
     Abstract base for all data-structure models.
 
-    设计取舍：
-      - 使用 ABC 强制公开接口（kind、node_count、apply_operation）。
-      - 可插拔 ID 策略：默认单调计数；可注入/覆写以支持自带 ID。
-      - apply_operation 不依赖 Command，避免 Model 对 SceneGraph 反向耦合。
+    Design trade-offs:
+      - Use ABC to enforce public interfaces (kind, node_count, apply_operation).
+      - Pluggable ID strategy: default monotonic counting; can be injected/overridden to support custom IDs.
+      - apply_operation does not depend on Command, avoiding reverse coupling from Model to SceneGraph.
     """
 
     structure_id: str
@@ -38,7 +38,7 @@ class BaseModel(ABC):
     def apply_operation(self, op: str, payload: Mapping[str, Any]) -> Timeline:
         """
         Uniform entry for model-level operations (model-scoped op, not CommandType).
-        SceneGraph 负责映射 Command → op+payload，避免 Model 依赖 Command 定义。
+        SceneGraph is responsible for mapping Command -> op+payload, avoiding Model dependency on Command definition.
         """
 
     # ------------------------------------------------------------------ #
@@ -48,7 +48,7 @@ class BaseModel(ABC):
         """
         Allocate a node ID scoped to this structure.
 
-        默认单调计数；如需自定义（GitGraph hash），可传入 id_allocator 或覆写本方法。
+        Default monotonic counting; if customization is needed (e.g., GitGraph hash), pass id_allocator or override this method.
         """
         if self.id_allocator:
             node_id = self.id_allocator(self.structure_id, prefix, self._next_obj_id)
@@ -61,6 +61,6 @@ class BaseModel(ABC):
         """
         Build a stable edge key scoped to this structure.
 
-        子类可覆写以适配特定 edge 命名策略。
+        Subclasses can override to adapt to specific edge naming strategies.
         """
         return f"{self.structure_id}|{edge_kind}|{src}->{dst}"
