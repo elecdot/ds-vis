@@ -63,6 +63,9 @@ SCHEMA_REGISTRY: Dict[Tuple[CommandType, str], CommandSchema] = {
     (CommandType.DELETE_NODE, "list"): CommandSchema(
         required={"kind": str, "index": int},
     ),
+    (CommandType.INSERT, "list"): CommandSchema(
+        required={"kind": str, "index": int, "value": object},
+    ),
 }
 
 
@@ -71,4 +74,5 @@ MODEL_OP_REGISTRY: Dict[Tuple[CommandType, str], str] = {
     (CommandType.CREATE_STRUCTURE, "list"): "create",
     (CommandType.DELETE_STRUCTURE, "list"): "delete_all",
     (CommandType.DELETE_NODE, "list"): "delete_index",
+    (CommandType.INSERT, "list"): "insert",
 }

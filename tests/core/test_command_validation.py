@@ -96,3 +96,26 @@ def test_delete_node_accepts_empty_payload_for_other_structures(scene_graph):
 def test_schema_registry_contains_known_mappings():
     assert SCHEMA_REGISTRY[(CommandType.CREATE_STRUCTURE, "list")]
     assert MODEL_OP_REGISTRY[(CommandType.DELETE_NODE, "list")] == "delete_index"
+
+
+def test_insert_requires_index_and_value(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_schema", CommandType.CREATE_STRUCTURE, kind="list", values=[1]
+        )
+    )
+    missing = Command("list_schema", CommandType.INSERT, payload={"kind": "list"})
+    with pytest.raises(CommandError, match="Missing required field: index"):
+        scene_graph.apply_command(missing)
+
+    wrong_index = Command(
+        "list_schema",
+        CommandType.INSERT,
+        payload={"kind": "list", "index": "1", "value": 2},
+    )
+    with pytest.raises(CommandError, match="Field 'index' must be int"):
+        scene_graph.apply_command(wrong_index)
+
+
+def test_model_op_registry_includes_insert():
+    assert MODEL_OP_REGISTRY[(CommandType.INSERT, "list")] == "insert"

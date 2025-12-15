@@ -79,7 +79,7 @@ def test_list_ids_monotonic_and_layout_refresh(scene_graph, create_cmd_factory):
 
 
 def test_unknown_command_raises_command_error(scene_graph):
-    cmd = Command(structure_id="s1", type=CommandType.INSERT, payload={})
+    cmd = Command(structure_id="s1", type=CommandType.SEARCH, payload={})
     try:
         scene_graph.apply_command(cmd)
     except CommandError:
@@ -134,3 +134,37 @@ def test_list_delete_index_rewires_and_keeps_ids_monotonic(
     assert xs[0] == 50.0
     if len(xs) > 1:
         assert xs[1] - xs[0] == 120.0
+
+
+def test_insert_routes_through_scene_graph_and_layout(scene_graph, create_cmd_factory):
+    create_cmd = create_cmd_factory(
+        "list_insert", CommandType.CREATE_STRUCTURE, kind="list", values=[1, 3]
+    )
+    scene_graph.apply_command(create_cmd)
+
+    insert_cmd = Command(
+        "list_insert",
+        CommandType.INSERT,
+        payload={"kind": "list", "index": 1, "value": 2},
+    )
+    timeline = scene_graph.apply_command(insert_cmd)
+
+    assert len(timeline.steps) >= 3
+
+    step0_state_ops = [
+        op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE
+    ]
+    assert {op.target for op in step0_state_ops} == {
+        "list_insert_node_0",
+        "list_insert_node_1",
+    }
+
+    step1_positions = {
+        op.target: (op.data.get("x"), op.data.get("y"))
+        for op in timeline.steps[1].ops
+        if op.op is OpCode.SET_POS
+    }
+    # New node inserted in the middle should shift the original second node.
+    assert step1_positions["list_insert_node_0"][0] == 50.0
+    assert step1_positions["list_insert_node_2"][0] == 50.0 + 120.0
+    assert step1_positions["list_insert_node_1"][0] == 50.0 + 120.0 * 2

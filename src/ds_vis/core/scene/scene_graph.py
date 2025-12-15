@@ -52,6 +52,7 @@ class SceneGraph:
             CommandType.CREATE_STRUCTURE: self._handle_create_structure,
             CommandType.DELETE_STRUCTURE: self._handle_delete_structure,
             CommandType.DELETE_NODE: self._handle_delete_node,
+            CommandType.INSERT: self._handle_insert,
         }
 
     def apply_command(self, command: Command) -> Timeline:
@@ -99,6 +100,18 @@ class SceneGraph:
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("DELETE_NODE index out of range")
         return model.apply_operation(op_name, {"index": index})
+
+    def _handle_insert(self, command: Command) -> Timeline:
+        kind, op_name, payload = self._resolve_schema_and_op(command)
+        model = self._structures.get(command.structure_id)
+        if model is None or model.kind != kind:
+            raise CommandError(f"Structure not found: {command.structure_id!r}")
+        index = payload.get("index")
+        if isinstance(index, int) and (index < 0 or index > model.node_count):
+            raise CommandError("INSERT index out of range")
+        return model.apply_operation(
+            op_name, {"index": index, "value": payload.get("value")}
+        )
 
     def _merge_timelines(self, *timelines: Timeline) -> Timeline:
         merged = Timeline()
