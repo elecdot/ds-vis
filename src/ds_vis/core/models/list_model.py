@@ -41,6 +41,11 @@ class ListModel(BaseModel):
             if not isinstance(index, int):
                 raise ModelError("delete_index requires int index")
             return self.delete_index(index)
+        if op == "insert":
+            index = payload.get("index")
+            if not isinstance(index, int):
+                raise ModelError("insert requires int index")
+            return self.insert(index=index, value=payload.get("value"))
         raise ModelError(f"Unsupported operation: {op}")
 
     def create(self, values: Optional[Iterable[Any]] = None) -> Timeline:
@@ -148,6 +153,109 @@ class ListModel(BaseModel):
             del self.values[index]
 
         timeline.add_step(AnimationStep(ops=ops))
+        return timeline
+
+    def insert(self, index: int, value: Any) -> Timeline:
+        """
+        Insert a value at the given logical position with L2 micro-steps:
+        Highlight -> structural move -> restore visuals.
+        """
+        if index < 0 or index > len(self._node_ids):
+            raise ModelError("insert index out of range")
+
+        timeline = Timeline()
+        prev_id = self._node_ids[index - 1] if index - 1 >= 0 else None
+        next_id = self._node_ids[index] if index < len(self._node_ids) else None
+
+        highlight_targets = [nid for nid in (prev_id, next_id) if nid is not None]
+        timeline.add_step(
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_STATE,
+                        target=nid,
+                        data={
+                            "structure_id": self.structure_id,
+                            "state": "highlight",
+                        },
+                    )
+                    for nid in highlight_targets
+                ]
+            )
+        )
+
+        new_node_id = self.allocate_node_id(prefix="node")
+        structural_ops: List[AnimationOp] = []
+        if prev_id and next_id:
+            structural_ops.append(
+                AnimationOp(
+                    op=OpCode.DELETE_EDGE,
+                    target=self.edge_id("next", prev_id, next_id),
+                    data={"structure_id": self.structure_id},
+                )
+            )
+
+        structural_ops.append(
+            AnimationOp(
+                op=OpCode.CREATE_NODE,
+                target=new_node_id,
+                data={
+                    "structure_id": self.structure_id,
+                    "kind": "list_node",
+                    "label": str(value),
+                    "index": index,
+                },
+            )
+        )
+        if prev_id:
+            structural_ops.append(
+                AnimationOp(
+                    op=OpCode.CREATE_EDGE,
+                    target=self.edge_id("next", prev_id, new_node_id),
+                    data={
+                        "structure_id": self.structure_id,
+                        "from": prev_id,
+                        "to": new_node_id,
+                        "directed": True,
+                        "label": "next",
+                    },
+                )
+            )
+        if next_id:
+            structural_ops.append(
+                AnimationOp(
+                    op=OpCode.CREATE_EDGE,
+                    target=self.edge_id("next", new_node_id, next_id),
+                    data={
+                        "structure_id": self.structure_id,
+                        "from": new_node_id,
+                        "to": next_id,
+                        "directed": True,
+                        "label": "next",
+                    },
+                )
+            )
+
+        self._node_ids.insert(index, new_node_id)
+        self.values.insert(index, value)
+        timeline.add_step(AnimationStep(ops=structural_ops))
+
+        restore_targets = highlight_targets + [new_node_id]
+        timeline.add_step(
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_STATE,
+                        target=nid,
+                        data={
+                            "structure_id": self.structure_id,
+                            "state": "normal",
+                        },
+                    )
+                    for nid in restore_targets
+                ]
+            )
+        )
         return timeline
 
     def recreate(self, values: Optional[Iterable[Any]] = None) -> Timeline:
