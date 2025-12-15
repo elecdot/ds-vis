@@ -70,3 +70,48 @@ def test_custom_id_allocator_can_override_default():
     node_ids = [op.target for op in _collect_ops(timeline, OpCode.CREATE_NODE)]
 
     assert node_ids == ["lst-node-custom-0"]
+
+
+def test_insert_emits_microsteps_and_rewires():
+    model = ListModel(structure_id="lst")
+    model.create([1, 3])
+
+    timeline = model.insert(index=1, value=2)
+
+    assert model.values == [1, 2, 3]
+    assert len(timeline.steps) == 3
+
+    highlight_ops = [
+        op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE
+    ]
+    assert {op.target for op in highlight_ops} == {"lst_node_0", "lst_node_1"}
+    assert all(op.data.get("state") == "highlight" for op in highlight_ops)
+
+    structural_ops = timeline.steps[1].ops
+    assert any(
+        op.op is OpCode.DELETE_EDGE
+        and op.target == "lst|next|lst_node_0->lst_node_1"
+        for op in structural_ops
+    )
+    assert any(
+        op.op is OpCode.CREATE_NODE and op.target == "lst_node_2"
+        for op in structural_ops
+    )
+    assert any(
+        op.op is OpCode.CREATE_EDGE
+        and op.target == "lst|next|lst_node_0->lst_node_2"
+        for op in structural_ops
+    )
+    assert any(
+        op.op is OpCode.CREATE_EDGE
+        and op.target == "lst|next|lst_node_2->lst_node_1"
+        for op in structural_ops
+    )
+
+    restore_ops = [
+        op for op in timeline.steps[2].ops if op.op is OpCode.SET_STATE
+    ]
+    assert {
+        op.target for op in restore_ops
+    } == {"lst_node_0", "lst_node_1", "lst_node_2"}
+    assert all(op.data.get("state") == "normal" for op in restore_ops)
