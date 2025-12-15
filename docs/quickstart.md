@@ -53,6 +53,111 @@ graph TD
 - ✅ **动画解耦**：通过 AnimationOps 和 Timeline 统一描述动画
 - ✅ **多渲染器**：支持 PySide6（当前）和未来的 Web 渲染
 
+```mermaid
+flowchart TB
+  %% =========================
+  %% DS-Vis Official Architecture
+  %% =========================
+
+  %% ---- Layer: UI Shell ----
+  subgraph L4["L4 UI Shell"]
+    UI["ui.main_window\n(PySide6 App Shell)"]
+  end
+
+  %% ---- Layer: Renderer Implementation ----
+  subgraph L3["L3 Renderer Implementation"]
+    RQtPkg["renderers.pyside6\n(Qt bindings & glue)"]
+    RQt["renderers.pyside6.renderer\n(Qt Renderer Impl)"]
+    QtLib["PySide6\n(External)"]
+    RQtPkg --> RQt
+    RQt --> QtLib
+  end
+
+  %% ---- Layer: Renderer Abstraction ----
+  subgraph L2["L2 Renderer Abstraction"]
+    RBase["renderers.base\n(Renderer API / Port)"]
+  end
+
+  %% ---- Layer: Core Domain ----
+  subgraph L1["L1 Core Domain"]
+    %% Models
+    subgraph Models["models (Domain Structures)"]
+      MBase["models.base\n(Model interface & invariants)"]
+      MList["models.list_model"]
+      MBST["models.bst"]
+      MDiGraph["models.digraph"]
+      MBase --> MList
+      MBase --> MBST
+      MBase --> MDiGraph
+    end
+
+    %% Layout
+    subgraph Layout["layout (Layout Strategy)"]
+      LCore["layout\n(Layout API)"]
+      LSimple["layout.simple\n(Simple Layout Impl)"]
+      LCore --> LSimple
+    end
+
+    %% Scene pipeline
+    subgraph Scene["scene (Scene Pipeline)"]
+      Cmd["scene.command\n(Command semantics)"]
+      Schema["scene.command_schema\n(Command schema)"]
+      Graph["scene.scene_graph\n(Resolved graph)"]
+      World["scene.scene\n(Scene state / World)"]
+
+      Schema --> Cmd
+      Cmd --> Graph
+      Graph --> World
+    end
+
+    Ex["core.exceptions"]
+  end
+
+  %% ---- Layer: Use-cases / Orchestration ----
+  subgraph L0["L0 Ops / Use-Cases"]
+    Ops["core.ops\n(Application Services / Use-cases)"]
+    TL["core.ops.timeline\n(Deterministic history)"]
+    Ops --> TL
+  end
+
+  %% =========================
+  %% Cross-layer dependencies
+  %% =========================
+
+  %% UI drives renderer + ops (thin shell)
+  UI --> RQt
+  UI --> Ops
+
+  %% Renderer depends on abstraction + core
+  RQt --> RBase
+  RQt --> World
+  RQt --> Graph
+  RQt --> LCore
+  RQt --> MBase
+
+  %% Abstraction depends on core types (ports reference domain)
+  RBase --> World
+  RBase --> Graph
+
+  %% Ops orchestrates core pipeline
+  Ops --> Cmd
+  Ops --> Schema
+  Ops --> Graph
+  Ops --> World
+  Ops --> LCore
+  Ops --> MBase
+  Ops --> Ex
+
+  %% Layout applies to models/scene
+  LCore --> World
+  LCore --> MBase
+
+  %% Exceptions shared across core/ops
+  Ex -.-> Ops
+  Ex -.-> Scene
+  Ex -.-> Models
+```
+
 ---
 
 ## 2. 环境配置与依赖安装
