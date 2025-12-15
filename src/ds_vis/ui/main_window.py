@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
             return
         self._advance_step()
 
-    def _advance_step(self) -> None:
+    def _advance_step(self, schedule_next: bool = True) -> None:
         if self._current_step_index >= len(self._pending_steps):
             self._timer.stop()
             return
@@ -233,7 +233,7 @@ class MainWindow(QMainWindow):
         step = self._pending_steps[self._current_step_index]
         self._renderer.apply_step(step)
         self._current_step_index += 1
-        if self._current_step_index < len(self._pending_steps):
+        if schedule_next and self._current_step_index < len(self._pending_steps):
             delay = int(max(0, step.duration_ms) / self._speed_factor)
             self._timer.start(delay)
         else:
@@ -254,7 +254,7 @@ class MainWindow(QMainWindow):
 
     def _step_once(self) -> None:
         self._timer.stop()
-        self._advance_step()
+        self._advance_step(schedule_next=False)
 
     def _set_speed(self, factor: float) -> None:
         self._speed_factor = max(0.1, factor)

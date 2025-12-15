@@ -106,3 +106,19 @@ def test_playback_controls_respect_speed(qt_app):
         )
     finally:
         window.close()
+
+
+def test_step_does_not_reschedule_timer(qt_app):
+    """
+    After pause, stepping once should not re-arm the timer (blocking mode).
+    """
+    window = MainWindow()
+    try:
+        window._play_list_insert_dev()
+        window._pause()
+        previous_index = window._current_step_index
+        window._step_once()
+        assert not window._timer.isActive()
+        assert window._current_step_index == previous_index + 1
+    finally:
+        window.close()
