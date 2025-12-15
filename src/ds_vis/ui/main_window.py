@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMenu,
     QMenuBar,
+    QToolBar,
 )
 
 from ds_vis.core.ops import AnimationStep, Timeline
@@ -68,9 +69,11 @@ class MainWindow(QMainWindow):
         self._timer.timeout.connect(self._advance_step)
         self._pending_steps: list[AnimationStep] = []
         self._current_step_index: int = 0
+        self._speed_factor: float = 1.0
 
         # Developer playground menu
         self._init_menubar()
+        self._init_toolbar()
 
     # --------------------------------------------------------------------- #
     # UI setup
@@ -104,6 +107,32 @@ class MainWindow(QMainWindow):
         )
         self._act_list_insert.triggered.connect(self._play_list_insert_dev)
         dev_menu.addAction(self._act_list_insert)
+
+    def _init_toolbar(self) -> None:
+        """Playback controls toolbar."""
+        toolbar = QToolBar("Playback", self)
+        self.addToolBar(toolbar)
+
+        self._act_play = QAction("Play", self)
+        self._act_play.triggered.connect(self._play)
+        toolbar.addAction(self._act_play)
+
+        self._act_pause = QAction("Pause", self)
+        self._act_pause.triggered.connect(self._pause)
+        toolbar.addAction(self._act_pause)
+
+        self._act_step = QAction("Step", self)
+        self._act_step.triggered.connect(self._step_once)
+        toolbar.addAction(self._act_step)
+
+        speed_menu = QMenu("Speed", self)
+        for label, factor in [("0.5x", 0.5), ("1x", 1.0), ("2x", 2.0)]:
+            action = QAction(label, self)
+            action.triggered.connect(lambda _=False, f=factor: self._set_speed(f))
+            speed_menu.addAction(action)
+        speed_button = QAction("Speed", self)
+        speed_button.setMenu(speed_menu)
+        toolbar.addAction(speed_button)
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -182,6 +211,7 @@ class MainWindow(QMainWindow):
         self._timer.stop()
         self._pending_steps = []
         self._current_step_index = 0
+        self._speed_factor = 1.0
         self._scene.clear()
         self._scene_graph = SceneGraph()
         self._renderer = PySide6Renderer(self._scene)
@@ -204,10 +234,30 @@ class MainWindow(QMainWindow):
         self._renderer.apply_step(step)
         self._current_step_index += 1
         if self._current_step_index < len(self._pending_steps):
-            delay = max(0, step.duration_ms)
+            delay = int(max(0, step.duration_ms) / self._speed_factor)
             self._timer.start(delay)
         else:
             self._timer.stop()
+
+    def _play(self) -> None:
+        if not self._pending_steps:
+            return
+        # If paused mid-sequence, resume; otherwise restart from current index.
+        if not self._timer.isActive():
+            current = max(0, min(self._current_step_index, len(self._pending_steps)))
+            if current >= len(self._pending_steps):
+                self._current_step_index = 0
+            self._advance_step()
+
+    def _pause(self) -> None:
+        self._timer.stop()
+
+    def _step_once(self) -> None:
+        self._timer.stop()
+        self._advance_step()
+
+    def _set_speed(self, factor: float) -> None:
+        self._speed_factor = max(0.1, factor)
 
     # --------------------------------------------------------------------- #
     # Entry point

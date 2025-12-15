@@ -89,3 +89,20 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
         )
     finally:
         window.close()
+
+
+def test_playback_controls_respect_speed(qt_app):
+    """
+    Speed factor should scale the timer delay; simulate by stepping manually.
+    """
+    window = MainWindow()
+    try:
+        window._play_list_insert_dev()
+        window._set_speed(2.0)
+        # Advance first step; timer would schedule next with halved delay.
+        window._advance_step()
+        assert window._timer.interval() == int(
+            max(0, window._pending_steps[0].duration_ms) / window._speed_factor
+        )
+    finally:
+        window.close()
