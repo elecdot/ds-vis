@@ -47,3 +47,26 @@ def test_delete_index_out_of_range_raises_model_error():
 
     with pytest.raises(ModelError, match="out of range"):
         model.delete_index(5)
+
+
+def test_apply_operation_routes_and_validates():
+    model = ListModel(structure_id="lst")
+    model.apply_operation("create", {"values": [1]})
+    assert model.node_count == 1
+
+    with pytest.raises(ModelError):
+        model.apply_operation("delete_index", {"index": "bad"})
+
+    with pytest.raises(ModelError):
+        model.apply_operation("unknown", {})
+
+
+def test_custom_id_allocator_can_override_default():
+    def custom_allocator(structure_id: str, prefix: str, counter: int) -> str:
+        return f"{structure_id}-{prefix}-custom-{counter}"
+
+    model = ListModel(structure_id="lst", id_allocator=custom_allocator)
+    timeline = model.create([1])
+    node_ids = [op.target for op in _collect_ops(timeline, OpCode.CREATE_NODE)]
+
+    assert node_ids == ["lst-node-custom-0"]

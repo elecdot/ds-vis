@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Mapping, Optional
 
 from ds_vis.core.exceptions import ModelError
 from ds_vis.core.models.base import BaseModel
@@ -26,6 +26,22 @@ class ListModel(BaseModel):
     @property
     def kind(self) -> str:
         return "list"
+
+    @property
+    def node_count(self) -> int:
+        return len(self._node_ids)
+
+    def apply_operation(self, op: str, payload: Mapping[str, Any]) -> Timeline:
+        if op == "create":
+            return self.create(payload.get("values"))
+        if op == "delete_all":
+            return self.delete_all()
+        if op == "delete_index":
+            index = payload.get("index")
+            if not isinstance(index, int):
+                raise ModelError("delete_index requires int index")
+            return self.delete_index(index)
+        raise ModelError(f"Unsupported operation: {op}")
 
     def create(self, values: Optional[Iterable[Any]] = None) -> Timeline:
         """
@@ -149,13 +165,6 @@ class ListModel(BaseModel):
         for step in create_timeline.steps:
             timeline.add_step(step)
         return timeline
-
-    @property
-    def node_count(self) -> int:
-        """
-        Public surface for SceneGraph to query node existence without peeking internals.
-        """
-        return len(self._node_ids)
 
     # ------------------------------------------------------------------ #
     # Internal helpers
