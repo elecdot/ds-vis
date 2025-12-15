@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.3
-version: v0.2
+bound_phase: P0.4
+version: v0.3
 status: Active
 last_updated: 2025-12-15
 ---
@@ -9,35 +9,33 @@ last_updated: 2025-12-15
 
 This document captures the active delivery phase, what is complete, current assumptions/limitations, and the next planned phase. It is the canonical status reference (SSOT) and should stay minimal.
 
-## Active Phase: P0.3 — Pipeline Hardening (list focus)
+## Active Phase: P0.4 — Infrastructure & Scaffolding
 - Scope: hardened path Command → SceneGraph → Layout → Renderer with list create/delete and dev UI hooks.
 - Completion highlights:
-  - SceneGraph uses a handler注册表；unsupported命令抛 `CommandError`，DELETE 拆分为 DELETE_STRUCTURE / DELETE_NODE。
-  - 引入集中 Command schema + 模型 op 映射（list），SceneGraph 通过注册表路由，移除跨层直接访问 Model 内部状态。
-  - 抽象 BaseModel（kind/node_count/apply_operation + 可插拔 ID 生成），ListModel 对齐并统一 ID/EdgeKey 生成。
-  - List IDs 单调不复用；支持 delete-all / delete-index，边 ID 映射包含结构/方向/端点。
-  - SimpleLayout 删除/重建后刷新一行定位；PySide6 renderer 支持 step 级入口与消息显示。
-  - 测试重组按域划分（core/renderers/ui）；新增错误路径、ID/布局稳定性、消息显示用例。
+  - Command schema + 模型 op 注册表落地（list），SceneGraph 通过注册表校验/路由，避免跨层访问模型内部。
+  - BaseModel 抽象化（kind/node_count/apply_operation + 可插拔 ID 生成），ListModel 对齐并保持 ID/EdgeKey 单调。
+  - SimpleLayout 升级：多结构垂直堆叠、脏检查、删除后行压缩；仍假设固定节点尺寸、左对齐。
+  - List 命令流稳定：CREATE/DELETE_STRUCTURE/DELETE_NODE 覆盖，布局级联更新正确 rewiring。
+  - 测试扩充覆盖 schema 校验、注册表映射、布局多结构/脏检查与删除重排。
 - Active assumptions/limitations:
   - Command 面极小：仅 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；schema/映射注册表仅覆盖 list，其他结构未注册。
   - UI controls: dev-only menu; single-scene、单次播放；消息呈现仅在 renderer 内部文本项，未与状态栏联动。
   - Qt tests rely on `QT_QPA_PLATFORM=offscreen` for headless runs.
-  - Layout: 单行、全局 `start_y`、无多结构间距；每步全量 SET_POS（无脏检查）；仅基于当前节点快照。
+  - Layout: stateful 顺序执行，不支持 seek/倒播；默认固定尺寸、左对齐；对齐策略单一，未支持树/DAG 居中。
   - Renderer: 仍忽略 `duration_ms`；无播放控制；视觉硬编码。
-  - Tests：覆盖 list 创建/删除/布局刷新和错误路径；但 timing、BST/GitGraph、细粒度动画仍缺。
+  - Tests：覆盖 list 创建/删除/布局刷新、schema 校验；但 timing、BST/GitGraph、细粒度动画仍缺。
   - BST/GitGraph models 仍为空壳；List 动画停留在 L1（结果态）。
 
 ### High-order issues (critical)
-- Command surface/校验仍最小化；后续命令扩展需引入更严格的 schema（避免 handler 逻辑分散）。
+- Command 面与注册表仅覆盖 list；扩展 INSERT/BST/GitGraph 时需同步 schema/映射与文档。
 - 除 list 外的 ID 仍基于索引；删除/插入会导致漂移，需在其他结构落地单调 ID 与 EdgeKey。
-- Layout 简化策略在多结构/动态场景下会错位或发膨胀的 SET_POS；需脏检查与多行/分组布局。
+- Layout 仍是有状态的顺序引擎，不支持 seek；对齐策略和可变尺寸未实现，需在后续迭代扩展。
 - Renderer 忽略时序，UI 无播放控制，难以暴露 timing/动画问题。
 
-## Planned Next Phase: P0.4 — Infrastructure & Scaffolding
-- **Command Schema**: 引入 Payload 验证层，建立明确的命令契约，消除隐式依赖。
-- **Model Standardization**: 提炼 Model 基类/协议；将 ListModel 打造为标准模板（完善错误处理、ID & EdgeKey管理、加入L2动画支持）。
-- **Layout Engine 2.0**: 重构为支持多结构堆叠、间距管理与脏检查的健壮引擎，为未来扩展铺路。
-- *注：Renderer/UI Controls 显式移出本阶段，待 Model/Layout 稳定后再实现，以避免架构漂移。*
+## Planned Next Phase: P0.5 — Timing & Renderer Controls (draft)
+- 定义/实现时序与播放控制（播放/暂停/seek 方案），并评估布局/渲染的状态重建需求。
+- 拓展命令面（至少 list INSERT，树/BST 基础操作）并同步 schema/注册表。
+- 视情况推进 Renderer/UI 控制以暴露 timing/seek 问题，形成最小可操作的播放体验。
 
 ## Invariants
 - project_state.md is the only authority on current phase.

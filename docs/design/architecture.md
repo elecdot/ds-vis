@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.3
-version: v0.3
+bound_phase: P0.4
+version: v0.4
 status: Stable
 last_updated: 2025-12-15
 ---
@@ -109,9 +109,10 @@ SceneGraph **不做**：
 * UI 逻辑（由 UI 负责）；
 * DSL 文本解析（由 DSL 负责）。
 
-> P0.3 约定：
-> - SceneGraph 通过 handler 注册表路由命令；未知命令抛 `CommandError`，禁止静默 no-op。
+> P0.4 约定：
+> - 命令入口通过 (CommandType, kind) → schema + 模型 op 注册表驱动，统一语法校验与路由；未知命令/种类直接抛 `CommandError`。
 > - 删除语义拆分为 `DELETE_STRUCTURE`（整结构删除）与 `DELETE_NODE`（按索引/ID 删除）；不再使用重载的 DELETE。
+> - SceneGraph 不再直接访问模型内部状态，依赖 BaseModel 接口（kind/node_count/apply_operation）。
 
 ---
 
@@ -199,6 +200,12 @@ Layout 层**禁止**：
 **关键设计思想**：Layout 是一个**纯几何计算层**，在不理解具体数据结构业务的情况下，也能为任何结构类型计算合理的坐标。
 **Layout 的信息来源**：Ops 流 + 拓扑查询接口
 
+### 6.3 当前实现状态（P0.4 SimpleLayout 2.0）
+
+- 多结构垂直堆叠：每个结构占用一行，`row_spacing` 控制行距，结构删除后行压缩避免纵向漂移。
+- 脏检查：仅对位置发生变化的节点发 `SET_POS`；插入/删除会将受影响结构标记为脏以覆盖级联位移。
+- 对齐与尺寸假设：默认左对齐，假定节点尺寸固定，`spacing/row_spacing` 基于单一宽高；未实现树/DAG 的居中或可变尺寸。
+- 状态性：布局引擎维护内部快照，假定按 Timeline 顺序播放，不支持 seek/倒播；若需随机访问需重放或重建状态。
 
 ---
 

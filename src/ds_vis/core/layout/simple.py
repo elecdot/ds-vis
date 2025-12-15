@@ -17,6 +17,8 @@ class SimpleLayoutEngine:
     are reserved for future use but not yet enabled.
     Dirty check: Only inject SET_POS for nodes whose positions have changed;
     cascading displacements caused by deletion/insertion are captured.
+    Stateful & sequential: relies on internal snapshots and assumes forward playback;
+    seek/rewind requires state rebuild or replay.
     """
 
     spacing: float = 120.0

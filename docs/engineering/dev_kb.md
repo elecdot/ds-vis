@@ -1,5 +1,5 @@
 ---
-bound_phase: P0.3
+bound_phase: P0.4
 version: rolling
 status: Living
 last_updated: 2025-12-15
@@ -49,12 +49,11 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 
 > Agents: Before attempting to "fix" a bug, check if it's a known limitation.
 
-- **[Limitation][Layout]** SimpleLayout is single-row with global `start_y`; no multi-structure spacing; always emits `SET_POS` for all nodes (no dirty check), inflating timelines for larger scenes.
+- **[Limitation][Layout]** SimpleLayout 2.0 仍为有状态顺序引擎，不支持 seek/倒播；默认左对齐与固定尺寸假设，未支持树/DAG 居中或可变尺寸。
 - **[Limitation][Renderer]** PySide6 renderer hardcodes colors/shapes and ignores `duration_ms`; timing/skins need design before widening scope.
 - **[Risk][IDs]** ID stability only implemented for list create/delete-recreate; other structures still index-derived and will rename on mutation.
-- **[Limitation][Commands]** Command handler registry存在但命令面极小（list create/delete）；payload 校验为最小必填/类型检查，后续扩展需更严格 schema。
+- **[Limitation][Commands]** 命令 schema/操作映射仅覆盖 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；扩展 INSERT/BST/GitGraph 需补注册表与模型 op。
 - **[Limitation][UI]** Main window is a dev playground; lacks play/pause/step/speed to surface timing bugs and manage multiple structures.
 - **[Gap][Tests]** Coverage thin beyond walking skeleton; timing semantics, BST/GitGraph ops, and error-path checks still missing.
 - **[Stub][Models]** BST/GitGraph models are skeletons emitting empty timelines; only list `CREATE_STRUCTURE` is implemented.
-- **[Limitation][CommandCoverage]** Supported命令面仍极小（list create + delete index/all）；其他操作均抛 `CommandError`。
 - **[Limitation][AnimationDepth]** List animations are L1（结果态）级别，仅覆盖 create/delete/recreate；缺少细化的教学步骤（L2+）。
