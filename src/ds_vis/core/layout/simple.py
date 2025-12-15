@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
+from typing import Dict, List, Mapping, Optional, Tuple
 
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 
@@ -65,8 +65,13 @@ class SimpleLayoutEngine:
             if op.op is OpCode.CREATE_NODE and structure_id and node_id:
                 self._assign_row_if_absent(structure_id)
                 nodes = self._structure_nodes.setdefault(structure_id, [])
-                if node_id not in nodes:
+                insert_idx = self._extract_index(op.data)
+                if node_id in nodes:
+                    nodes.remove(node_id)
+                if insert_idx is None or insert_idx >= len(nodes):
                     nodes.append(node_id)
+                else:
+                    nodes.insert(insert_idx, node_id)
                 self._dirty_structures.add(structure_id)
             elif op.op is OpCode.DELETE_NODE and structure_id and node_id:
                 nodes = self._structure_nodes.get(structure_id, [])
@@ -114,3 +119,10 @@ class SimpleLayoutEngine:
             self._structure_rows = {
                 sid: idx for idx, sid in enumerate(self._row_order)
             }
+
+    @staticmethod
+    def _extract_index(data: Mapping[str, object]) -> Optional[int]:
+        index_value = data.get("index")
+        if isinstance(index_value, int):
+            return max(index_value, 0)
+        return None
