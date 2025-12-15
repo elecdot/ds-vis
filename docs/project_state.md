@@ -2,7 +2,7 @@
 bound_phase: P0.3
 version: v0.2
 status: Active
-last_updated: 2025-12-14
+last_updated: 2025-12-15
 ---
 
 # Project State — Single Source of Truth
@@ -13,11 +13,13 @@ This document captures the active delivery phase, what is complete, current assu
 - Scope: hardened path Command → SceneGraph → Layout → Renderer with list create/delete and dev UI hooks.
 - Completion highlights:
   - SceneGraph uses a handler注册表；unsupported命令抛 `CommandError`，DELETE 拆分为 DELETE_STRUCTURE / DELETE_NODE。
+  - 引入集中 Command schema + 模型 op 映射（list），SceneGraph 通过注册表路由，移除跨层直接访问 Model 内部状态。
+  - 抽象 BaseModel（kind/node_count/apply_operation + 可插拔 ID 生成），ListModel 对齐并统一 ID/EdgeKey 生成。
   - List IDs 单调不复用；支持 delete-all / delete-index，边 ID 映射包含结构/方向/端点。
   - SimpleLayout 删除/重建后刷新一行定位；PySide6 renderer 支持 step 级入口与消息显示。
   - 测试重组按域划分（core/renderers/ui）；新增错误路径、ID/布局稳定性、消息显示用例。
 - Active assumptions/limitations:
-  - Command 面极小：仅 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；payload 校验为最小必填/类型检查。
+  - Command 面极小：仅 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE；schema/映射注册表仅覆盖 list，其他结构未注册。
   - UI controls: dev-only menu; single-scene、单次播放；消息呈现仅在 renderer 内部文本项，未与状态栏联动。
   - Qt tests rely on `QT_QPA_PLATFORM=offscreen` for headless runs.
   - Layout: 单行、全局 `start_y`、无多结构间距；每步全量 SET_POS（无脏检查）；仅基于当前节点快照。
