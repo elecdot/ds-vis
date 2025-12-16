@@ -56,7 +56,7 @@ class PySide6Renderer(Renderer):
       - Minimal visuals: circles for nodes, straight lines for edges, simple labels.
     """
 
-    def __init__(self, scene: QGraphicsScene) -> None:
+    def __init__(self, scene: QGraphicsScene, animations_enabled: bool = True) -> None:
         self._scene = scene
         self._nodes: Dict[str, NodeVisual] = {}
         self._edges: Dict[str, EdgeVisual] = {}
@@ -65,7 +65,8 @@ class PySide6Renderer(Renderer):
         self._message_item.setVisible(False)
         self._message_item.setPos(10, 10)
         self._scene.addItem(self._message_item)
-        self._animations_enabled: bool = True
+        self._animations_enabled: bool = animations_enabled
+        self._speed_factor: float = 1.0
 
     def render_timeline(self, timeline: Timeline) -> None:
         """Interpret the given Timeline and update the scene accordingly."""
@@ -79,6 +80,10 @@ class PySide6Renderer(Renderer):
             for op in step.ops:
                 self._apply_op(op)
 
+    def set_speed(self, factor: float) -> None:
+        """Adjust animation speed (scales duration)."""
+        self._speed_factor = max(0.1, factor)
+
     # ------------------------------------------------------------------ #
     # Animation helpers
     # ------------------------------------------------------------------ #
@@ -89,7 +94,8 @@ class PySide6Renderer(Renderer):
           - SET_STATE color interpolation
           - CREATE_* fade-in; DELETE_* fade-out then remove
         """
-        frames = max(1, min(10, step.duration_ms // 50 or 1))
+        adjusted_duration = int(step.duration_ms / self._speed_factor)
+        frames = max(1, min(10, adjusted_duration // 50 or 1))
         create_nodes: list[AnimationOp] = []
         create_edges: list[AnimationOp] = []
         delete_nodes: list[AnimationOp] = []
@@ -175,7 +181,7 @@ class PySide6Renderer(Renderer):
 
         # Run interpolation frames synchronously (with a small wait per frame
         # so the UI can present motion when running in the main loop).
-        delay_per_frame = int(step.duration_ms / frames) if frames > 0 else 0
+        delay_per_frame = int(adjusted_duration / frames) if frames > 0 else 0
         for i in range(1, frames + 1):
             t = i / frames
             # positions

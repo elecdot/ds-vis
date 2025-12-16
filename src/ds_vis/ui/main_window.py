@@ -70,6 +70,7 @@ class MainWindow(QMainWindow):
         self._pending_steps: list[AnimationStep] = []
         self._current_step_index: int = 0
         self._speed_factor: float = 1.0
+        self._animations_enabled: bool = True
 
         # Developer playground menu
         self._init_menubar()
@@ -133,6 +134,11 @@ class MainWindow(QMainWindow):
         speed_button = QAction("Speed", self)
         speed_button.setMenu(speed_menu)
         toolbar.addAction(speed_button)
+
+        self._act_toggle_anim = QAction("Animations", self, checkable=True)
+        self._act_toggle_anim.setChecked(True)
+        self._act_toggle_anim.triggered.connect(self._toggle_animations)
+        toolbar.addAction(self._act_toggle_anim)
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -212,9 +218,10 @@ class MainWindow(QMainWindow):
         self._pending_steps = []
         self._current_step_index = 0
         self._speed_factor = 1.0
+        self._animations_enabled = True
         self._scene.clear()
         self._scene_graph = SceneGraph()
-        self._renderer = PySide6Renderer(self._scene)
+        self._renderer = PySide6Renderer(self._scene, animations_enabled=True)
 
     def _play_timeline(self, timeline: Timeline) -> None:
         """Play a timeline step-by-step using the renderer and a timer."""
@@ -258,6 +265,12 @@ class MainWindow(QMainWindow):
 
     def _set_speed(self, factor: float) -> None:
         self._speed_factor = max(0.1, factor)
+        self._renderer.set_speed(self._speed_factor)
+
+    def _toggle_animations(self, checked: bool) -> None:
+        self._animations_enabled = checked
+        self._renderer = PySide6Renderer(self._scene, animations_enabled=checked)
+        self._renderer.set_speed(self._speed_factor)
 
     # --------------------------------------------------------------------- #
     # Entry point
