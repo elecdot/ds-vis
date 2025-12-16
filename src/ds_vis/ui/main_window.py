@@ -217,11 +217,12 @@ class MainWindow(QMainWindow):
         self._timer.stop()
         self._pending_steps = []
         self._current_step_index = 0
-        self._speed_factor = 1.0
-        self._animations_enabled = True
         self._scene.clear()
         self._scene_graph = SceneGraph()
-        self._renderer = PySide6Renderer(self._scene, animations_enabled=True)
+        self._renderer = PySide6Renderer(
+            self._scene, animations_enabled=self._animations_enabled
+        )
+        self._renderer.set_speed(self._speed_factor)
 
     def _play_timeline(self, timeline: Timeline) -> None:
         """Play a timeline step-by-step using the renderer and a timer."""
@@ -269,8 +270,7 @@ class MainWindow(QMainWindow):
 
     def _toggle_animations(self, checked: bool) -> None:
         self._animations_enabled = checked
-        self._renderer = PySide6Renderer(self._scene, animations_enabled=checked)
-        self._renderer.set_speed(self._speed_factor)
+        self._renderer.set_animations_enabled(checked)
 
     # --------------------------------------------------------------------- #
     # Entry point

@@ -84,6 +84,10 @@ class PySide6Renderer(Renderer):
         """Adjust animation speed (scales duration)."""
         self._speed_factor = max(0.1, factor)
 
+    def set_animations_enabled(self, enabled: bool) -> None:
+        """Enable or disable animations without rebuilding renderer."""
+        self._animations_enabled = enabled
+
     # ------------------------------------------------------------------ #
     # Animation helpers
     # ------------------------------------------------------------------ #
