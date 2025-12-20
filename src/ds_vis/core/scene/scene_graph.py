@@ -30,7 +30,6 @@ class SceneGraph:
     CommandError (no silent no-op).
     """
 
-    # TODO: replace `object` with a proper model base class / protocol in later phases.
     _structures: Dict[str, BaseModel] = field(default_factory=dict)
     _layout_engine: Optional[LayoutEngine] = None
     _handlers: Dict[CommandType, Callable[[Command], Timeline]] = field(
