@@ -45,6 +45,8 @@ last_updated: 2025-12-15
 ## 6. 当前限制（P0.6）
 
 - 除 list 外的模型仍为空壳。
+- list 模型并不完整，只有 insert 操作满足要求
+- 可复用的 builder 库并未建立
 - ID 稳定性策略仅在 list 完整落地。
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。

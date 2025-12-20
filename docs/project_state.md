@@ -30,13 +30,13 @@ This document captures the active delivery phase, what is complete, current assu
 - 结构 ID 稳定性仅在 list 覆盖，其他结构仍为索引派生。
 - 多结构视觉分区（结构容器框/区域分配）未落地，混排可能冲突。
 
-## Planned Next Phase: P0.7 — Non-blocking Animation & Broader Coverage
-- 核心目标：降低动画对 UI 的阻塞，引入跳过/seek 能力，并拓展更多结构。
+## Planned Next Phase: P0.7 — ListModel Full Coverage (Model-First)
+- 核心目标：把 ListModel 打造成“完整范例”，形成可复用的模型设计与 L2 动画拆解模式。
 - Scope（初版）:
-  - Renderer 动画异步化或减少主线程阻塞；增加“跳过动画”快捷操作；可选缓动策略。
-  - UI 播放控制扩展：可选 skip/rest 钩子，基础 seek 方案设计（可能需状态重建或快照）。
-  - 模型/命令扩展优先级评估（BST/GitGraph），补注册表与最小动画走通。
-- 延迟项：多场景/多 Timeline 并行管理、皮肤/主题、深度播放控制。
+  - ListModel 操作集补全（按课程需求确定）：search / update / clear / insert variants（头/尾/中间）等。
+  - 每个操作输出 L2 级微步骤 Timeline（高亮/变更/恢复），并补齐边界与异常测试。
+  - 形成“builder + step 编排”的推荐模式与示例（见 `model.md`），确保新模型可按此复用但不强制。
+- 延迟项：非阻塞动画、skip/seek、Renderer/ UI 深度优化、BST/GitGraph 扩展。
 
 ## Invariants
 - project_state.md is the only authority on current phase.
