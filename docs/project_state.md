@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.5
-version: v0.4
+bound_phase: P0.6
+version: v0.5
 status: Active
 last_updated: 2025-12-15
 ---
@@ -9,34 +9,32 @@ last_updated: 2025-12-15
 
 This document captures the active delivery phase, what is complete, current assumptions/limitations, and the next planned phase. It is the canonical status reference (SSOT) and should stay minimal.
 
-## Active Phase: P0.5 — L2 Animation Skeleton (List Insert)
-- Scope: L2 微步骤落地（链表插入）、非追加式布局、基本可视高亮与 Dev 播放入口。
+## Active Phase: P0.6 — Timed Animation & Playback Controls
+- Scope: 在 L2 微步骤基础上加入可见动画过渡与基础播放控制/开关。
 - Completion highlights:
-  - `ListModel.insert` 拆解为 Highlight → Delete old edge → New node born (highlight) → Rewire → Restore；ID/EdgeKey 单调；增补越界/头尾/空表插入测试。
-  - SceneGraph/schema 现支持 INSERT（list），并进行 index 范围校验；Command 验证覆盖缺失 value 等错误路径。
-  - `SimpleLayout` 支持 `data.index` 插入顺序，删除/插入后整体重排；多结构堆叠与脏检查保留。
-  - PySide6 renderer 支持 `SET_STATE`（含 `highlight`）作用于节点与边；视觉管线可播放 Step 序列。
-  - UI Dev 菜单新增链表插入演示，基于 QTimer 按 Step 播放；保留快速创建/删除/重建钩子。
-  - 测试补齐：插入边界、布局头插右移、边高亮、Dev 插入 demo 烟测，全套 pytest/ruff/mypy 通过。
+  - Renderer 支持基于 `duration_ms` 的同步插值：`SET_POS` 线性移动、`SET_STATE` 颜色插值、CREATE/DELETE 的淡入淡出；全局速度因子可调并持久，动画可开关。
+  - UI 播放控制：Play/Pause/Step/速度倍率（0.5/1/2），单步阻塞不续播；动画开关用于防止阻塞，快速验收。
+  - List 插入微步骤、非追加式布局与高亮演示保持可播放；Dev 菜单可结合开关/速度复用。
+  - 测试覆盖动画路径与播放控制行为；全套 pytest/ruff/mypy 通过。
 - Active assumptions/limitations:
-  - 支持的结构/命令仍仅 list 的 create/delete/insert；其他结构模型为空壳，ID 稳定性未落地。
-  - Renderer 仍按 Step 结果跳变，忽略 `duration_ms`，无缓入/缓出/插值；颜色/形状硬编码。
-  - UI 播放控制极简：仅 Dev 菜单串行播放，无暂停/seek/速度控制；单场景。
-  - Layout 仍为有状态顺序执行，不支持 seek/回放；固定节点尺寸与左对齐假设未改。
-  - Qt 测试依赖 `QT_QPA_PLATFORM=offscreen`；运行 `uv run` 时可能需设置 `UV_CACHE_DIR` 避免全局缓存权限问题。
+  - 动画为同步阻塞插值（qWait），长时长/大规模可能卡 UI；无 seek/倒播/skip，帧率与缓动固定（线性，<=10 帧）。
+  - 支持的结构/命令仍仅 list create/delete/insert；其他模型为空壳，ID 稳定性未落地。
+  - Renderer 配色/形状仍硬编码；布局仍左对齐、固定尺寸、有状态顺序执行。
+  - UI 仍是 Dev playground：单场景，无多 Timeline 管理。
+  - Qt 测试依赖 `QT_QPA_PLATFORM=offscreen`；运行 `uv run` 时如遇缓存权限需设置 `UV_CACHE_DIR=./tmp/uv-cache`。
 
 ### High-order issues (critical)
-- 命令/模型覆盖面有限：仅 list create/delete/insert；扩展 BST/GitGraph 需补注册表、模型与测试。
-- 时间语义缺失：renderer 无插值/时间控制，UI 无播放控制；难以暴露 timing/动画问题。
+- 时间控制阻塞，缺少 skip/seek/倒播与非阻塞调度；性能/体验需迭代。
+- 命令/模型覆盖面有限：仅 list；扩展 BST/GitGraph 需补注册表、模型与测试。
 - 结构 ID 稳定性仅在 list 覆盖，其他结构仍为索引派生。
 
-## Planned Next Phase: P0.6 — Timed Animation & Playback Controls
-- 核心目标：在保持 Step 粒度的基础上加入“真动画”与基础播放控制。
+## Planned Next Phase: P0.7 — Non-blocking Animation & Broader Coverage
+- 核心目标：降低动画对 UI 的阻塞，引入跳过/seek 能力，并拓展更多结构。
 - Scope（初版）:
-  - Renderer 内对 `SET_POS`/`SET_STATE`/CREATE/DELETE 做插值或淡入淡出，使用 Step `duration_ms`（提供跳过动画开关）。
-  - UI 播放控制：最小集的 play/pause/step/速度倍率，驱动 Step 播放而非结果跳变。
-  - 设计与文档：更新 animation.md 说明默认缓动/节奏策略；评估 ops_spec 是否需要可选的动画 hint（优先保持协议稳定）。
-- 延迟项：seek/倒播、多结构并行播放、皮肤/主题切换。
+  - Renderer 动画异步化或减少主线程阻塞；增加“跳过动画”快捷操作；可选缓动策略。
+  - UI 播放控制扩展：可选 skip/rest 钩子，基础 seek 方案设计（可能需状态重建或快照）。
+  - 模型/命令扩展优先级评估（BST/GitGraph），补注册表与最小动画走通。
+- 延迟项：多场景/多 Timeline 并行管理、皮肤/主题、深度播放控制。
 
 ## Invariants
 - project_state.md is the only authority on current phase.

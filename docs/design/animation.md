@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.2
-version: v0.1
+bound_phase: P0.6
+version: v0.2
 status: Draft
-last_updated: 2025-12-14
+last_updated: 2025-12-15
 ---
 
 # ANIMATION_REQUIREMENTS — 动画要求与教学规范
@@ -200,3 +200,12 @@ L3 作为扩展方向，不纳入当前课程设计必做范围。
   - 不重新决定教学粒度与流程，仅负责具体的渲染与动画实现
 
 **如果现有的 AnimationOps 定义不足以支撑目前的动画要求，应该经过谨慎考虑后扩展**
+
+---
+
+## 6. 当前实现基线（P0.6）
+
+- 播放粒度：仍以 Step 为单位，不支持 seek/倒播/skip。
+- 动画实现：PySide6 renderer 基于 `duration_ms` 做同步插值（线性），CREATE/DELETE 淡入淡出，`SET_POS`/`SET_STATE` 线性过渡，帧数最多 10 帧；可全局开关、速度倍率（0.5/1/2）。
+- 限制：动画为阻塞式（使用 qWait），长时长或大量节点可能卡 UI；无自定义缓动、无异步调度。
+- UI 控件：Dev 播放控制 Play/Pause/Step/Speed 与动画开关，单场景演示用，不含 seek/多时间线管理。
