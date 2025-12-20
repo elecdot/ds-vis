@@ -63,6 +63,7 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Gap][Tests]** timing 语义、BST/GitGraph ops、渲染时序仍缺覆盖。
 - **[Stub][Models]** BST/GitGraph models 仍为空壳；仅 list create/delete/insert 实现。
 - **[Limitation][AnimationDepth]** 仍缺可配置缓动/非阻塞播放；播放控制为基础版。
+- **[Note][ListModel]** `create([])` 会生成 sentinel 仅用于可视化空表（display-only），当前假设空表用于展示而非逻辑操作。
 - **[Risk][Ops]** `CREATE_NODE.data.kind` 目前未强制必填，Renderer/Layout 需默认回退样式；可考虑加入告警或文档强化为“强烈建议必填”。
 - **[Design][Metrics]** 不同结构节点形态与度量差异明显（seqlist/stack/tree）；建议引入可选 `StyleRegistry`/`Metrics`（`kind -> shape/size`），有默认值，避免新 Model 必须管理布局/渲染。
 - **[Design][Layout]** SimpleLayout 的固定 spacing 假设可能与渲染尺寸不匹配；应将尺寸/间距由配置驱动，布局不读取 renderer。

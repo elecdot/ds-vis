@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from ds_vis.core.exceptions import ModelError
 from ds_vis.core.models.base import BaseModel
@@ -55,6 +55,7 @@ class ListModel(BaseModel):
         Even for an empty list we create a sentinel node so the skeleton
         test can observe a structural op.
         """
+        # NOTE: sentinel exists only for visualization of empty list (display-only).
         self.values = list(values or [])
         ops = self._emit_create_ops()
 
@@ -168,113 +169,25 @@ class ListModel(BaseModel):
         next_id = self._node_ids[index] if index < len(self._node_ids) else None
 
         highlight_targets = [nid for nid in (prev_id, next_id) if nid is not None]
-        if highlight_targets:
-            timeline.add_step(
-                AnimationStep(
-                    ops=[
-                        AnimationOp(
-                            op=OpCode.SET_STATE,
-                            target=nid,
-                            data={
-                                "structure_id": self.structure_id,
-                                "state": "highlight",
-                            },
-                        )
-                        for nid in highlight_targets
-                    ]
-                )
-            )
+        self._add_state_step(
+            timeline, highlight_targets, "highlight", "Highlight neighbors"
+        )
 
         new_node_id = self.allocate_node_id(prefix="node")
-        delete_ops: List[AnimationOp] = []
-        if prev_id and next_id:
-            delete_ops.append(
-                AnimationOp(
-                    op=OpCode.DELETE_EDGE,
-                    target=self.edge_id("next", prev_id, next_id),
-                    data={"structure_id": self.structure_id},
-                )
-            )
+        delete_ops = self._emit_delete_edge_between(prev_id, next_id)
+        self._add_ops_step(timeline, delete_ops, "Remove old link")
 
-        if delete_ops:
-            timeline.add_step(AnimationStep(ops=delete_ops))
+        node_ops = self._emit_create_node_with_state(new_node_id, value, index)
+        self._add_ops_step(timeline, node_ops, "Create new node")
 
-        node_ops: List[AnimationOp] = [
-            AnimationOp(
-                op=OpCode.CREATE_NODE,
-                target=new_node_id,
-                data={
-                    "structure_id": self.structure_id,
-                    "kind": "list_node",
-                    "label": str(value),
-                    "index": index,
-                },
-            )
-        ]
-        node_ops.append(
-            AnimationOp(
-                op=OpCode.SET_STATE,
-                target=new_node_id,
-                data={
-                    "structure_id": self.structure_id,
-                    "state": "highlight",
-                },
-            )
-        )
-        timeline.add_step(AnimationStep(ops=node_ops))
-
-        rewire_ops: List[AnimationOp] = []
-        if prev_id:
-            rewire_ops.append(
-                AnimationOp(
-                    op=OpCode.CREATE_EDGE,
-                    target=self.edge_id("next", prev_id, new_node_id),
-                    data={
-                        "structure_id": self.structure_id,
-                        "from": prev_id,
-                        "to": new_node_id,
-                        "directed": True,
-                        "label": "next",
-                    },
-                )
-            )
-        if next_id:
-            rewire_ops.append(
-                AnimationOp(
-                    op=OpCode.CREATE_EDGE,
-                    target=self.edge_id("next", new_node_id, next_id),
-                    data={
-                        "structure_id": self.structure_id,
-                        "from": new_node_id,
-                        "to": next_id,
-                        "directed": True,
-                        "label": "next",
-                    },
-                )
-            )
-        if rewire_ops:
-            timeline.add_step(AnimationStep(ops=rewire_ops))
+        rewire_ops = self._emit_rewire_edges(prev_id, new_node_id, next_id)
+        self._add_ops_step(timeline, rewire_ops, "Rewire links")
 
         self._node_ids.insert(index, new_node_id)
         self.values.insert(index, value)
 
         restore_targets = list(dict.fromkeys(highlight_targets + [new_node_id]))
-        if restore_targets:
-            timeline.add_step(
-                AnimationStep(
-                    ops=[
-                        AnimationOp(
-                            op=OpCode.SET_STATE,
-                            target=nid,
-                            data={
-                                "structure_id": self.structure_id,
-                                "state": "normal",
-                            },
-                        )
-                        for nid in restore_targets
-                    ]
-                )
-            )
+        self._add_state_step(timeline, restore_targets, "normal", "Restore state")
         return timeline
 
     def recreate(self, values: Optional[Iterable[Any]] = None) -> Timeline:
@@ -296,21 +209,115 @@ class ListModel(BaseModel):
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #
+    def _add_ops_step(
+        self, timeline: Timeline, ops: List[AnimationOp], label: Optional[str] = None
+    ) -> None:
+        if ops:
+            timeline.add_step(AnimationStep(ops=ops, label=label))
+
+    def _add_state_step(
+        self,
+        timeline: Timeline,
+        targets: List[str],
+        state: str,
+        label: Optional[str] = None,
+    ) -> None:
+        if not targets:
+            return
+        ops = [
+            AnimationOp(
+                op=OpCode.SET_STATE,
+                target=target,
+                data={"structure_id": self.structure_id, "state": state},
+            )
+            for target in targets
+        ]
+        timeline.add_step(AnimationStep(ops=ops, label=label))
+
+    def _emit_delete_edge_between(
+        self, prev_id: Optional[str], next_id: Optional[str]
+    ) -> List[AnimationOp]:
+        if not (prev_id and next_id):
+            return []
+        return [
+            AnimationOp(
+                op=OpCode.DELETE_EDGE,
+                target=self.edge_id("next", prev_id, next_id),
+                data={"structure_id": self.structure_id},
+            )
+        ]
+
+    def _emit_create_node_with_state(
+        self, node_id: str, value: Any, index: int
+    ) -> List[AnimationOp]:
+        return [
+            self._build_create_node_op(
+                node_id=node_id,
+                kind="list_node",
+                label=str(value),
+                index=index,
+            ),
+            AnimationOp(
+                op=OpCode.SET_STATE,
+                target=node_id,
+                data={"structure_id": self.structure_id, "state": "highlight"},
+            ),
+        ]
+
+    def _emit_rewire_edges(
+        self,
+        prev_id: Optional[str],
+        new_id: str,
+        next_id: Optional[str],
+    ) -> List[AnimationOp]:
+        ops: List[AnimationOp] = []
+        if prev_id:
+            ops.append(self._build_create_edge_op(prev_id, new_id, "next"))
+        if next_id:
+            ops.append(self._build_create_edge_op(new_id, next_id, "next"))
+        return ops
+
+    def _build_create_node_op(
+        self,
+        node_id: str,
+        kind: str,
+        label: str,
+        index: Optional[int] = None,
+    ) -> AnimationOp:
+        data: Dict[str, Any] = {
+            "structure_id": self.structure_id,
+            "kind": kind,
+            "label": label,
+        }
+        if index is not None:
+            data["index"] = index
+        return AnimationOp(op=OpCode.CREATE_NODE, target=node_id, data=data)
+
+    def _build_create_edge_op(
+        self, src: str, dst: str, label: str
+    ) -> AnimationOp:
+        return AnimationOp(
+            op=OpCode.CREATE_EDGE,
+            target=self.edge_id(label, src, dst),
+            data={
+                "structure_id": self.structure_id,
+                "from": src,
+                "to": dst,
+                "directed": True,
+                "label": label,
+            },
+        )
+
     def _emit_create_ops(self) -> List[AnimationOp]:
         ops: List[AnimationOp] = []
-
         if not self.values:
             node_id = self.allocate_node_id(prefix="sentinel")
             self._node_ids = [node_id]
             ops.append(
-                AnimationOp(
-                    op=OpCode.CREATE_NODE,
-                    target=node_id,
-                    data={
-                        "structure_id": self.structure_id,
-                        "kind": "list_sentinel",
-                        "label": "head",
-                    },
+                self._build_create_node_op(
+                    node_id=node_id,
+                    kind="list_sentinel",
+                    label="head",
                 )
             )
             return ops
@@ -321,31 +328,15 @@ class ListModel(BaseModel):
             node_id = self.allocate_node_id(prefix="node")
             self._node_ids.append(node_id)
             ops.append(
-                AnimationOp(
-                    op=OpCode.CREATE_NODE,
-                    target=node_id,
-                    data={
-                        "structure_id": self.structure_id,
-                        "kind": "list_node",
-                        "label": str(value),
-                    },
+                self._build_create_node_op(
+                    node_id=node_id,
+                    kind="list_node",
+                    label=str(value),
                 )
-                )
+            )
 
             if prev_node_id is not None:
-                ops.append(
-                    AnimationOp(
-                        op=OpCode.CREATE_EDGE,
-                        target=self.edge_id("next", prev_node_id, node_id),
-                        data={
-                            "structure_id": self.structure_id,
-                            "from": prev_node_id,
-                            "to": node_id,
-                            "directed": True,
-                            "label": "next",
-                        },
-                    )
-                )
+                ops.append(self._build_create_edge_op(prev_node_id, node_id, "next"))
             prev_node_id = node_id
 
         return ops
