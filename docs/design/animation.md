@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.6
-version: v0.2
+version: v0.3
 status: Draft
 last_updated: 2025-12-15
 ---
@@ -209,3 +209,5 @@ L3 作为扩展方向，不纳入当前课程设计必做范围。
 - 动画实现：PySide6 renderer 基于 `duration_ms` 做同步插值（线性），CREATE/DELETE 淡入淡出，`SET_POS`/`SET_STATE` 线性过渡，帧数最多 10 帧；可全局开关、速度倍率（0.5/1/2）。
 - 限制：动画为阻塞式（使用 qWait），长时长或大量节点可能卡 UI；无自定义缓动、无异步调度。
 - UI 控件：Dev 播放控制 Play/Pause/Step/Speed 与动画开关，单场景演示用，不含 seek/多时间线管理。
+
+> 交叉引用：`kind` 的语义类型与 Style/Metrics 的注入约束请参见 `docs/design/architecture.md` 第 6.3 节。

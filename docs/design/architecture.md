@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.4
-version: v0.4
+bound_phase: P0.6
+version: v0.5
 status: Stable
 last_updated: 2025-12-15
 ---
@@ -198,9 +198,21 @@ Layout 层**禁止**：
 - 与 Renderer 层的双向耦合（只输出 Ops，不关心如何渲染）
 
 **关键设计思想**：Layout 是一个**纯几何计算层**，在不理解具体数据结构业务的情况下，也能为任何结构类型计算合理的坐标。
+
+---
+
+### 6.3 Style / Metrics 配置（跨层约束）
+
+为避免 Layout 与 Renderer 的隐式耦合，视觉样式与几何度量必须通过**可选配置**注入，而非跨层读取：
+
+- **StyleRegistry（Renderer 侧）**：按 `kind` 决定形状/颜色/线型等视觉样式；缺失则回退默认样式。
+- **MetricsRegistry（Layout 侧）**：按 `kind` 提供节点尺寸/间距等度量信息；缺失则回退默认尺寸与 spacing。
+- **注入路径**：由 UI/上层构建并注入到 Layout/Renderer；Layout/Renderer 不反向依赖对方或 Model。
+- **Model 责任**：只输出 `kind` 作为语义类型（强烈建议必填）；不输出具体尺寸或渲染细节。
+- **容器/结构框**：可作为 Renderer 侧可选能力（按 `structure_id` 计算包围盒绘制），不改变 Ops 协议。
 **Layout 的信息来源**：Ops 流 + 拓扑查询接口
 
-### 6.3 当前实现状态（P0.4 SimpleLayout 2.0）
+### 6.4 当前实现状态（P0.4 SimpleLayout 2.0）
 
 - 多结构垂直堆叠：每个结构占用一行，`row_spacing` 控制行距，结构删除后行压缩避免纵向漂移。
 - 脏检查：仅对位置发生变化的节点发 `SET_POS`；插入/删除会将受影响结构标记为脏以覆盖级联位移。

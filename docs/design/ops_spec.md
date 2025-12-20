@@ -1,6 +1,6 @@
 ---
-bound_phase: P0.5
-version: v1.1
+bound_phase: P0.6
+version: v1.3
 status: Stable
 last_updated: 2025-12-15
 ---
@@ -9,6 +9,8 @@ last_updated: 2025-12-15
 
 本规范定义了本项目中 “动画指令层（AnimationOps）” 的统一协议，  
 用于在 **模型 / SceneGraph** 与 **渲染器** 之间传递“应该展示什么动画”。
+
+> 交叉引用：关于 `kind` 的语义类型与 Style/Metrics 配置边界，请参见 `docs/design/architecture.md` 第 6.3 节（Style / Metrics 配置）。
 
 目标：
 
@@ -192,7 +194,7 @@ AnimationOps 操作的对象分为三类：
 ```json
 {
   "structure_id": "tree_1",
-  "kind": "bst_node",     // 由渲染器/皮肤系统解释，比如 bst_node / array_cell / git_commit
+  "kind": "bst_node",     // 渲染/布局的语义类型，强烈建议必填；缺失则回退默认样式
   "label": "42",          // 显示在节点上的文本
   "index": 1,             // 可选，布局提示：在当前行的插入位置（用于非追加式插入）
   "meta": {               // 可选，模型附带信息
