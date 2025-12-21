@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self._current_step_index: int = 0
         self._speed_factor: float = 1.0
         self._animations_enabled: bool = True
+        self._paused: bool = False
 
         # Developer playground menu
         self._init_menubar()
@@ -196,12 +197,12 @@ class MainWindow(QMainWindow):
         create_cmd = Command(
             structure_id=structure_id,
             type=CommandType.CREATE_STRUCTURE,
-            payload={"kind": "list", "values": [1, 2]}
+            payload={"kind": "list", "values": [1, 3]}
         )
         insert_cmd = Command(
             structure_id=structure_id,
             type=CommandType.INSERT,
-            payload={"kind": "list", "index": 2, "value": 3},
+            payload={"kind": "list", "index": 1, "value": 2},
         )
         create_tl = self._scene_graph.apply_command(create_cmd)
         insert_tl = self._scene_graph.apply_command(insert_cmd)
@@ -217,6 +218,7 @@ class MainWindow(QMainWindow):
         self._timer.stop()
         self._pending_steps = []
         self._current_step_index = 0
+        self._paused = False
         self._scene.clear()
         self._scene_graph = SceneGraph()
         self._renderer = PySide6Renderer(
@@ -229,6 +231,7 @@ class MainWindow(QMainWindow):
         self._timer.stop()
         self._pending_steps = list(timeline.steps)
         self._current_step_index = 0
+        self._paused = False
         if not self._pending_steps:
             return
         self._advance_step()
@@ -241,7 +244,11 @@ class MainWindow(QMainWindow):
         step = self._pending_steps[self._current_step_index]
         self._renderer.apply_step(step)
         self._current_step_index += 1
-        if schedule_next and self._current_step_index < len(self._pending_steps):
+        if (
+            schedule_next
+            and not self._paused
+            and self._current_step_index < len(self._pending_steps)
+        ):
             delay = int(max(0, step.duration_ms) / self._speed_factor)
             self._timer.start(delay)
         else:
@@ -251,6 +258,7 @@ class MainWindow(QMainWindow):
         if not self._pending_steps:
             return
         # If paused mid-sequence, resume; otherwise restart from current index.
+        self._paused = False
         if not self._timer.isActive():
             current = max(0, min(self._current_step_index, len(self._pending_steps)))
             if current >= len(self._pending_steps):
@@ -258,6 +266,7 @@ class MainWindow(QMainWindow):
             self._advance_step()
 
     def _pause(self) -> None:
+        self._paused = True
         self._timer.stop()
 
     def _step_once(self) -> None:
