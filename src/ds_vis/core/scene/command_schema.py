@@ -51,6 +51,14 @@ class CommandSchema:
         return " or ".join(names)
 
 
+def _require_index_or_value(context: str) -> Validator:
+    def _validate(payload: Mapping[str, Any]) -> None:
+        if payload.get("index") is None and payload.get("value") is None:
+            raise CommandError(f"{context} requires index or value")
+
+    return _validate
+
+
 # (CommandType, kind) -> CommandSchema
 SCHEMA_REGISTRY: Dict[Tuple[CommandType, str], CommandSchema] = {
     (CommandType.CREATE_STRUCTURE, "list"): CommandSchema(
@@ -66,6 +74,16 @@ SCHEMA_REGISTRY: Dict[Tuple[CommandType, str], CommandSchema] = {
     (CommandType.INSERT, "list"): CommandSchema(
         required={"kind": str, "index": int, "value": object},
     ),
+    (CommandType.SEARCH, "list"): CommandSchema(
+        required={"kind": str},
+        optional={"index": (int,), "value": (object,)},
+        validators=(_require_index_or_value("SEARCH"),),
+    ),
+    (CommandType.UPDATE, "list"): CommandSchema(
+        required={"kind": str, "new_value": object},
+        optional={"index": (int,), "value": (object,)},
+        validators=(_require_index_or_value("UPDATE"),),
+    ),
 }
 
 
@@ -75,4 +93,6 @@ MODEL_OP_REGISTRY: Dict[Tuple[CommandType, str], str] = {
     (CommandType.DELETE_STRUCTURE, "list"): "delete_all",
     (CommandType.DELETE_NODE, "list"): "delete_index",
     (CommandType.INSERT, "list"): "insert",
+    (CommandType.SEARCH, "list"): "search",
+    (CommandType.UPDATE, "list"): "update",
 }

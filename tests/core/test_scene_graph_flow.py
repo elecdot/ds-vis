@@ -182,3 +182,37 @@ def test_insert_routes_through_scene_graph_and_layout(scene_graph, create_cmd_fa
     assert step_positions["list_insert_node_0"][0] == 50.0
     assert step_positions["list_insert_node_2"][0] == 50.0 + 120.0
     assert step_positions["list_insert_node_1"][0] == 50.0 + 120.0 * 2
+
+
+def test_search_routes_and_emits_message(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_search", CommandType.CREATE_STRUCTURE, kind="list", values=[1, 2]
+        )
+    )
+    search_cmd = Command(
+        "list_search",
+        CommandType.SEARCH,
+        payload={"kind": "list", "index": 1},
+    )
+    timeline = scene_graph.apply_command(search_cmd)
+    all_ops = [op for step in timeline.steps for op in step.ops]
+    assert any(op.op is OpCode.SET_MESSAGE for op in all_ops)
+    assert any(op.op is OpCode.SET_STATE for op in all_ops)
+
+
+def test_update_routes_and_sets_label(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_update", CommandType.CREATE_STRUCTURE, kind="list", values=[1, 2]
+        )
+    )
+    update_cmd = Command(
+        "list_update",
+        CommandType.UPDATE,
+        payload={"kind": "list", "index": 1, "new_value": 9},
+    )
+    timeline = scene_graph.apply_command(update_cmd)
+    all_ops = [op for step in timeline.steps for op in step.ops]
+    assert any(op.op is OpCode.SET_LABEL for op in all_ops)
+    assert any(op.op is OpCode.SET_STATE for op in all_ops)

@@ -18,6 +18,7 @@ class CommandType(Enum):
     DELETE_STRUCTURE = auto()
     DELETE_NODE = auto()
     SEARCH = auto()
+    UPDATE = auto()
 
     # Git-related commands (teaching visualization, not real git)
     GIT_INIT = auto()

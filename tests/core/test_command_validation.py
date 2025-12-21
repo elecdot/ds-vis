@@ -134,3 +134,40 @@ def test_insert_requires_value(scene_graph, create_cmd_factory):
     )
     with pytest.raises(CommandError, match="Missing required field: value"):
         scene_graph.apply_command(missing_value)
+
+
+def test_search_requires_index_or_value(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_schema", CommandType.CREATE_STRUCTURE, kind="list", values=[1]
+        )
+    )
+    missing = Command("list_schema", CommandType.SEARCH, payload={"kind": "list"})
+    with pytest.raises(CommandError, match="requires index or value"):
+        scene_graph.apply_command(missing)
+
+
+def test_update_requires_new_value_and_target(scene_graph, create_cmd_factory):
+    scene_graph.apply_command(
+        create_cmd_factory(
+            "list_schema", CommandType.CREATE_STRUCTURE, kind="list", values=[1]
+        )
+    )
+    missing_target = Command(
+        "list_schema", CommandType.UPDATE, payload={"kind": "list", "new_value": 2}
+    )
+    with pytest.raises(CommandError, match="requires index or value"):
+        scene_graph.apply_command(missing_target)
+
+    missing_new = Command(
+        "list_schema",
+        CommandType.UPDATE,
+        payload={"kind": "list", "index": 0},
+    )
+    with pytest.raises(CommandError, match="Missing required field: new_value"):
+        scene_graph.apply_command(missing_new)
+
+
+def test_model_op_registry_includes_search_and_update():
+    assert MODEL_OP_REGISTRY[(CommandType.SEARCH, "list")] == "search"
+    assert MODEL_OP_REGISTRY[(CommandType.UPDATE, "list")] == "update"

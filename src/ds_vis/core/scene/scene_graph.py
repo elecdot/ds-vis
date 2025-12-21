@@ -52,6 +52,8 @@ class SceneGraph:
             CommandType.DELETE_STRUCTURE: self._handle_delete_structure,
             CommandType.DELETE_NODE: self._handle_delete_node,
             CommandType.INSERT: self._handle_insert,
+            CommandType.SEARCH: self._handle_search,
+            CommandType.UPDATE: self._handle_update,
         }
 
     def apply_command(self, command: Command) -> Timeline:
@@ -110,6 +112,35 @@ class SceneGraph:
             raise CommandError("INSERT index out of range")
         return model.apply_operation(
             op_name, {"index": index, "value": payload.get("value")}
+        )
+
+    def _handle_search(self, command: Command) -> Timeline:
+        kind, op_name, payload = self._resolve_schema_and_op(command)
+        model = self._structures.get(command.structure_id)
+        if model is None or model.kind != kind:
+            raise CommandError(f"Structure not found: {command.structure_id!r}")
+        index = payload.get("index")
+        if isinstance(index, int) and (index < 0 or index >= model.node_count):
+            raise CommandError("SEARCH index out of range")
+        return model.apply_operation(
+            op_name, {"index": index, "value": payload.get("value")}
+        )
+
+    def _handle_update(self, command: Command) -> Timeline:
+        kind, op_name, payload = self._resolve_schema_and_op(command)
+        model = self._structures.get(command.structure_id)
+        if model is None or model.kind != kind:
+            raise CommandError(f"Structure not found: {command.structure_id!r}")
+        index = payload.get("index")
+        if isinstance(index, int) and (index < 0 or index >= model.node_count):
+            raise CommandError("UPDATE index out of range")
+        return model.apply_operation(
+            op_name,
+            {
+                "index": index,
+                "value": payload.get("value"),
+                "new_value": payload.get("new_value"),
+            },
         )
 
     def _merge_timelines(self, *timelines: Timeline) -> Timeline:
