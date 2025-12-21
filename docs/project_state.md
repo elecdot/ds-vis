@@ -57,6 +57,10 @@ This document captures the active delivery phase, what is complete, current assu
 - 方向（维持原设想，后续再细化）：非阻塞播放（seek/skip）、可配置缓动与消息展示优化；Layout 需支持重放/重建以解耦时序，Renderer 样式/尺寸配置化。
 - 仍需扩展 BST/GitGraph 模型与命令注册，补充多结构容器/分区策略。
 - 若提前启动的工作（如 Layout 抽象）需保持兼容 SimpleLayout 并可随时回滚。
+### P0.8 子任务（Renderer 动画增强，待启动）
+- 有向边视觉：箭头绘制 + 起终点从节点边界算起（复用 node_radius）。
+- 边动画：CREATE_EDGE/DELETE_EDGE 支持端点插值式“渐绘/缩回”；配置开关可放在 RendererConfig。
+
 ## Invariants
 - project_state.md is the only authority on current phase.
 - Other docs must not restate "current status", only bind to phases.
