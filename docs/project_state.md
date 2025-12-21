@@ -36,10 +36,17 @@ This document captures the active delivery phase, what is complete, current assu
 - 设计文档阶段标记滞后（architecture/animation 等仍为 P0.6），需在后续同步新增命令/颜色语义/消息习惯。
 - 测试盲区：BST/GitGraph 等模型仍为空壳且未在文档显式标记，容易误判已部分实现；需在扩展前明确状态与期望。
 
-## Planned Next Phase: P0.8 — Renderer/Layout Responsiveness
-- 方向：非阻塞播放（seek/skip）、可配置缓动与消息展示优化；Layout 需支持重放/重建以解耦时序，Renderer 样式/尺寸配置化。
-- 仍需扩展 BST/GitGraph 模型与命令注册，补充多结构容器/分区策略。
+## Active Plan: Milestone 1 — Layout 抽象与策略化（并保持兼容）
+- 目标：抽象 Layout 接口与策略选择（线性/树/DAG 占位），引入重建/无状态入口，保留 SimpleLayout 兼容层。
+- 范围：`src/ds_vis/core/layout/**`、`SceneGraph` 调用处的接口适配、必要的设计文档更新；不改变 Ops 协议。
+- 验收：接口单测 + SceneGraph 集成冒烟（保持现有功能不回退），文档记录新接口与兼容策略。
+- 注意：如需提前跑 P0.8 方向的探索，须确保可回滚且不破坏现有 dev hook；简单布局策略为默认。
 
+## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
+- 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
+- 方向（维持原设想，后续再细化）：非阻塞播放（seek/skip）、可配置缓动与消息展示优化；Layout 需支持重放/重建以解耦时序，Renderer 样式/尺寸配置化。
+- 仍需扩展 BST/GitGraph 模型与命令注册，补充多结构容器/分区策略。
+- 若提前启动的工作（如 Layout 抽象）需保持兼容 SimpleLayout 并可随时回滚。
 ## Invariants
 - project_state.md is the only authority on current phase.
 - Other docs must not restate "current status", only bind to phases.
