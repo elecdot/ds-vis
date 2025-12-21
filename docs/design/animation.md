@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.6
-version: v0.5
+bound_phase: P0.7
+version: v0.6
 status: Draft
-last_updated: 2025-12-20
+last_updated: 2025-12-24
 ---
 
 # ANIMATION_REQUIREMENTS — 动画要求与教学规范
@@ -189,6 +189,7 @@ L3 作为扩展方向，不纳入当前课程设计必做范围。
 
 - 允许在动画旁显示简短说明文字（如“比较：5 < 8，向左走”）。
 - 说明文字应可配置显示/隐藏，避免过度干扰。
+- P0.7 增量：消息显示与否可由 Renderer 配置（show_messages），颜色/节点尺寸等样式受 Renderer 配置驱动（默认保持现有视觉）；缓动/帧率参数仍为占位（线性，同步阻塞）。
 
 ---
 

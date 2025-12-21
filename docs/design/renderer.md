@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.6
-version: v0.1
+bound_phase: P0.7
+version: v0.2
 status: Draft
-last_updated: 2025-12-15
+last_updated: 2025-12-24
 ---
 
 # RENDERER — 设计说明（轻量）
@@ -32,15 +32,27 @@ last_updated: 2025-12-15
 - 支持全局速度因子与动画开关。
 - Step 粒度播放，不支持 seek/倒播/skip（后续阶段扩展）。
 
-## 5. 扩展点
+## 5. 配置化（P0.7 增量）
+
+- RendererConfig（当前 PySide6 实现）：
+  - `node_radius`：默认 20
+  - `colors`：状态颜色表（默认与旧版一致：normal/active/highlight/secondary/to_delete/faded/error）
+  - `max_frames`：动画帧数上限（默认 10，保持原行为）
+  - `show_messages`：是否渲染 SET_MESSAGE/CLEAR_MESSAGE（可禁用）
+  - `easing`：占位（当前仅线性）
+- 默认构造保持视觉/阻塞播放不变，配置为可选注入。
+- 消息策略：固定 HUD 文本，若 show_messages=False 则忽略消息 Ops。
+
+## 6. 扩展点
 
 - 新 OpCode 的渲染：在 Renderer 添加 handler，保持默认回退。
-- 新样式需求：通过 StyleRegistry（按 `kind`）进行可选配置。
-- 非阻塞动画：可引入调度器或 Qt Animation，但必须保持 Step 语义不变。
+- 新样式需求：通过配置（或未来 StyleRegistry）按 `kind` 选择样式。
+- 非阻塞动画：可引入调度器或 Qt Animation，但必须保持 Step 语义不变（计划 P0.8）。
 
-## 6. 当前限制（P0.6）
+## 7. 当前限制（P0.7）
 
-- 动画为同步阻塞插值，可能导致 UI 卡顿。
-- 形状/配色硬编码，缺少皮肤系统。
+- 动画仍为同步阻塞插值，可能导致 UI 卡顿；max_frames/easing 仅占位。
+- 消息为固定位置文本，无节点锚定/富提示。
+- 配置与 Layout 未联动（尺寸/间距仍在 SimpleLayout 内硬编码）。
 
 > 交叉引用：Ops 协议见 `ops_spec.md`，Style/Metrics 约束见 `architecture.md` 第 7 节。
