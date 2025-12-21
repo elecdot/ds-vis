@@ -3,11 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Mapping, Optional, Tuple
 
+from ds_vis.core.layout import LayoutEngine, LayoutStrategy
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 
 
 @dataclass
-class SimpleLayoutEngine:
+class SimpleLayoutEngine(LayoutEngine):
     """
     P0.4: linear layout with multi-structure stacking and dirty check.
 
@@ -32,6 +33,7 @@ class SimpleLayoutEngine:
     )
     _row_order: List[str] = field(default_factory=list)
     _dirty_structures: set[str] = field(default_factory=set)
+    strategy: LayoutStrategy = LayoutStrategy.LINEAR
 
     def apply_layout(self, timeline: Timeline) -> Timeline:
         """
@@ -54,6 +56,14 @@ class SimpleLayoutEngine:
             new_timeline.add_step(new_step)
 
         return new_timeline
+
+    def reset(self) -> None:
+        """Reset internal state (rows/positions) for rebuild/seek."""
+        self._structure_nodes.clear()
+        self._structure_rows.clear()
+        self._structure_positions.clear()
+        self._row_order.clear()
+        self._dirty_structures.clear()
 
     # ------------------------------------------------------------------ #
     # Internal helpers

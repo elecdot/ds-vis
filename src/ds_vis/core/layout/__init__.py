@@ -14,6 +14,7 @@ currently, only roles and protocols are defined.)"
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Protocol
 
 from ds_vis.core.ops import Timeline
@@ -32,3 +33,19 @@ class LayoutEngine(Protocol):
     def apply_layout(self, timeline: Timeline) -> Timeline:
         # pragma: no cover - protocol
         ...
+
+    def reset(self) -> None:
+        """
+        Optional: clear internal state when switching scenes or seeking.
+        Implementations may be stateless; default no-op.
+        """
+        # pragma: no cover - protocol
+        ...
+
+
+class LayoutStrategy(Enum):
+    """Well-known layout strategy categories."""
+
+    LINEAR = "linear"
+    TREE = "tree"
+    DAG = "dag"
