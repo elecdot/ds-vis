@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.0
+version: v0.7.1
 status: Active
 last_updated: 2025-12-24
 ---
@@ -36,12 +36,16 @@ This document captures the active delivery phase, what is complete, current assu
 - 设计文档阶段标记滞后（architecture/animation 等仍为 P0.6），需在后续同步新增命令/颜色语义/消息习惯。
 - 测试盲区：BST/GitGraph 等模型仍为空壳且未在文档显式标记，容易误判已部分实现；需在扩展前明确状态与期望。
 
-## Active Plan: Milestone 1 — Layout 抽象与策略化（并保持兼容）
-- 目标：抽象 Layout 接口与策略选择（线性/树/DAG 占位），引入重建/无状态入口，保留 SimpleLayout 兼容层。
-- 范围：`src/ds_vis/core/layout/**`、`SceneGraph` 调用处的接口适配、必要的设计文档更新；不改变 Ops 协议。
-- 验收：接口单测 + SceneGraph 集成冒烟（保持现有功能不回退），文档记录新接口与兼容策略。
-- 注意：如需提前跑 P0.8 方向的探索，须确保可回滚且不破坏现有 dev hook；简单布局策略为默认。
-- 当前进展：已定义 LayoutEngine/reset 与 LayoutStrategy，SimpleLayout 兼容实现，SceneGraph 使用新接口；文档/registry 已同步，重建接口已提供；后续树/DAG 策略与无状态重建在 P0.8 规划。
+## Completed Plan: Milestone 1 — Layout 抽象与策略化（兼容完成）
+- 交付：LayoutEngine/reset + LayoutStrategy (LINEAR/TREE/DAG 占位)；SimpleLayout 实现接口并保留 LINEAR 默认；SceneGraph 兼容接入；文档/registry 同步。
+- 测试：核心冒烟 + 全量 pytest/ruff/mypy 通过。
+- TODO（P0.8）：布局策略路由、reset/seek 调用点、树/DAG 实现与无状态重建。
+
+## Active Plan: Milestone 2 — Renderer 配置化与消息策略
+- 目标：引入 Renderer 样式/动画参数配置（颜色、尺寸、帧率/缓动占位），保持默认视觉；消息策略可禁用，预留锚定节点接口占位。
+- 范围：`src/ds_vis/renderers/**`、必要的 UI 钩子（启用/禁用动画、消息显示开关）、设计文档更新（renderer/animation）；不改 Ops 协议。
+- 验收：属性/配置应用测试（颜色/尺寸/动画参数），消息显示/清除行为测试，默认行为与现状一致。
+- 注意：避免破坏现有同步动画与 Dev hook；配置应为可选，默认保持现有视觉与阻塞播放。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
