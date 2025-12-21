@@ -47,6 +47,14 @@ class ListModel(BaseModel):
             if not isinstance(index, int):
                 raise ModelError("insert requires int index")
             return self.insert(index=index, value=payload.get("value"))
+        if op == "search":
+            return self.search(value=payload.get("value"), index=payload.get("index"))
+        if op == "update":
+            return self.update(
+                new_value=payload.get("new_value"),
+                index=payload.get("index"),
+                value=payload.get("value"),
+            )
         raise ModelError(f"Unsupported operation: {op}")
 
     def create(self, values: Optional[Iterable[Any]] = None) -> Timeline:
@@ -183,7 +191,9 @@ class ListModel(BaseModel):
                 target=self._sentinel_id,
                 data={"structure_id": self.structure_id},
             )
-            timeline.add_step(AnimationStep(ops=[remove_sentinel], label="Remove empty"))
+            timeline.add_step(
+                AnimationStep(ops=[remove_sentinel], label="Remove empty")
+            )
             self._sentinel_id = None
 
         prev_id = self._node_ids[index - 1] if index - 1 >= 0 else None
@@ -239,43 +249,25 @@ class ListModel(BaseModel):
         timeline = Timeline()
         target_index: Optional[int] = None
         for idx, node_id in enumerate(self._node_ids):
-            if index is not None and idx == index:
-                target_index = idx
-            if value is not None and idx < len(self.values) and self.values[idx] == value:
-                target_index = idx
-
+            match_index = index is not None and idx == index
+            match_value = (
+                value is not None
+                and idx < len(self.values)
+                and self.values[idx] == value
+            )
             self._add_state_step(timeline, [node_id], "highlight", "Search visit")
-            if target_index == idx:
+            if match_index or match_value:
+                target_index = idx
                 break
             self._add_state_step(timeline, [node_id], "normal", "Search reset")
 
         if target_index is None:
-            timeline.add_step(
-                AnimationStep(
-                    ops=[
-                        AnimationOp(
-                            op=OpCode.SET_MESSAGE,
-                            target=None,
-                            data={"text": "Search not found"},
-                        )
-                    ],
-                    label="Search result",
-                )
-            )
+            self._add_message_step(timeline, "Search not found", "Search result")
             return timeline
 
         target_id = self._node_ids[target_index]
-        timeline.add_step(
-            AnimationStep(
-                ops=[
-                    AnimationOp(
-                        op=OpCode.SET_MESSAGE,
-                        target=None,
-                        data={"text": f"Found at index {target_index}"},
-                    )
-                ],
-                label="Search result",
-            )
+        self._add_message_step(
+            timeline, f"Found at index {target_index}", "Search result"
         )
         self._add_state_step(timeline, [target_id], "highlight", "Search highlight")
         self._add_state_step(timeline, [target_id], "normal", "Search restore")
@@ -288,6 +280,8 @@ class ListModel(BaseModel):
         index: int | None = None,
         value: Any | None = None,
     ) -> Timeline:
+        if new_value is None:
+            raise ModelError("update requires new_value")
         if index is None and value is None:
             raise ModelError("update requires value or index")
         if index is not None and (index < 0 or index >= len(self._node_ids)):
@@ -313,23 +307,19 @@ class ListModel(BaseModel):
 
         target_id = self._node_ids[target_index]
         self.values[target_index] = new_value
-        timeline.add_step(
-            AnimationStep(
-                ops=[
-                    AnimationOp(
-                        op=OpCode.SET_LABEL,
-                        target=target_id,
-                        data={"text": str(new_value)},
-                    ),
-                    AnimationOp(
-                        op=OpCode.SET_STATE,
-                        target=target_id,
-                        data={"structure_id": self.structure_id, "state": "highlight"},
-                    ),
-                ],
-                label="Update value",
-            )
-        )
+        ops = [
+            AnimationOp(
+                op=OpCode.SET_LABEL,
+                target=target_id,
+                data={"structure_id": self.structure_id, "text": str(new_value)},
+            ),
+            AnimationOp(
+                op=OpCode.SET_STATE,
+                target=target_id,
+                data={"structure_id": self.structure_id, "state": "highlight"},
+            ),
+        ]
+        self._add_ops_step(timeline, ops, "Update value")
         self._add_state_step(timeline, [target_id], "normal", "Update restore")
         return timeline
 
@@ -369,6 +359,22 @@ class ListModel(BaseModel):
             return
         ops = [self._build_set_state_op(target, state) for target in targets]
         timeline.add_step(AnimationStep(ops=ops, label=label))
+
+    def _add_message_step(
+        self, timeline: Timeline, message: str, label: Optional[str] = None
+    ) -> None:
+        timeline.add_step(
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_MESSAGE,
+                        target=None,
+                        data={"text": message},
+                    )
+                ],
+                label=label,
+            )
+        )
 
     def _build_set_state_op(self, target: str, state: str) -> AnimationOp:
         return AnimationOp(
@@ -489,7 +495,7 @@ class ListModel(BaseModel):
     def _emit_create_ops(self) -> List[AnimationOp]:
         ops: List[AnimationOp] = []
         if not self.values:
-            node_id = self.allocate_node_id(prefix="sentinel")
+            node_id = f"{self.structure_id}_sentinel"
             self._node_ids = []
             self._sentinel_id = node_id
             ops.append(
