@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.3
+version: v0.4
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -54,5 +54,13 @@ last_updated: 2025-12-24
 - sentinel 仅用于展示空表：不计入 `_node_ids` / `node_count`，ID 通过 allocator 生成，空表插入前会删除 sentinel。
 - 颜色语义：遍历类步骤使用 `secondary`，旧边（待重连）使用 `to_delete`，关键节点/新边使用 `highlight`。
 - 消息提示：insert/search/update 会在步骤前后用 `SET_MESSAGE`，结束后 `CLEAR_MESSAGE`；消息位置由 Renderer 决定（当前为固定文本）。
+
+## 8. 新模型开发指北（模板，P0.7）
+
+- 状态/颜色：优先使用统一状态值（见 animation.md），避免自定义散乱命名。
+- 微步骤拆解模板：遍历/定位（secondary）→ 关键节点/边高亮（highlight）→ 结构变更（CREATE/DELETE/SET_LABEL 等）→ 恢复（normal）。
+- 消息：在操作开始/结果使用 `SET_MESSAGE`，完成后 `CLEAR_MESSAGE`；尊重 RendererConfig.show_messages。
+- ID/边命名：使用 allocator，边 key 稳定（`structure_id|kind|src->dst`）；sentinel 仅展示。
+- 测试建议：正/误路径，ID 稳定性，微步骤标签/状态覆盖；若复杂行为未实现可用 xfail 锁定预期。
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
