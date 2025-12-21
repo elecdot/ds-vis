@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.3
+version: v0.7.4
 status: Active
 last_updated: 2025-12-24
 ---
@@ -41,12 +41,10 @@ This document captures the active delivery phase, what is complete, current assu
 - 测试：核心冒烟 + 全量 pytest/ruff/mypy 通过。
 - TODO（P0.8）：布局策略路由、reset/seek 调用点、树/DAG 实现与无状态重建。
 
-## Active Plan: Milestone 2 — Renderer 配置化与消息策略
-- 目标：引入 Renderer 样式/动画参数配置（颜色、尺寸、帧率/缓动占位），保持默认视觉；消息策略可禁用，预留锚定节点接口占位。
-- 范围：`src/ds_vis/renderers/**`、必要的 UI 钩子（启用/禁用动画、消息显示开关）、设计文档更新（renderer/animation）；不改 Ops 协议。
-- 验收：属性/配置应用测试（颜色/尺寸/动画参数），消息显示/清除行为测试，默认行为与现状一致。
-- 注意：避免破坏现有同步动画与 Dev hook；配置应为可选，默认保持现有视觉与阻塞播放。
-- 当前进展：RendererConfig（颜色/半径/max_frames/show_messages/easing 占位）已注入 PySide6Renderer，默认兼容；消息可禁用；测试与全量检查通过；renderer 文档与 registry 已同步。
+## Completed Plan: Milestone 2 — Renderer 配置化与消息策略
+- 交付：RendererConfig（颜色、节点半径、max_frames、show_messages、easing 占位）注入 PySide6Renderer；默认视觉/阻塞播放保持；消息可禁用；UI 增加 Messages 开关；文档（renderer/animation/index）同步。
+- 测试：属性/配置应用测试、UI 消息开关测试；全量 pytest/ruff/mypy 通过。
+- TODO（P0.8）：非阻塞/seek/缓动真正实现；消息锚定/富提示；样式与 Layout 联动（尺寸/间距配置）。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
