@@ -30,6 +30,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
 | [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.6 | N/A | 2025-12-21 |
+| [PLAN.md](./PLAN.md) | v0.1 | Draft | P0.7 | Iteration roadmap | 2025-12-24 |
 
 ## Documentation Reorganization (v0.1 — 2025-12-14)
 
