@@ -22,6 +22,7 @@ class ListModel(BaseModel):
 
     values: List[Any] = field(default_factory=list)
     _node_ids: List[str] = field(default_factory=list)
+    _sentinel_id: Optional[str] = None
 
     @property
     def kind(self) -> str:
@@ -57,6 +58,7 @@ class ListModel(BaseModel):
         """
         # NOTE: sentinel exists only for visualization of empty list (display-only).
         self.values = list(values or [])
+        self._sentinel_id = None
         ops = self._emit_create_ops()
 
         timeline = Timeline()
@@ -68,7 +70,7 @@ class ListModel(BaseModel):
         Emit DELETE_* ops for all tracked nodes/edges.
         """
         timeline = Timeline()
-        if not self._node_ids:
+        if not self._node_ids and not self._sentinel_id:
             return timeline
 
         ops: List[AnimationOp] = []
@@ -91,8 +93,18 @@ class ListModel(BaseModel):
                 )
             )
 
+        if self._sentinel_id:
+            ops.append(
+                AnimationOp(
+                    op=OpCode.DELETE_NODE,
+                    target=self._sentinel_id,
+                    data={"structure_id": self.structure_id},
+                )
+            )
+
         self._node_ids.clear()
         self.values = []
+        self._sentinel_id = None
         timeline.add_step(AnimationStep(ops=ops))
         return timeline
 
@@ -165,6 +177,15 @@ class ListModel(BaseModel):
             raise ModelError("insert index out of range")
 
         timeline = Timeline()
+        if self._sentinel_id:
+            remove_sentinel = AnimationOp(
+                op=OpCode.DELETE_NODE,
+                target=self._sentinel_id,
+                data={"structure_id": self.structure_id},
+            )
+            timeline.add_step(AnimationStep(ops=[remove_sentinel], label="Remove empty"))
+            self._sentinel_id = None
+
         prev_id = self._node_ids[index - 1] if index - 1 >= 0 else None
         next_id = self._node_ids[index] if index < len(self._node_ids) else None
 
@@ -205,6 +226,111 @@ class ListModel(BaseModel):
             dict.fromkeys(highlight_targets + [new_node_id] + new_edge_ids)
         )
         self._add_state_step(timeline, restore_targets, "normal", "Restore state")
+        return timeline
+
+    def search(
+        self, *, value: Any | None = None, index: int | None = None
+    ) -> Timeline:
+        if value is None and index is None:
+            raise ModelError("search requires value or index")
+        if index is not None and (index < 0 or index >= len(self._node_ids)):
+            raise ModelError("search index out of range")
+
+        timeline = Timeline()
+        target_index: Optional[int] = None
+        for idx, node_id in enumerate(self._node_ids):
+            if index is not None and idx == index:
+                target_index = idx
+            if value is not None and idx < len(self.values) and self.values[idx] == value:
+                target_index = idx
+
+            self._add_state_step(timeline, [node_id], "highlight", "Search visit")
+            if target_index == idx:
+                break
+            self._add_state_step(timeline, [node_id], "normal", "Search reset")
+
+        if target_index is None:
+            timeline.add_step(
+                AnimationStep(
+                    ops=[
+                        AnimationOp(
+                            op=OpCode.SET_MESSAGE,
+                            target=None,
+                            data={"text": "Search not found"},
+                        )
+                    ],
+                    label="Search result",
+                )
+            )
+            return timeline
+
+        target_id = self._node_ids[target_index]
+        timeline.add_step(
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_MESSAGE,
+                        target=None,
+                        data={"text": f"Found at index {target_index}"},
+                    )
+                ],
+                label="Search result",
+            )
+        )
+        self._add_state_step(timeline, [target_id], "highlight", "Search highlight")
+        self._add_state_step(timeline, [target_id], "normal", "Search restore")
+        return timeline
+
+    def update(
+        self,
+        *,
+        new_value: Any,
+        index: int | None = None,
+        value: Any | None = None,
+    ) -> Timeline:
+        if index is None and value is None:
+            raise ModelError("update requires value or index")
+        if index is not None and (index < 0 or index >= len(self._node_ids)):
+            raise ModelError("update index out of range")
+
+        target_index: Optional[int] = None
+        if index is not None:
+            target_index = index
+        else:
+            for idx, current in enumerate(self.values):
+                if current == value:
+                    target_index = idx
+                    break
+        if target_index is None:
+            raise ModelError("update target not found")
+
+        timeline = Timeline()
+        for idx, node_id in enumerate(self._node_ids):
+            self._add_state_step(timeline, [node_id], "highlight", "Update visit")
+            if idx == target_index:
+                break
+            self._add_state_step(timeline, [node_id], "normal", "Update reset")
+
+        target_id = self._node_ids[target_index]
+        self.values[target_index] = new_value
+        timeline.add_step(
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.SET_LABEL,
+                        target=target_id,
+                        data={"text": str(new_value)},
+                    ),
+                    AnimationOp(
+                        op=OpCode.SET_STATE,
+                        target=target_id,
+                        data={"structure_id": self.structure_id, "state": "highlight"},
+                    ),
+                ],
+                label="Update value",
+            )
+        )
+        self._add_state_step(timeline, [target_id], "normal", "Update restore")
         return timeline
 
     def recreate(self, values: Optional[Iterable[Any]] = None) -> Timeline:
@@ -364,7 +490,8 @@ class ListModel(BaseModel):
         ops: List[AnimationOp] = []
         if not self.values:
             node_id = self.allocate_node_id(prefix="sentinel")
-            self._node_ids = [node_id]
+            self._node_ids = []
+            self._sentinel_id = node_id
             ops.append(
                 self._build_create_node_op(
                     node_id=node_id,
