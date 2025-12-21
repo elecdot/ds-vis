@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.5
+version: v0.7.6
 status: Active
 last_updated: 2025-12-24
 ---
@@ -46,11 +46,10 @@ This document captures the active delivery phase, what is complete, current assu
 - 测试：属性/配置应用测试、UI 消息开关测试；全量 pytest/ruff/mypy 通过。
 - TODO（P0.8）：非阻塞/seek/缓动真正实现；消息锚定/富提示；样式与 Layout 联动（尺寸/间距配置）。
 
-## Active Plan: Milestone 3 — 动画/状态规范文档化
-- 目标：补充动画/状态/消息规范，给新模型/布局/渲染扩展提供统一锚点与模板。
-- 范围：`docs/design/animation.md`、`docs/design/model.md`（状态值语义、消息使用约定、微步骤拆解模板）、必要的 registry 更新；不改代码行为。
-- 验收：文档明确状态颜色表、消息策略（含 show_messages 配置）、新模型开发指北（微步骤、颜色/消息建议、测试建议）；registry 版本同步。
-- 注意：保持与现有实现一致（默认颜色/消息行为），标注占位/未来项（锚定消息、非阻塞动画）以防歧义。
+## Completed Plan: Milestone 3 — 动画/状态规范文档化
+- 交付：更新 `animation.md`（状态/颜色表、消息策略、配置占位说明），`model.md`（新模型开发指北模板、状态/消息/微步骤/测试建议），`index.md` 同步版本。
+- 范围：仅文档，未改代码行为；保持与现状一致并标注未来项（锚定消息、非阻塞动画）。
+- 测试：无代码改动，延用前次全量通过结果。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
