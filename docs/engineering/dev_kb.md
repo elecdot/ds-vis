@@ -2,7 +2,7 @@
 bound_phase: P0.6
 version: rolling
 status: Living
-last_updated: 2025-12-15
+last_updated: 2025-12-21
 ---
 
 # Developer Knowledge Base (FAQ & Troubleshooting)
@@ -29,6 +29,9 @@ Always use `uv run pytest`. This ensures the `src` directory is in the `PYTHONPA
 ```
 UV_CACHE_DIR=./tmp/uv-cache uv run pytest
 ```
+
+### Q: UI 测试里手动推进 step 会导致结果不稳定？
+**A:** 使用 `MainWindow._advance_step(schedule_next=False)` 来推进步骤，避免在渲染同步动画 (`qWait`) 时重新启动定时器导致步进错位。
 
 ---
 
@@ -64,6 +67,8 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Stub][Models]** BST/GitGraph models 仍为空壳；仅 list create/delete/insert 实现。
 - **[Limitation][AnimationDepth]** 仍缺可配置缓动/非阻塞播放；播放控制为基础版。
 - **[Note][ListModel]** `create([])` 会生成 sentinel 仅用于可视化空表（display-only），当前假设空表用于展示而非逻辑操作。
+- **[Note][ListModel]** `insert` 现包含遍历高亮与边高亮步骤，并使用 step label 便于 UI/测试定位。
+- **[Gap][Animation]** 边动画（逐渐绘制/虚线删除）未实现；节点“侧边悬停”标记为 Layout 低优先需求。
 - **[Risk][Ops]** `CREATE_NODE.data.kind` 目前未强制必填，Renderer/Layout 需默认回退样式；可考虑加入告警或文档强化为“强烈建议必填”。
 - **[Design][Metrics]** 不同结构节点形态与度量差异明显（seqlist/stack/tree）；建议引入可选 `StyleRegistry`/`Metrics`（`kind -> shape/size`），有默认值，避免新 Model 必须管理布局/渲染。
 - **[Design][Layout]** SimpleLayout 的固定 spacing 假设可能与渲染尺寸不匹配；应将尺寸/间距由配置驱动，布局不读取 renderer。

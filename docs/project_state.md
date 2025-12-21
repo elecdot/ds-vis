@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.6
-version: v0.6
+version: v0.6.1
 status: Active
-last_updated: 2025-12-15
+last_updated: 2025-12-21
 ---
 
 # Project State — Single Source of Truth
@@ -14,7 +14,7 @@ This document captures the active delivery phase, what is complete, current assu
 - Completion highlights:
   - Renderer 支持基于 `duration_ms` 的同步插值：`SET_POS` 线性移动、`SET_STATE` 颜色插值、CREATE/DELETE 的淡入淡出；全局速度因子可调并持久，动画可开关。
   - UI 播放控制：Play/Pause/Step/速度倍率（0.5/1/2），单步阻塞不续播；动画开关用于防止阻塞，快速验收。
-  - List 插入微步骤、非追加式布局与高亮演示保持可播放；Dev 菜单可结合开关/速度复用。
+  - List 插入微步骤完善为“遍历高亮 + 边高亮 + 重连 + 恢复”，并保留 step label 以便教学/测试定位。
   - 测试覆盖动画路径与播放控制行为；全套 pytest/ruff/mypy 通过。
 - Active assumptions/limitations:
   - 动画为同步阻塞插值（qWait），长时长/大规模可能卡 UI；无 seek/倒播/skip，帧率与缓动固定（线性，<=10 帧）。

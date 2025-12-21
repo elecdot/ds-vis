@@ -77,47 +77,93 @@ def test_insert_emits_microsteps_and_rewires():
     model.create([1, 3])
 
     timeline = model.insert(index=1, value=2)
+    labels = [step.label for step in timeline.steps]
 
     assert model.values == [1, 2, 3]
-    assert len(timeline.steps) == 5
 
-    highlight_ops = [op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE]
+    traverse_steps = [step for step in timeline.steps if step.label == "Traverse node"]
+    assert traverse_steps
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == "lst_node_0"
+        and op.data.get("state") == "highlight"
+        for step in traverse_steps
+        for op in step.ops
+    )
+    reset_steps = [step for step in timeline.steps if step.label == "Traverse reset"]
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == "lst_node_0"
+        and op.data.get("state") == "normal"
+        for step in reset_steps
+        for op in step.ops
+    )
+
+    highlight_step = timeline.steps[labels.index("Highlight neighbors")]
+    highlight_ops = [op for op in highlight_step.ops if op.op is OpCode.SET_STATE]
     assert {op.target for op in highlight_ops} == {"lst_node_0", "lst_node_1"}
     assert all(op.data.get("state") == "highlight" for op in highlight_ops)
 
-    delete_ops = timeline.steps[1].ops
+    highlight_link_step = timeline.steps[labels.index("Highlight link")]
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == "lst|next|lst_node_0->lst_node_1"
+        and op.data.get("state") == "highlight"
+        for op in highlight_link_step.ops
+    )
+
+    delete_step = timeline.steps[labels.index("Remove old link")]
     assert any(
         op.op is OpCode.DELETE_EDGE
         and op.target == "lst|next|lst_node_0->lst_node_1"
-        for op in delete_ops
+        for op in delete_step.ops
     )
 
-    create_ops = timeline.steps[2].ops
+    create_step = timeline.steps[labels.index("Create new node")]
     assert any(
         op.op is OpCode.CREATE_NODE and op.target == "lst_node_2"
-        for op in create_ops
+        for op in create_step.ops
     )
     assert any(
         op.op is OpCode.SET_STATE
         and op.target == "lst_node_2"
         and op.data.get("state") == "highlight"
-        for op in create_ops
+        for op in create_step.ops
     )
 
-    rewire_ops = timeline.steps[3].ops
+    rewire_step = timeline.steps[labels.index("Rewire links")]
     assert any(
         op.op is OpCode.CREATE_EDGE
         and op.target == "lst|next|lst_node_0->lst_node_2"
-        for op in rewire_ops
+        for op in rewire_step.ops
     )
     assert any(
         op.op is OpCode.CREATE_EDGE
         and op.target == "lst|next|lst_node_2->lst_node_1"
-        for op in rewire_ops
+        for op in rewire_step.ops
+    )
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == "lst|next|lst_node_0->lst_node_2"
+        and op.data.get("state") == "highlight"
+        for op in rewire_step.ops
+    )
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == "lst|next|lst_node_2->lst_node_1"
+        and op.data.get("state") == "highlight"
+        for op in rewire_step.ops
     )
 
-    restore_ops = [op for op in timeline.steps[4].ops if op.op is OpCode.SET_STATE]
+    restore_step = timeline.steps[labels.index("Restore state")]
+    restore_ops = [op for op in restore_step.ops if op.op is OpCode.SET_STATE]
     assert {
         op.target for op in restore_ops
-    } == {"lst_node_0", "lst_node_1", "lst_node_2"}
+    } == {
+        "lst_node_0",
+        "lst_node_1",
+        "lst_node_2",
+        "lst|next|lst_node_0->lst_node_2",
+        "lst|next|lst_node_2->lst_node_1",
+    }
     assert all(op.data.get("state") == "normal" for op in restore_ops)

@@ -168,25 +168,42 @@ class ListModel(BaseModel):
         prev_id = self._node_ids[index - 1] if index - 1 >= 0 else None
         next_id = self._node_ids[index] if index < len(self._node_ids) else None
 
+        for node_id in self._emit_traversal_nodes(prev_id):
+            self._add_state_step(
+                timeline, [node_id], "highlight", "Traverse node"
+            )
+            self._add_state_step(
+                timeline, [node_id], "normal", "Traverse reset"
+            )
+
         highlight_targets = [nid for nid in (prev_id, next_id) if nid is not None]
         self._add_state_step(
             timeline, highlight_targets, "highlight", "Highlight neighbors"
         )
 
         new_node_id = self.allocate_node_id(prefix="node")
+        edge_highlight_ops = self._emit_edge_state_between(
+            prev_id, next_id, "highlight"
+        )
+        self._add_ops_step(timeline, edge_highlight_ops, "Highlight link")
+
         delete_ops = self._emit_delete_edge_between(prev_id, next_id)
         self._add_ops_step(timeline, delete_ops, "Remove old link")
 
         node_ops = self._emit_create_node_with_state(new_node_id, value, index)
         self._add_ops_step(timeline, node_ops, "Create new node")
 
+        new_edge_ids = self._emit_new_edge_ids(prev_id, new_node_id, next_id)
         rewire_ops = self._emit_rewire_edges(prev_id, new_node_id, next_id)
+        rewire_ops.extend(self._emit_edge_state_ops(new_edge_ids, "highlight"))
         self._add_ops_step(timeline, rewire_ops, "Rewire links")
 
         self._node_ids.insert(index, new_node_id)
         self.values.insert(index, value)
 
-        restore_targets = list(dict.fromkeys(highlight_targets + [new_node_id]))
+        restore_targets = list(
+            dict.fromkeys(highlight_targets + [new_node_id] + new_edge_ids)
+        )
         self._add_state_step(timeline, restore_targets, "normal", "Restore state")
         return timeline
 
@@ -224,15 +241,50 @@ class ListModel(BaseModel):
     ) -> None:
         if not targets:
             return
-        ops = [
-            AnimationOp(
-                op=OpCode.SET_STATE,
-                target=target,
-                data={"structure_id": self.structure_id, "state": state},
-            )
-            for target in targets
-        ]
+        ops = [self._build_set_state_op(target, state) for target in targets]
         timeline.add_step(AnimationStep(ops=ops, label=label))
+
+    def _build_set_state_op(self, target: str, state: str) -> AnimationOp:
+        return AnimationOp(
+            op=OpCode.SET_STATE,
+            target=target,
+            data={"structure_id": self.structure_id, "state": state},
+        )
+
+    def _emit_edge_state_ops(
+        self, edge_ids: List[str], state: str
+    ) -> List[AnimationOp]:
+        return [self._build_set_state_op(edge_id, state) for edge_id in edge_ids]
+
+    def _emit_edge_state_between(
+        self, prev_id: Optional[str], next_id: Optional[str], state: str
+    ) -> List[AnimationOp]:
+        if not (prev_id and next_id):
+            return []
+        return self._emit_edge_state_ops(
+            [self.edge_id("next", prev_id, next_id)], state
+        )
+
+    def _emit_new_edge_ids(
+        self,
+        prev_id: Optional[str],
+        new_id: str,
+        next_id: Optional[str],
+    ) -> List[str]:
+        edge_ids: List[str] = []
+        if prev_id:
+            edge_ids.append(self.edge_id("next", prev_id, new_id))
+        if next_id:
+            edge_ids.append(self.edge_id("next", new_id, next_id))
+        return edge_ids
+
+    def _emit_traversal_nodes(self, stop_at: Optional[str]) -> List[str]:
+        if stop_at is None:
+            return []
+        if stop_at not in self._node_ids:
+            return []
+        stop_index = self._node_ids.index(stop_at)
+        return list(self._node_ids[: stop_index + 1])
 
     def _emit_delete_edge_between(
         self, prev_id: Optional[str], next_id: Optional[str]

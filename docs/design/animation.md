@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.6
-version: v0.4
+version: v0.5
 status: Draft
 last_updated: 2025-12-20
 ---
@@ -216,3 +216,11 @@ L3 作为扩展方向，不纳入当前课程设计必做范围。
 - UI 控件：Dev 播放控制 Play/Pause/Step/Speed 与动画开关，单场景演示用，不含 seek/多时间线管理。
 
 > 交叉引用：`kind` 的语义类型与 Style/Metrics 的注入约束请参见 `docs/design/architecture.md` 第 6.3 节。
+
+---
+
+## 7. 已知缺口（P0.6）
+
+- **Model**：链表插入缺少“从头节点遍历到目标位置”的高亮/熄灭循环步骤（需补 L2 traversal）。
+- **Renderer**：边动画缺失（仅支持边创建与状态色变化）；未实现“逐渐绘制/虚线抓取/删除边”的表现。
+- **Layout**：节点“侧边悬停/从上方入场”的位置预留未实现。该需求标记为**低优先级**，且应在 Layout 层实现，避免 Renderer 通过私有位移规则引入隐式耦合。

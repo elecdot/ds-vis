@@ -196,12 +196,12 @@ class MainWindow(QMainWindow):
         create_cmd = Command(
             structure_id=structure_id,
             type=CommandType.CREATE_STRUCTURE,
-            payload={"kind": "list", "values": [1, 3]},
+            payload={"kind": "list", "values": [1, 2]}
         )
         insert_cmd = Command(
             structure_id=structure_id,
             type=CommandType.INSERT,
-            payload={"kind": "list", "index": 1, "value": 2},
+            payload={"kind": "list", "index": 2, "value": 3},
         )
         create_tl = self._scene_graph.apply_command(create_cmd)
         insert_tl = self._scene_graph.apply_command(insert_cmd)

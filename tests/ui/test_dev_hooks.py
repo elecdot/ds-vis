@@ -78,8 +78,9 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
     window = MainWindow()
     try:
         window._play_list_insert_dev()
+        window._pause()
         while window._current_step_index < len(window._pending_steps):
-            window._advance_step()
+            window._advance_step(schedule_next=False)
 
         nodes = window._renderer._nodes
         assert len(nodes) == 3

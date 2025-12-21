@@ -151,10 +151,15 @@ def test_insert_routes_through_scene_graph_and_layout(scene_graph, create_cmd_fa
 
     assert len(timeline.steps) >= 5
 
-    step0_state_ops = [
-        op for op in timeline.steps[0].ops if op.op is OpCode.SET_STATE
+    highlight_step = next(
+        (step for step in timeline.steps if step.label == "Highlight neighbors"),
+        None,
+    )
+    assert highlight_step is not None
+    step_state_ops = [
+        op for op in highlight_step.ops if op.op is OpCode.SET_STATE
     ]
-    assert {op.target for op in step0_state_ops} == {
+    assert {op.target for op in step_state_ops} == {
         "list_insert_node_0",
         "list_insert_node_1",
     }

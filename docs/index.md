@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.6
-version: v0.8
+version: v0.9
 status: Stable
-last_updated: 2025-12-15
+last_updated: 2025-12-21
 ---
 
 # Documentation Registry & Version Control
@@ -17,8 +17,8 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| [index.md](./index.md) | v0.7 | Stable | P0.6 | Documentation Registry System | 2025-12-15 |
-| [project_state.md](./project_state.md) | v0.6 | Active | P0.6 | Project phase SSOT | 2025-12-15 |
+| [index.md](./index.md) | v0.9 | Stable | P0.6 | Documentation Registry System | 2025-12-21 |
+| [project_state.md](./project_state.md) | v0.6.1 | Active | P0.6 | Project phase SSOT | 2025-12-21 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.5 | Stable | P0.6 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
 | [scene_graph.md](./design/scene_graph.md) | v0.1 | Draft | P0.6 | `src/ds_vis/core/scene/` | 2025-12-15 |
@@ -26,10 +26,10 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | [model.md](./design/model.md) | v0.2 | Draft | P0.6 | `src/ds_vis/core/models/` | 2025-12-15 |
 | [layout.md](./design/layout.md) | v0.1 | Draft | P0.6 | `src/ds_vis/core/layout/` | 2025-12-15 |
 | [ops_spec.md](./design/ops_spec.md) | v1.3 | Stable | P0.6 | `src/ds_vis/core/ops/` | 2025-12-20 |
-| [animation.md](./design/animation.md) | v0.4 | Draft | P0.6 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-15 |
+| [animation.md](./design/animation.md) | v0.5 | Draft | P0.6 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-20 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
-| [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.6 | N/A | 2025-12-15 |
+| [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.6 | N/A | 2025-12-21 |
 
 ## Documentation Reorganization (v0.1 — 2025-12-14)
 
