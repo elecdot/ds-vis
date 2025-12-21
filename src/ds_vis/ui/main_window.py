@@ -110,6 +110,12 @@ class MainWindow(QMainWindow):
         self._act_list_insert.triggered.connect(self._play_list_insert_dev)
         dev_menu.addAction(self._act_list_insert)
 
+        self._act_list_full = QAction(
+            "Play List Full Demo (create/insert/search/update/delete)", self
+        )
+        self._act_list_full.triggered.connect(self._play_list_full_demo)
+        dev_menu.addAction(self._act_list_full)
+
     def _init_toolbar(self) -> None:
         """Playback controls toolbar."""
         toolbar = QToolBar("Playback", self)
@@ -210,6 +216,44 @@ class MainWindow(QMainWindow):
         merged = Timeline()
         for step in list(create_tl.steps) + list(insert_tl.steps):
             merged.add_step(step)
+
+        self._play_timeline(merged)
+
+    def _play_list_full_demo(self) -> None:
+        """
+        Developer-only hook: exercise full ListModel operations end-to-end.
+
+        Covers: create empty (sentinel), insert head/mid/tail, search (hit/miss),
+        update (by index/value), delete_index, delete_all.
+        """
+        self._reset_engine()
+        sid = "dev_list_full"
+        commands = [
+            Command(sid, CommandType.CREATE_STRUCTURE, {"kind": "list", "values": []}),
+            Command(sid, CommandType.INSERT, {"kind": "list", "index": 0, "value": 1}),
+            Command(sid, CommandType.INSERT, {"kind": "list", "index": 1, "value": 3}),
+            Command(sid, CommandType.INSERT, {"kind": "list", "index": 1, "value": 2}),
+            Command(sid, CommandType.SEARCH, {"kind": "list", "value": 2}),
+            Command(sid, CommandType.SEARCH, {"kind": "list", "value": 99}),
+            Command(
+                sid,
+                CommandType.UPDATE,
+                {"kind": "list", "index": 1, "new_value": 20},
+            ),
+            Command(
+                sid,
+                CommandType.UPDATE,
+                {"kind": "list", "value": 3, "new_value": 30},
+            ),
+            Command(sid, CommandType.DELETE_NODE, {"kind": "list", "index": 0}),
+            Command(sid, CommandType.DELETE_STRUCTURE, {"kind": "list"}),
+        ]
+
+        merged = Timeline()
+        for cmd in commands:
+            tl = self._scene_graph.apply_command(cmd)
+            for step in tl.steps:
+                merged.add_step(step)
 
         self._play_timeline(merged)
 

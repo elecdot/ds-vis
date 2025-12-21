@@ -92,6 +92,23 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
         window.close()
 
 
+def test_dev_play_list_full_demo_runs_without_residual_nodes(qt_app):
+    """
+    Full ListModel demo should run all operations and end with an empty scene.
+    """
+    window = MainWindow()
+    try:
+        window._play_list_full_demo()
+        window._pause()
+        while window._current_step_index < len(window._pending_steps):
+            window._advance_step(schedule_next=False)
+
+        assert not window._renderer._nodes
+        assert not window._renderer._edges
+    finally:
+        window.close()
+
+
 def test_playback_controls_respect_speed(qt_app):
     """
     Speed factor should scale the timer delay; simulate by stepping manually.
