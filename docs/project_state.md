@@ -53,7 +53,7 @@ This document captures the active delivery phase, what is complete, current assu
 
 ## Active Plan: Milestone 4 — SceneGraph/command_schema 可维护性
 - 目标：重构命令校验为可读的命名函数，清理 lambda+生成器抛异常技巧；为新增结构/命令提供注册模板；保持现有行为与测试通过。
-- 范围：`src/ds_vis/core/scene/command_schema.py`、`scene_graph.py`（如需轻量适配）、相关测试与文档（scene_graph 设计说明、registry）。
+- 范围：`src/ds_vis/core/scene/command_schema.py`、必要的 SceneGraph 适配、相关测试与文档（scene_graph 设计说明、registry）。
 - 验收：命令校验逻辑清晰可读，现有命令/错误消息保持一致；测试/CI 通过；文档同步更新。
 - 注意：不改变 Ops/命令协议行为，避免影响现有 UI/Dev hook；为未来扩展（AVL/DSL/LLM）留出注册/验证锚点。
 

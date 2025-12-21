@@ -17,38 +17,58 @@ class CommandSchema:
     validators: Tuple[Validator, ...] = ()
 
     def validate(self, payload: Mapping[str, Any]) -> None:
-        if not isinstance(payload, Mapping):
-            raise CommandError("Command payload must be a mapping")
+        _ensure_mapping(payload)
 
-        for key, expected_type in self.required.items():
-            if key not in payload:
-                raise CommandError(f"Missing required field: {key}")
-            if not isinstance(payload.get(key), expected_type):
-                raise CommandError(f"Field {key!r} must be {expected_type.__name__}")
+        _validate_required_fields(payload, self.required)
+        _validate_optional_fields(payload, self.optional)
+        _validate_no_extra_fields(payload, allowed=set(self.required) | set(self.optional), allow_extra=self.allow_extra)
+        _run_validators(payload, self.validators)
 
-        for key, expected_types in self.optional.items():
-            if key in payload and payload.get(key) is not None:
-                value = payload.get(key)
-                if not isinstance(value, expected_types):
-                    raise CommandError(
-                        f"Field {key!r} must be a "
-                        f"{self._type_names(expected_types)} when present"
-                    )
 
-        if not self.allow_extra:
-            allowed = set(self.required) | set(self.optional)
-            unknown = set(payload.keys()) - allowed
-            if unknown:
-                unknown_list = ", ".join(sorted(unknown))
-                raise CommandError(f"Unexpected payload fields: {unknown_list}")
+def _ensure_mapping(payload: Mapping[str, Any]) -> None:
+    if not isinstance(payload, Mapping):
+        raise CommandError("Command payload must be a mapping")
 
-        for validator in self.validators:
-            validator(payload)
 
-    @staticmethod
-    def _type_names(types: Tuple[Type[Any], ...]) -> str:
-        names = [t.__name__ for t in types]
-        return " or ".join(names)
+def _validate_required_fields(payload: Mapping[str, Any], required: Dict[str, Type[Any]]) -> None:
+    for key, expected_type in required.items():
+        if key not in payload:
+            raise CommandError(f"Missing required field: {key}")
+        if not isinstance(payload.get(key), expected_type):
+            raise CommandError(f"Field {key!r} must be {expected_type.__name__}")
+
+
+def _validate_optional_fields(
+    payload: Mapping[str, Any], optional: Dict[str, Tuple[Type[Any], ...]]
+) -> None:
+    for key, expected_types in optional.items():
+        if key in payload and payload.get(key) is not None:
+            value = payload.get(key)
+            if not isinstance(value, expected_types):
+                raise CommandError(
+                    f"Field {key!r} must be a {_type_names(expected_types)} when present"
+                )
+
+
+def _validate_no_extra_fields(
+    payload: Mapping[str, Any], allowed: set[str], allow_extra: bool
+) -> None:
+    if allow_extra:
+        return
+    unknown = set(payload.keys()) - allowed
+    if unknown:
+        unknown_list = ", ".join(sorted(unknown))
+        raise CommandError(f"Unexpected payload fields: {unknown_list}")
+
+
+def _run_validators(payload: Mapping[str, Any], validators: Tuple[Validator, ...]) -> None:
+    for validator in validators:
+        validator(payload)
+
+
+def _type_names(types: Tuple[Type[Any], ...]) -> str:
+    names = [t.__name__ for t in types]
+    return " or ".join(names)
 
 
 def _require_index_or_value(context: str) -> Validator:
