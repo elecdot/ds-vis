@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QGraphicsEllipseItem
 
+from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode
 from ds_vis.core.scene.command import Command, CommandType
-from ds_vis.renderers.pyside6.renderer import RendererConfig
 from ds_vis.ui.main_window import MainWindow
 
 
@@ -89,6 +89,25 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
             == window._renderer._config.colors["normal"]
             for visual in nodes.values()
         )
+    finally:
+        window.close()
+
+
+def test_toggle_messages_disables_message_render(qt_app):
+    window = MainWindow()
+    try:
+        window._toggle_messages(False)
+        step = AnimationStep(
+            ops=[
+                AnimationOp(
+                    op=OpCode.SET_MESSAGE,
+                    target=None,
+                    data={"text": "hidden"},
+                )
+            ]
+        )
+        window._renderer.apply_step(step)
+        assert not window._renderer._message_item.isVisible()
     finally:
         window.close()
 

@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
-from ds_vis.renderers.pyside6.renderer import PySide6Renderer
+from ds_vis.renderers.pyside6.renderer import PySide6Renderer, RendererConfig
 
 # Developer examples (structural timelines only)
 try:
@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self._current_step_index: int = 0
         self._speed_factor: float = 1.0
         self._animations_enabled: bool = True
+        self._show_messages: bool = True
         self._paused: bool = False
 
         # Developer playground menu
@@ -146,6 +147,11 @@ class MainWindow(QMainWindow):
         self._act_toggle_anim.setChecked(True)
         self._act_toggle_anim.triggered.connect(self._toggle_animations)
         toolbar.addAction(self._act_toggle_anim)
+
+        self._act_toggle_message = QAction("Messages", self, checkable=True)
+        self._act_toggle_message.setChecked(True)
+        self._act_toggle_message.triggered.connect(self._toggle_messages)
+        toolbar.addAction(self._act_toggle_message)
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -265,9 +271,12 @@ class MainWindow(QMainWindow):
         self._paused = False
         self._renderer.abort_animations()
         self._scene.clear()
+        config = RendererConfig(show_messages=self._show_messages)
         self._scene_graph = SceneGraph()
         self._renderer = PySide6Renderer(
-            self._scene, animations_enabled=self._animations_enabled
+            self._scene,
+            animations_enabled=self._animations_enabled,
+            config=config,
         )
         self._renderer.set_speed(self._speed_factor)
 
@@ -326,6 +335,10 @@ class MainWindow(QMainWindow):
     def _toggle_animations(self, checked: bool) -> None:
         self._animations_enabled = checked
         self._renderer.set_animations_enabled(checked)
+
+    def _toggle_messages(self, checked: bool) -> None:
+        self._show_messages = checked
+        self._renderer.set_show_messages(checked)
 
     # --------------------------------------------------------------------- #
     # Entry point

@@ -106,6 +106,12 @@ class PySide6Renderer(Renderer):
         """Enable or disable animations without rebuilding renderer."""
         self._animations_enabled = enabled
 
+    def set_show_messages(self, enabled: bool) -> None:
+        """Enable or disable message rendering."""
+        self._config.show_messages = enabled
+        if not enabled:
+            self._clear_message()
+
     def abort_animations(self) -> None:
         """Signal any in-flight animation loop to stop safely."""
         self._abort_animations = True
