@@ -219,6 +219,7 @@ class MainWindow(QMainWindow):
         self._pending_steps = []
         self._current_step_index = 0
         self._paused = False
+        self._renderer.abort_animations()
         self._scene.clear()
         self._scene_graph = SceneGraph()
         self._renderer = PySide6Renderer(

@@ -67,6 +67,7 @@ class PySide6Renderer(Renderer):
         self._scene.addItem(self._message_item)
         self._animations_enabled: bool = animations_enabled
         self._speed_factor: float = 1.0
+        self._abort_animations: bool = False
 
     def render_timeline(self, timeline: Timeline) -> None:
         """Interpret the given Timeline and update the scene accordingly."""
@@ -88,6 +89,10 @@ class PySide6Renderer(Renderer):
         """Enable or disable animations without rebuilding renderer."""
         self._animations_enabled = enabled
 
+    def abort_animations(self) -> None:
+        """Signal any in-flight animation loop to stop safely."""
+        self._abort_animations = True
+
     # ------------------------------------------------------------------ #
     # Animation helpers
     # ------------------------------------------------------------------ #
@@ -98,6 +103,9 @@ class PySide6Renderer(Renderer):
           - SET_STATE color interpolation
           - CREATE_* fade-in; DELETE_* fade-out then remove
         """
+        if self._abort_animations:
+            return
+
         adjusted_duration = int(step.duration_ms / self._speed_factor)
         frames = max(1, min(10, adjusted_duration // 50 or 1))
         create_nodes: list[AnimationOp] = []
@@ -187,6 +195,8 @@ class PySide6Renderer(Renderer):
         # so the UI can present motion when running in the main loop).
         delay_per_frame = int(adjusted_duration / frames) if frames > 0 else 0
         for i in range(1, frames + 1):
+            if self._abort_animations:
+                return
             t = i / frames
             # positions
             for target, end_pos in pos_targets.items():
@@ -236,8 +246,12 @@ class PySide6Renderer(Renderer):
                         edge.label.setOpacity(max(0.0, start_opacity * (1 - t)))
             if delay_per_frame > 0:
                 QTest.qWait(delay_per_frame)
+                if self._abort_animations:
+                    return
 
         # Finalize state: apply labels, final set_state/set_label/pos just in case.
+        if self._abort_animations:
+            return
         for op in set_label_ops:
             self._apply_op(op)
         for op in set_state_ops:
