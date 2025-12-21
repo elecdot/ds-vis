@@ -185,6 +185,9 @@ class ListModel(BaseModel):
             raise ModelError("insert index out of range")
 
         timeline = Timeline()
+        self._add_message_step(
+            timeline, f"Inserting {value} at index {index}", "Insert info"
+        )
         if self._sentinel_id:
             remove_sentinel = AnimationOp(
                 op=OpCode.DELETE_NODE,
@@ -201,7 +204,7 @@ class ListModel(BaseModel):
 
         for node_id in self._emit_traversal_nodes(prev_id):
             self._add_state_step(
-                timeline, [node_id], "highlight", "Traverse node"
+                timeline, [node_id], "secondary", "Traverse node"
             )
             self._add_state_step(
                 timeline, [node_id], "normal", "Traverse reset"
@@ -214,7 +217,7 @@ class ListModel(BaseModel):
 
         new_node_id = self.allocate_node_id(prefix="node")
         edge_highlight_ops = self._emit_edge_state_between(
-            prev_id, next_id, "highlight"
+            prev_id, next_id, "to_delete"
         )
         self._add_ops_step(timeline, edge_highlight_ops, "Highlight link")
 
@@ -236,6 +239,10 @@ class ListModel(BaseModel):
             dict.fromkeys(highlight_targets + [new_node_id] + new_edge_ids)
         )
         self._add_state_step(timeline, restore_targets, "normal", "Restore state")
+        self._add_message_step(
+            timeline, f"Inserted {value} at index {index}", "Insert result"
+        )
+        self._add_clear_message_step(timeline)
         return timeline
 
     def search(
@@ -255,7 +262,7 @@ class ListModel(BaseModel):
                 and idx < len(self.values)
                 and self.values[idx] == value
             )
-            self._add_state_step(timeline, [node_id], "highlight", "Search visit")
+            self._add_state_step(timeline, [node_id], "secondary", "Search visit")
             if match_index or match_value:
                 target_index = idx
                 break
@@ -263,6 +270,7 @@ class ListModel(BaseModel):
 
         if target_index is None:
             self._add_message_step(timeline, "Search not found", "Search result")
+            self._add_clear_message_step(timeline)
             return timeline
 
         target_id = self._node_ids[target_index]
@@ -271,6 +279,7 @@ class ListModel(BaseModel):
         )
         self._add_state_step(timeline, [target_id], "highlight", "Search highlight")
         self._add_state_step(timeline, [target_id], "normal", "Search restore")
+        self._add_clear_message_step(timeline)
         return timeline
 
     def update(
@@ -299,8 +308,11 @@ class ListModel(BaseModel):
             raise ModelError("update target not found")
 
         timeline = Timeline()
+        self._add_message_step(
+            timeline, f"Updating to {new_value}", "Update info"
+        )
         for idx, node_id in enumerate(self._node_ids):
-            self._add_state_step(timeline, [node_id], "highlight", "Update visit")
+            self._add_state_step(timeline, [node_id], "secondary", "Update visit")
             if idx == target_index:
                 break
             self._add_state_step(timeline, [node_id], "normal", "Update reset")
@@ -320,7 +332,11 @@ class ListModel(BaseModel):
             ),
         ]
         self._add_ops_step(timeline, ops, "Update value")
+        self._add_message_step(
+            timeline, f"Updated index {target_index} to {new_value}", "Update result"
+        )
         self._add_state_step(timeline, [target_id], "normal", "Update restore")
+        self._add_clear_message_step(timeline)
         return timeline
 
     def recreate(self, values: Optional[Iterable[Any]] = None) -> Timeline:
@@ -373,6 +389,20 @@ class ListModel(BaseModel):
                     )
                 ],
                 label=label,
+            )
+        )
+
+    def _add_clear_message_step(self, timeline: Timeline) -> None:
+        timeline.add_step(
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CLEAR_MESSAGE,
+                        target=None,
+                        data={},
+                    )
+                ],
+                label="Clear message",
             )
         )
 

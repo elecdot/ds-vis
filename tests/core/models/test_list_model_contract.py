@@ -86,7 +86,7 @@ def test_insert_emits_microsteps_and_rewires():
     assert any(
         op.op is OpCode.SET_STATE
         and op.target == "lst_node_0"
-        and op.data.get("state") == "highlight"
+        and op.data.get("state") == "secondary"
         for step in traverse_steps
         for op in step.ops
     )
@@ -108,7 +108,7 @@ def test_insert_emits_microsteps_and_rewires():
     assert any(
         op.op is OpCode.SET_STATE
         and op.target == "lst|next|lst_node_0->lst_node_1"
-        and op.data.get("state") == "highlight"
+        and op.data.get("state") == "to_delete"
         for op in highlight_link_step.ops
     )
 
