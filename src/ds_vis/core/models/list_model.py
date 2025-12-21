@@ -495,7 +495,7 @@ class ListModel(BaseModel):
     def _emit_create_ops(self) -> List[AnimationOp]:
         ops: List[AnimationOp] = []
         if not self.values:
-            node_id = f"{self.structure_id}_sentinel"
+            node_id = self.allocate_node_id(prefix="sentinel")
             self._node_ids = []
             self._sentinel_id = node_id
             ops.append(
