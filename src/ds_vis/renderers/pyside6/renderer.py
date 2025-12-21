@@ -93,6 +93,18 @@ class PySide6Renderer(Renderer):
         """Signal any in-flight animation loop to stop safely."""
         self._abort_animations = True
 
+    def clear(self) -> None:
+        """Remove all rendered node/edge visuals and reset transient state."""
+        for node in list(self._nodes.values()):
+            self._scene.removeItem(node.ellipse)
+        for edge in list(self._edges.values()):
+            self._scene.removeItem(edge.line)
+            if edge.label:
+                self._scene.removeItem(edge.label)
+        self._nodes.clear()
+        self._edges.clear()
+        self._clear_message()
+
     # ------------------------------------------------------------------ #
     # Animation helpers
     # ------------------------------------------------------------------ #

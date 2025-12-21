@@ -263,6 +263,7 @@ class MainWindow(QMainWindow):
         if not self._timer.isActive():
             current = max(0, min(self._current_step_index, len(self._pending_steps)))
             if current >= len(self._pending_steps):
+                self._renderer.clear()
                 self._current_step_index = 0
             self._advance_step()
 

@@ -314,3 +314,45 @@ def test_renderer_sets_and_clears_message(qt_app):
     assert renderer._message == ""
     assert renderer._message_item.text() == ""
     assert renderer._message_item.isVisible() is False
+
+
+def test_renderer_clear_removes_visuals(qt_app):
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "1"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n2",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "2"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_EDGE,
+                        target="e1",
+                        data={"structure_id": "s1", "from": "n1", "to": "n2"},
+                    ),
+                ]
+            )
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene)
+    renderer.render_timeline(timeline)
+
+    assert renderer._nodes
+    assert renderer._edges
+    assert any(isinstance(item, QGraphicsEllipseItem) for item in scene.items())
+    assert any(isinstance(item, QGraphicsLineItem) for item in scene.items())
+
+    renderer.clear()
+
+    assert not renderer._nodes
+    assert not renderer._edges
+    assert not any(isinstance(item, QGraphicsEllipseItem) for item in scene.items())
+    assert not any(isinstance(item, QGraphicsLineItem) for item in scene.items())
