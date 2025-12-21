@@ -24,7 +24,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | [scene_graph.md](./design/scene_graph.md) | v0.2 | Draft | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |
 | [renderer.md](./design/renderer.md) | v0.1 | Draft | P0.6 | `src/ds_vis/renderers/` | 2025-12-15 |
 | [model.md](./design/model.md) | v0.3 | Draft | P0.7 | `src/ds_vis/core/models/` | 2025-12-24 |
-| [layout.md](./design/layout.md) | v0.1 | Draft | P0.6 | `src/ds_vis/core/layout/` | 2025-12-15 |
+| [layout.md](./design/layout.md) | v0.2 | Draft | P0.7 | `src/ds_vis/core/layout/` | 2025-12-24 |
 | [ops_spec.md](./design/ops_spec.md) | v1.3 | Stable | P0.6 | `src/ds_vis/core/ops/` | 2025-12-20 |
 | [animation.md](./design/animation.md) | v0.5 | Draft | P0.6 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-20 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |

@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.6
-version: v0.1
+bound_phase: P0.7
+version: v0.2
 status: Draft
-last_updated: 2025-12-15
+last_updated: 2025-12-24
 ---
 
 # LAYOUT — 设计说明（轻量）
@@ -19,6 +19,7 @@ last_updated: 2025-12-15
 
 - 输入：结构 Ops（Timeline）。
 - 输出：结构 Ops + `SET_POS` 注入后的 Timeline。
+- 可选：提供 `reset()` / 重建入口以支持 seek/倒播或状态重放。
 
 ## 3. 约束与边界
 
@@ -26,11 +27,14 @@ last_updated: 2025-12-15
 - **不得**依赖 Renderer 或 UI。
 - **仅**注入 `SET_POS`。
 - **应**消费 MetricsRegistry（按 `kind` 的尺寸/间距提示），缺省时回退默认值。
+- **应**提供清理接口 `reset()`（或同等能力）以便场景切换/重放。
 
-## 4. 扩展点
+## 4. 接口与扩展
 
-- 新布局策略：Tree/DAG/Linear 各自实现，SceneGraph/上层选择策略。
-- 未来可支持布局重建以启用 seek/倒播。
+- 接口：`LayoutEngine.apply_layout(timeline) -> Timeline`；可选 `reset()` 清理内部状态。
+- 策略：`LayoutStrategy` 枚举（LINEAR/TREE/DAG），用于上层选择布局实现。
+- 兼容：默认 SimpleLayout 作为 LINEAR 策略实现，保持 stateful 顺序行为。
+- 扩展：Tree/DAG 布局可作为占位实现接入；重建/无状态模式可在未来支持 seek/倒播。
 
 ## 5. 当前限制（P0.6）
 

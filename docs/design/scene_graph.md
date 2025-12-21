@@ -14,7 +14,7 @@ last_updated: 2025-12-24
 
 - 维护场景中所有结构实例的生命周期（按 `structure_id` 管理）。
 - 接收 `Command` 并做 schema 校验、路由到 Model 操作。
-- 将 Model 输出的结构 Ops 交给 Layout 注入 `SET_POS`，再交 Renderer 播放。
+- 将 Model 输出的结构 Ops 交给 Layout 注入 `SET_POS`（通过 `LayoutEngine` 接口，默认 SimpleLayout/LINEAR 策略），再交 Renderer 播放。
 - 提供可序列化的结构状态（供 persistence 使用，后续阶段实现）。
 
 ## 2. 输入输出
