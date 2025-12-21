@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.6
-version: v0.9
+bound_phase: P0.7
+version: v1.0
 status: Stable
-last_updated: 2025-12-21
+last_updated: 2025-12-24
 ---
 
 # Documentation Registry & Version Control
@@ -17,13 +17,13 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| [index.md](./index.md) | v0.9 | Stable | P0.6 | Documentation Registry System | 2025-12-21 |
-| [project_state.md](./project_state.md) | v0.6.1 | Active | P0.6 | Project phase SSOT | 2025-12-21 |
+| [index.md](./index.md) | v1.0 | Stable | P0.7 | Documentation Registry System | 2025-12-24 |
+| [project_state.md](./project_state.md) | v0.7.0 | Active | P0.7 | Project phase SSOT | 2025-12-24 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.5 | Stable | P0.6 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
-| [scene_graph.md](./design/scene_graph.md) | v0.1 | Draft | P0.6 | `src/ds_vis/core/scene/` | 2025-12-15 |
+| [scene_graph.md](./design/scene_graph.md) | v0.2 | Draft | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |
 | [renderer.md](./design/renderer.md) | v0.1 | Draft | P0.6 | `src/ds_vis/renderers/` | 2025-12-15 |
-| [model.md](./design/model.md) | v0.2 | Draft | P0.6 | `src/ds_vis/core/models/` | 2025-12-15 |
+| [model.md](./design/model.md) | v0.3 | Draft | P0.7 | `src/ds_vis/core/models/` | 2025-12-24 |
 | [layout.md](./design/layout.md) | v0.1 | Draft | P0.6 | `src/ds_vis/core/layout/` | 2025-12-15 |
 | [ops_spec.md](./design/ops_spec.md) | v1.3 | Stable | P0.6 | `src/ds_vis/core/ops/` | 2025-12-20 |
 | [animation.md](./design/animation.md) | v0.5 | Draft | P0.6 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-20 |

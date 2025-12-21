@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.6
-version: v0.1
+bound_phase: P0.7
+version: v0.2
 status: Draft
-last_updated: 2025-12-15
+last_updated: 2025-12-24
 ---
 
 # SCENE_GRAPH — 设计说明（轻量）
@@ -48,7 +48,7 @@ last_updated: 2025-12-15
 
 ## 6. 当前限制（P0.6）
 
-- 仅覆盖 list 的 create/delete/insert。
+- 当前命令覆盖 list：CREATE_STRUCTURE / DELETE_STRUCTURE / DELETE_NODE / INSERT / SEARCH / UPDATE。
 - 未实现 persistence 的导入导出。
 - 暂无 seek/倒播，需要 Layout/Renderer 支持状态重建后再扩展。
 

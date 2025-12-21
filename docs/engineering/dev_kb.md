@@ -1,8 +1,8 @@
 ---
-bound_phase: P0.6
+bound_phase: P0.7
 version: rolling
 status: Living
-last_updated: 2025-12-21
+last_updated: 2025-12-24
 ---
 
 # Developer Knowledge Base (FAQ & Troubleshooting)
@@ -61,13 +61,13 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Limitation][Layout]** SimpleLayout 仍为有状态顺序引擎，不支持 seek/倒播；默认左对齐与固定尺寸假设，未支持树/DAG 居中或可变尺寸。
 - **[Limitation][Renderer]** PySide6 renderer 硬编码配色/形状；动画为同步插值（qWait），无 seek/skip/异步调度，缓动固定。
 - **[Risk][IDs]** ID 稳定性仅在 list 覆盖；其他结构仍基于索引，变更会导致重命名。
-- **[Limitation][Commands]** 命令 schema/操作映射仅覆盖 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/INSERT；扩展 BST/GitGraph 需补注册表与模型 op。
+- **[Limitation][Commands]** 目前仅覆盖 list 的 CREATE_STRUCTURE/DELETE_STRUCTURE/DELETE_NODE/INSERT/SEARCH/UPDATE；扩展 BST/GitGraph 需补注册表与模型 op。
 - **[Limitation][UI]** Main window 仅 Dev playground：单场景，无 seek/skip/多时间线管理。
 - **[Gap][Tests]** timing 语义、BST/GitGraph ops、渲染时序仍缺覆盖。
 - **[Stub][Models]** BST/GitGraph models 仍为空壳；仅 list create/delete/insert 实现。
 - **[Limitation][AnimationDepth]** 仍缺可配置缓动/非阻塞播放；播放控制为基础版。
 - **[Note][ListModel]** `create([])` 会生成 sentinel 仅用于可视化空表（display-only），当前假设空表用于展示而非逻辑操作。
-- **[Note][ListModel]** `insert` 现包含遍历高亮与边高亮步骤，并使用 step label 便于 UI/测试定位。
+- **[Note][ListModel]** `insert` 现包含遍历高亮（secondary）、旧边标记为 to_delete、新边/关键节点用 highlight，并使用 step label 便于 UI/测试定位；insert/update/search 会在步骤前后用 SET_MESSAGE，操作结束 CLEAR_MESSAGE。
 - **[Gap][Animation]** 边动画（逐渐绘制/虚线删除）未实现；节点“侧边悬停”标记为 Layout 低优先需求。
 - **[Risk][Ops]** `CREATE_NODE.data.kind` 目前未强制必填，Renderer/Layout 需默认回退样式；可考虑加入告警或文档强化为“强烈建议必填”。
 - **[Design][Metrics]** 不同结构节点形态与度量差异明显（seqlist/stack/tree）；建议引入可选 `StyleRegistry`/`Metrics`（`kind -> shape/size`），有默认值，避免新 Model 必须管理布局/渲染。
