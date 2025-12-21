@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 from PySide6.QtGui import QColor, QPen
@@ -15,17 +15,28 @@ from PySide6.QtWidgets import (
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 from ds_vis.renderers.base import Renderer
 
-# Basic visual constants for Phase 1 renderer.
-NODE_RADIUS = 20.0
-COLOR_MAP: Dict[str, QColor] = {
-    "normal": QColor("#6b7280"),     # gray
-    "active": QColor("#2563eb"),     # blue
-    "highlight": QColor("#f59e0b"),  # amber
-    "secondary": QColor("#059669"),  # green
-    "to_delete": QColor("#dc2626"),  # red
-    "faded": QColor("#9ca3af"),      # light gray
-    "error": QColor("#f97316"),      # orange
-}
+
+@dataclass
+class RendererConfig:
+    """Renderer configuration (visuals + animation parameters)."""
+
+    node_radius: float = 20.0
+    colors: Dict[str, QColor] = field(
+        default_factory=lambda: {
+            "normal": QColor("#6b7280"),     # gray
+            "active": QColor("#2563eb"),     # blue
+            "highlight": QColor("#f59e0b"),  # amber
+            "secondary": QColor("#059669"),  # green
+            "to_delete": QColor("#dc2626"),  # red
+            "faded": QColor("#9ca3af"),      # light gray
+            "error": QColor("#f97316"),      # orange
+        }
+    )
+    max_frames: int = 10
+    show_messages: bool = True
+
+    # Placeholder for future easing/animation parameters.
+    easing: str = "linear"
 
 
 @dataclass
@@ -56,11 +67,17 @@ class PySide6Renderer(Renderer):
       - Minimal visuals: circles for nodes, straight lines for edges, simple labels.
     """
 
-    def __init__(self, scene: QGraphicsScene, animations_enabled: bool = True) -> None:
+    def __init__(
+        self,
+        scene: QGraphicsScene,
+        animations_enabled: bool = True,
+        config: Optional[RendererConfig] = None,
+    ) -> None:
         self._scene = scene
         self._nodes: Dict[str, NodeVisual] = {}
         self._edges: Dict[str, EdgeVisual] = {}
         self._message: str = ""
+        self._config = config or RendererConfig()
         self._message_item = QGraphicsSimpleTextItem("")
         self._message_item.setVisible(False)
         self._message_item.setPos(10, 10)
@@ -180,7 +197,9 @@ class PySide6Renderer(Renderer):
         state_starts: Dict[str, QColor] = {}
         for op in set_state_ops:
             target = op.target or ""
-            desired = COLOR_MAP.get(op.data.get("state", "normal"), COLOR_MAP["normal"])
+            desired = self._config.colors.get(
+                op.data.get("state", "normal"), self._config.colors["normal"]
+            )
             node = self._nodes.get(target)
             edge = self._edges.get(target)
             if node:
@@ -311,10 +330,12 @@ class PySide6Renderer(Renderer):
             self._set_label(op)
             return
         if op.op is OpCode.SET_MESSAGE:
-            self._set_message(op)
+            if self._config.show_messages:
+                self._set_message(op)
             return
         if op.op is OpCode.CLEAR_MESSAGE:
-            self._clear_message()
+            if self._config.show_messages:
+                self._clear_message()
             return
 
     def _create_node(self, op: AnimationOp) -> None:
@@ -324,13 +345,14 @@ class PySide6Renderer(Renderer):
         if op.target in self._nodes:
             return  # Already exists; avoid duplicates.
 
+        radius = self._config.node_radius
         ellipse = QGraphicsEllipseItem(
-            -NODE_RADIUS,
-            -NODE_RADIUS,
-            NODE_RADIUS * 2,
-            NODE_RADIUS * 2,
+            -radius,
+            -radius,
+            radius * 2,
+            radius * 2,
         )
-        ellipse.setBrush(COLOR_MAP["normal"])
+        ellipse.setBrush(self._config.colors["normal"])
         self._scene.addItem(ellipse)
 
         label_text = op.data.get("label")
@@ -338,7 +360,10 @@ class PySide6Renderer(Renderer):
         if label_text:
             label_item = QGraphicsSimpleTextItem(str(label_text))
             label_item.setParentItem(ellipse)
-            label_item.setPos(-NODE_RADIUS / 2, -NODE_RADIUS / 2)
+            # rough centering based on radius; refined anchoring can be added later
+            label_item.setPos(
+                -self._config.node_radius / 2, -self._config.node_radius / 2
+            )
 
         self._nodes[op.target] = NodeVisual(ellipse=ellipse, label=label_item)
 
@@ -406,13 +431,13 @@ class PySide6Renderer(Renderer):
         state = op.data.get("state", "normal")
         node = self._nodes.get(op.target or "")
         if node:
-            color = COLOR_MAP.get(state, COLOR_MAP["normal"])
+            color = self._config.colors.get(state, self._config.colors["normal"])
             node.ellipse.setBrush(color)
             return
 
         edge = self._edges.get(op.target or "")
         if edge:
-            color = COLOR_MAP.get(state, COLOR_MAP["normal"])
+            color = self._config.colors.get(state, self._config.colors["normal"])
             edge.line.setPen(QPen(color))
 
     def _set_label(self, op: AnimationOp) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
     QGraphicsLineItem,
@@ -9,7 +10,7 @@ from PySide6.QtWidgets import (
 
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 from ds_vis.core.scene.command import CommandType
-from ds_vis.renderers.pyside6.renderer import COLOR_MAP, PySide6Renderer
+from ds_vis.renderers.pyside6.renderer import PySide6Renderer, RendererConfig
 
 
 def test_renderer_creates_node_and_positions(qt_app, scene_graph, create_cmd_factory):
@@ -30,6 +31,50 @@ def test_renderer_creates_node_and_positions(qt_app, scene_graph, create_cmd_fac
     pos = ellipse_items[0].pos()
     assert pos.x() == 50.0
     assert pos.y() == 50.0
+
+
+def test_renderer_respects_custom_config(qt_app):
+    config = RendererConfig(
+        node_radius=10.0,
+        colors={"normal": QColor("#000000"), "active": QColor("#ffffff")},
+        max_frames=5,
+        show_messages=False,
+    )
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="node_c",
+                        data={"structure_id": "s1", "kind": "list_node", "label": "C"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.SET_STATE,
+                        target="node_c",
+                        data={"state": "active"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.SET_MESSAGE,
+                        target=None,
+                        data={"text": "Hidden"},
+                    ),
+                ]
+            )
+        ]
+    )
+
+    scene = QGraphicsScene()
+    renderer = PySide6Renderer(scene, config=config)
+    renderer.render_timeline(timeline)
+
+    node = renderer._nodes.get("node_c")
+    assert node is not None
+    # radius applied (roughly equals ellipse width/2)
+    assert node.ellipse.rect().width() == config.node_radius * 2
+    assert node.ellipse.brush().color() == config.colors["active"]
+    # message disabled
+    assert not renderer._message_item.isVisible()
 
 
 def test_renderer_applies_state_color(qt_app):
@@ -58,7 +103,7 @@ def test_renderer_applies_state_color(qt_app):
 
     node = renderer._nodes.get("node_a")
     assert node is not None
-    assert node.ellipse.brush().color() == COLOR_MAP["active"]
+    assert node.ellipse.brush().color() == renderer._config.colors["active"]
 
 
 def test_renderer_applies_highlight_state(qt_app):
@@ -87,7 +132,7 @@ def test_renderer_applies_highlight_state(qt_app):
 
     node = renderer._nodes.get("node_h")
     assert node is not None
-    assert node.ellipse.brush().color() == COLOR_MAP["highlight"]
+    assert node.ellipse.brush().color() == renderer._config.colors["highlight"]
 
 
 def test_renderer_applies_edge_highlight(qt_app):
@@ -126,7 +171,7 @@ def test_renderer_applies_edge_highlight(qt_app):
 
     edge = renderer._edges.get("e1")
     assert edge is not None
-    assert edge.line.pen().color() == COLOR_MAP["highlight"]
+    assert edge.line.pen().color() == renderer._config.colors["highlight"]
 
 
 def test_renderer_updates_edges_on_position(qt_app):
@@ -271,7 +316,7 @@ def test_renderer_color_interpolation_reaches_target(qt_app):
 
     node = renderer._nodes.get("n1")
     assert node is not None
-    assert node.ellipse.brush().color() == COLOR_MAP["highlight"]
+    assert node.ellipse.brush().color() == renderer._config.colors["highlight"]
 
 
 def test_renderer_sets_and_clears_message(qt_app):

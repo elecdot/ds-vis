@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QGraphicsEllipseItem
 
 from ds_vis.core.scene.command import Command, CommandType
-from ds_vis.renderers.pyside6.renderer import COLOR_MAP
+from ds_vis.renderers.pyside6.renderer import RendererConfig
 from ds_vis.ui.main_window import MainWindow
 
 
@@ -85,7 +85,8 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
         nodes = window._renderer._nodes
         assert len(nodes) == 3
         assert all(
-            visual.ellipse.brush().color() == COLOR_MAP["normal"]
+            visual.ellipse.brush().color()
+            == window._renderer._config.colors["normal"]
             for visual in nodes.values()
         )
     finally:
