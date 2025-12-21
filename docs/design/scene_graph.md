@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.2
+version: v0.3
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -37,7 +37,7 @@ last_updated: 2025-12-24
 
 ### 4.2 新增模型
 - 新 Model 需实现 `BaseModel`（`kind`/`node_count`/`apply_operation`）。
-- 在 `_model_registry` 注册 `(kind, kind) -> factory`。
+- 在 `_model_registry` 注册 `kind -> factory`。
 - 必须生成结构 Ops（CREATE/DELETE/SET_STATE/SET_LABEL 等），不生成布局信息。
 
 ## 5. 错误处理

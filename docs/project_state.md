@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.6
+version: v0.7.7
 status: Active
 last_updated: 2025-12-24
 ---
@@ -50,6 +50,12 @@ This document captures the active delivery phase, what is complete, current assu
 - 交付：更新 `animation.md`（状态/颜色表、消息策略、配置占位说明），`model.md`（新模型开发指北模板、状态/消息/微步骤/测试建议），`index.md` 同步版本。
 - 范围：仅文档，未改代码行为；保持与现状一致并标注未来项（锚定消息、非阻塞动画）。
 - 测试：无代码改动，延用前次全量通过结果。
+
+## Active Plan: Milestone 4 — SceneGraph/command_schema 可维护性
+- 目标：重构命令校验为可读的命名函数，清理 lambda+生成器抛异常技巧；为新增结构/命令提供注册模板；保持现有行为与测试通过。
+- 范围：`src/ds_vis/core/scene/command_schema.py`、`scene_graph.py`（如需轻量适配）、相关测试与文档（scene_graph 设计说明、registry）。
+- 验收：命令校验逻辑清晰可读，现有命令/错误消息保持一致；测试/CI 通过；文档同步更新。
+- 注意：不改变 Ops/命令协议行为，避免影响现有 UI/Dev hook；为未来扩展（AVL/DSL/LLM）留出注册/验证锚点。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。

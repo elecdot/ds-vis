@@ -35,9 +35,7 @@ class SceneGraph:
     _handlers: Dict[CommandType, Callable[[Command], Timeline]] = field(
         default_factory=dict
     )
-    _model_registry: Dict[Tuple[str, str], Callable[[str], BaseModel]] = field(
-        default_factory=dict
-    )
+    _model_registry: Dict[str, Callable[[str], BaseModel]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # Default to a simple linear layout to keep the pipeline connected.
@@ -158,15 +156,10 @@ class SceneGraph:
     # Model registry + schema helpers
     # ------------------------------------------------------------------ #
     def _register_models(self) -> None:
-        self._model_registry = {
-            ("list", "list"): lambda structure_id: self._get_or_create_list_model(
-                structure_id
-            ),
-        }
+        self._model_registry = {"list": self._create_list_model}
 
     def _get_or_create_model(self, kind: str, structure_id: str) -> BaseModel:
-        key = (kind, kind)
-        factory = self._model_registry.get(key)
+        factory = self._model_registry.get(kind)
         if factory is None:
             raise CommandError(f"No model registered for kind: {kind!r}")
         existing = self._structures.get(structure_id)
@@ -196,11 +189,5 @@ class SceneGraph:
             raise CommandError(f"Unsupported operation for kind: {kind!r}")
         return kind, op_name, payload
 
-    def _get_or_create_list_model(self, structure_id: str) -> ListModel:
-        existing = self._structures.get(structure_id)
-        if isinstance(existing, ListModel):
-            return existing
-
-        model = ListModel(structure_id=structure_id)
-        self._structures[structure_id] = model
-        return model
+    def _create_list_model(self, structure_id: str) -> ListModel:
+        return ListModel(structure_id=structure_id)
