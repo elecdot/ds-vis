@@ -204,3 +204,30 @@ def test_head_insert_shifts_all_nodes_right():
     assert step2_pos["n0"] == (layout.start_x, layout.start_y)
     assert step2_pos["n1"] == (layout.start_x + layout.spacing, layout.start_y)
     assert step2_pos["n2"] == (layout.start_x + 2 * layout.spacing, layout.start_y)
+
+
+def test_reset_clears_state_for_rebuild():
+    layout = SimpleLayoutEngine()
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "s"},
+                    ),
+                ]
+            )
+        ]
+    )
+    laid_out1 = layout.apply_layout(timeline)
+    pos1 = _set_pos_targets(laid_out1)
+    assert pos1["n1"] == (layout.start_x, layout.start_y)
+
+    layout.reset()
+    assert layout._structure_nodes == {}
+
+    laid_out2 = layout.apply_layout(timeline)
+    pos2 = _set_pos_targets(laid_out2)
+    assert pos2["n1"] == (layout.start_x, layout.start_y)

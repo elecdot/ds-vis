@@ -41,6 +41,7 @@ This document captures the active delivery phase, what is complete, current assu
 - 范围：`src/ds_vis/core/layout/**`、`SceneGraph` 调用处的接口适配、必要的设计文档更新；不改变 Ops 协议。
 - 验收：接口单测 + SceneGraph 集成冒烟（保持现有功能不回退），文档记录新接口与兼容策略。
 - 注意：如需提前跑 P0.8 方向的探索，须确保可回滚且不破坏现有 dev hook；简单布局策略为默认。
+- 当前进展：已定义 LayoutEngine/reset 与 LayoutStrategy，SimpleLayout 兼容实现，SceneGraph 使用新接口；文档/registry 已同步，重建接口已提供；后续树/DAG 策略与无状态重建在 P0.8 规划。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
