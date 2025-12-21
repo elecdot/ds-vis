@@ -45,6 +45,10 @@ class SceneGraph:
             self._layout_engine = SimpleLayoutEngine()
         self._register_handlers()
         self._register_models()
+        # TODO(P0.8): allow injecting/swapping layout engines/strategies and invoking
+        # layout_engine.reset() on scene reset/seek to support non-linear layouts.
+        # TODO(P0.8): consider layout routing (e.g., per-structure strategy selection)
+        # rather than a single engine instance, once tree/DAG layouts are available.
 
     def _register_handlers(self) -> None:
         self._handlers = {
