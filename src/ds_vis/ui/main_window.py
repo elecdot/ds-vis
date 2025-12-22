@@ -6,16 +6,25 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QScreen
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QGraphicsScene,
     QGraphicsView,
+    QHBoxLayout,
     QInputDialog,
+    QLabel,
+    QLineEdit,
     QMainWindow,
     QMenu,
     QMenuBar,
     QMessageBox,
+    QPushButton,
+    QSplitter,
     QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
 
+from ds_vis.core.exceptions import CommandError
 from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
@@ -62,8 +71,12 @@ class MainWindow(QMainWindow):
         self._scene = QGraphicsScene(self)
         self._view = QGraphicsView(self._scene, self)
         self._view.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-
-        self.setCentralWidget(self._view)
+        self._control_panel = self._build_control_panel()
+        splitter = QSplitter(Qt.Orientation.Horizontal, self)
+        splitter.addWidget(self._control_panel)
+        splitter.addWidget(self._view)
+        splitter.setStretchFactor(1, 1)
+        self.setCentralWidget(splitter)
 
         # Core engine wiring (skeleton)
         self._scene_graph = SceneGraph()
@@ -80,10 +93,58 @@ class MainWindow(QMainWindow):
         # Developer playground menu
         self._init_menubar()
         self._init_toolbar()
+        self._wire_control_panel()
 
     # --------------------------------------------------------------------- #
     # UI setup
     # --------------------------------------------------------------------- #
+    def _build_control_panel(self) -> QWidget:
+        panel = QWidget(self)
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(6)
+
+        form_layout = QVBoxLayout()
+        self._structure_id_input = QLineEdit("ui_ds", panel)
+        self._kind_combo = QComboBox(panel)
+        self._kind_combo.addItems(["list", "seqlist", "stack", "bst"])
+        self._values_input = QLineEdit("", panel)
+        self._value_input = QLineEdit("", panel)
+        self._index_input = QLineEdit("", panel)
+
+        def add_row(label_text: str, widget: QWidget) -> None:
+            row = QHBoxLayout()
+            row.addWidget(QLabel(label_text, panel))
+            row.addWidget(widget)
+            form_layout.addLayout(row)
+
+        add_row("Structure ID", self._structure_id_input)
+        add_row("Kind", self._kind_combo)
+        add_row("Values (comma)", self._values_input)
+        add_row("Value", self._value_input)
+        add_row("Index", self._index_input)
+
+        layout.addLayout(form_layout)
+
+        btn_create = QPushButton("Create", panel)
+        btn_insert = QPushButton("Insert", panel)
+        btn_search = QPushButton("Search", panel)
+        btn_delete = QPushButton("Delete", panel)
+        btn_delete_all = QPushButton("Delete All", panel)
+        btn_dsl = QPushButton("Run DSL/JSON", panel)
+
+        for btn in [btn_create, btn_insert, btn_search, btn_delete, btn_delete_all, btn_dsl]:
+            btn.setMinimumHeight(28)
+            layout.addWidget(btn)
+
+        layout.addStretch(1)
+        self._btn_create = btn_create
+        self._btn_insert = btn_insert
+        self._btn_search = btn_search
+        self._btn_delete = btn_delete
+        self._btn_delete_all = btn_delete_all
+        self._btn_dsl = btn_dsl
+        return panel
 
     def _init_menubar(self) -> None:
         """Initialize a minimal menubar with a 'Dev' menu."""
@@ -170,9 +231,117 @@ class MainWindow(QMainWindow):
         self._act_toggle_message.triggered.connect(self._toggle_messages)
         toolbar.addAction(self._act_toggle_message)
 
+    def _wire_control_panel(self) -> None:
+        self._btn_create.clicked.connect(self._on_create_clicked)
+        self._btn_insert.clicked.connect(self._on_insert_clicked)
+        self._btn_search.clicked.connect(self._on_search_clicked)
+        self._btn_delete.clicked.connect(self._on_delete_clicked)
+        self._btn_delete_all.clicked.connect(self._on_delete_all_clicked)
+        self._btn_dsl.clicked.connect(self._run_dsl_input_dev)
+
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
     # --------------------------------------------------------------------- #
+    def _parse_structure_id(self) -> str:
+        return self._structure_id_input.text().strip() or "ui_ds"
+
+    def _parse_kind(self) -> str:
+        return self._kind_combo.currentText().strip() or "list"
+
+    def _parse_values(self) -> list:
+        raw = self._values_input.text().strip()
+        if not raw:
+            return []
+        parts = [p.strip() for p in raw.split(",") if p.strip()]
+        parsed = []
+        for part in parts:
+            if part.lstrip("-").isdigit():
+                parsed.append(int(part))
+            else:
+                parsed.append(part)
+        return parsed
+
+    def _parse_value(self) -> object:
+        raw = self._value_input.text().strip()
+        if not raw:
+            return None
+        return int(raw) if raw.lstrip("-").isdigit() else raw
+
+    def _parse_index(self) -> object:
+        raw = self._index_input.text().strip()
+        if not raw:
+            return None
+        return int(raw) if raw.lstrip("-").isdigit() else raw
+
+    def _on_create_clicked(self) -> None:
+        sid = self._parse_structure_id()
+        kind = self._parse_kind()
+        values = self._parse_values()
+        cmd = Command(
+            sid,
+            CommandType.CREATE_STRUCTURE,
+            {"kind": kind, "values": values},
+        )
+        self._run_commands([cmd])
+
+    def _on_insert_clicked(self) -> None:
+        sid = self._parse_structure_id()
+        kind = self._parse_kind()
+        payload = {"kind": kind, "value": self._parse_value()}
+        idx = self._parse_index()
+        if idx is not None:
+            payload["index"] = idx
+        cmd = Command(sid, CommandType.INSERT, payload)
+        self._run_commands([cmd])
+
+    def _on_search_clicked(self) -> None:
+        sid = self._parse_structure_id()
+        kind = self._parse_kind()
+        payload = {"kind": kind, "value": self._parse_value()}
+        idx = self._parse_index()
+        if idx is not None:
+            payload["index"] = idx
+        cmd = Command(sid, CommandType.SEARCH, payload)
+        self._run_commands([cmd])
+
+    def _on_delete_clicked(self) -> None:
+        sid = self._parse_structure_id()
+        kind = self._parse_kind()
+        payload = {"kind": kind}
+        idx = self._parse_index()
+        if idx is not None:
+            payload["index"] = idx
+        val = self._parse_value()
+        if val is not None:
+            payload["value"] = val
+        cmd = Command(sid, CommandType.DELETE_NODE, payload)
+        self._run_commands([cmd])
+
+    def _on_delete_all_clicked(self) -> None:
+        sid = self._parse_structure_id()
+        kind = self._parse_kind()
+        cmd = Command(sid, CommandType.DELETE_STRUCTURE, {"kind": kind})
+        self._run_commands([cmd])
+
+    def _run_commands(self, commands: list[Command]) -> None:
+        """Apply a sequence of commands and play their timelines."""
+        self._timer.stop()
+        merged = Timeline()
+        try:
+            for cmd in commands:
+                tl = self._scene_graph.apply_command(cmd)
+                for step in tl.steps:
+                    merged.add_step(step)
+        except CommandError as exc:
+            QMessageBox.critical(self, "Command Error", str(exc))
+            return
+        except Exception as exc:  # pragma: no cover - defensive
+            QMessageBox.critical(self, "Error", str(exc))
+            return
+        if not merged.steps:
+            return
+        self._play_timeline(merged)
+
 
     def _run_bst_example(self) -> None:
         """

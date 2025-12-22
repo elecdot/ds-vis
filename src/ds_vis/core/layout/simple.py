@@ -136,7 +136,7 @@ class SimpleLayoutEngine(LayoutEngine):
                         AnimationOp(
                             op=OpCode.SET_POS,
                             target=node_id,
-                            data={"x": x, "y": y},
+                            data={"x": current[0], "y": current[1]},
                         )
                     )
                 pos_cache[node_id] = current

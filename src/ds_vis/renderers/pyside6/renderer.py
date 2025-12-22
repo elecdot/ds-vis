@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 from PySide6.QtGui import QColor, QPen
+from PySide6.QtCore import QRectF
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
@@ -529,7 +530,7 @@ class PySide6Renderer(Renderer):
         Falls back to (10,10) when scene is empty.
         """
         margin = 12.0
-        content_rect = self._scene.itemsBoundingRect()
+        content_rect = self._content_bounding_rect()
         if content_rect.isNull():
             return margin, margin
         msg_rect = self._message_item.boundingRect()
@@ -538,6 +539,27 @@ class PySide6Renderer(Renderer):
         if y < margin:
             y = content_rect.top() + margin
         return x, y
+
+    def _content_bounding_rect(self) -> QRectF:
+        """
+        Compute bounding rect excluding the message item itself to avoid anchoring near (0,0).
+        """
+        rect = QRectF()
+        any_item = False
+        for node in self._nodes.values():
+            item_rect = node.item.mapToScene(node.item.boundingRect()).boundingRect()
+            rect = rect.united(item_rect)
+            any_item = True
+        for edge in self._edges.values():
+            item_rect = edge.line.mapToScene(edge.line.boundingRect()).boundingRect()
+            rect = rect.united(item_rect)
+            any_item = True
+            if edge.label:
+                label_rect = edge.label.mapToScene(edge.label.boundingRect()).boundingRect()
+                rect = rect.united(label_rect)
+        if not any_item:
+            return QRectF()
+        return rect
 
     def _update_edges_for_node(self, node_id: str) -> None:
         for edge_id, edge in self._edges.items():

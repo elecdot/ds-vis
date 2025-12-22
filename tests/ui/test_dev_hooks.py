@@ -16,7 +16,9 @@ def test_dev_create_list_renders_scene(qt_app):
     window._create_list_dev()
 
     ellipse_items = [
-        item for item in window._scene.items() if isinstance(item, QGraphicsEllipseItem)
+        item
+        for item in window._scene.items()
+        if isinstance(item, QGraphicsEllipseItem)
     ]
     try:
         assert len(ellipse_items) == 3, "Expected three list nodes rendered"
@@ -58,7 +60,7 @@ def test_dev_create_delete_recreate_stable_ids(qt_app):
         assert initial_ids.isdisjoint(recreated_ids)
 
         recreated_positions = [
-            (node.ellipse.pos().x(), node.ellipse.pos().y())
+            (node.item.pos().x(), node.item.pos().y())
             for node in window._renderer._nodes.values()
         ]
         # Layout refresh should place nodes on the line with spacing.
@@ -89,7 +91,7 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
         nodes = window._renderer._nodes
         assert len(nodes) == 3
         assert all(
-            visual.ellipse.brush().color()
+            visual.item.brush().color()
             == window._renderer._config.colors["normal"]
             for visual in nodes.values()
         )
