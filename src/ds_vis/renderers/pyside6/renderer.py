@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
+from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QPen
-from PySide6.QtCore import QRectF
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
@@ -50,7 +50,7 @@ class RendererConfig:
 class NodeVisual:
     """Lightweight holder for node visuals."""
 
-    item: QGraphicsItem
+    item: Union[QGraphicsEllipseItem, QGraphicsRectItem]
     label: Optional[QGraphicsSimpleTextItem] = None
     shape: str = "circle"
     width: float = 0.0
@@ -227,7 +227,7 @@ class PySide6Renderer(Renderer):
             node = self._nodes.get(target)
             edge = self._edges.get(target)
             if node:
-                state_starts[target] = node.item.brush().color()  # type: ignore[arg-type]
+                state_starts[target] = node.item.brush().color()
                 state_targets[target] = desired
             elif edge:
                 state_starts[target] = edge.line.pen().color()
@@ -268,7 +268,7 @@ class PySide6Renderer(Renderer):
                 interp = self._interpolate_color(start_color, end_color, t)
                 node = self._nodes.get(target)
                 if node:
-                    node.item.setBrush(interp)  # type: ignore[arg-type]
+                    node.item.setBrush(interp)
                 edge = self._edges.get(target)
                 if edge:
                     edge.line.setPen(QPen(interp))
@@ -386,7 +386,7 @@ class PySide6Renderer(Renderer):
             item = QGraphicsRectItem(-lane_w / 2, -lane_h / 2, lane_w, lane_h)
             item.setBrush(QColor(0, 0, 0, 0))
             pen = QPen(self._config.colors.get("faded", QColor("#9ca3af")))
-            pen.setStyle(Qt.DashLine)
+            pen.setStyle(Qt.PenStyle.DashLine)
             item.setPen(pen)
         else:
             # rect/bucket are centered on origin to keep setPos as center placement
@@ -482,10 +482,10 @@ class PySide6Renderer(Renderer):
             if node.shape == "bucket":
                 pen = QPen(color)
                 pen.setWidth(2)
-                node.item.setPen(pen)  # type: ignore[arg-type]
+                node.item.setPen(pen)
                 node.item.setBrush(QColor(0, 0, 0, 0))  # keep container hollow
             else:
-                node.item.setBrush(color)  # type: ignore[arg-type]
+                node.item.setBrush(color)
             return
 
         edge = self._edges.get(op.target or "")
@@ -542,7 +542,8 @@ class PySide6Renderer(Renderer):
 
     def _content_bounding_rect(self) -> QRectF:
         """
-        Compute bounding rect excluding the message item itself to avoid anchoring near (0,0).
+        Compute bounding rect excluding the message item itself to avoid
+        anchoring near (0,0).
         """
         rect = QRectF()
         any_item = False
@@ -555,7 +556,9 @@ class PySide6Renderer(Renderer):
             rect = rect.united(item_rect)
             any_item = True
             if edge.label:
-                label_rect = edge.label.mapToScene(edge.label.boundingRect()).boundingRect()
+                label_rect = edge.label.mapToScene(
+                    edge.label.boundingRect()
+                ).boundingRect()
                 rect = rect.united(label_rect)
         if not any_item:
             return QRectF()

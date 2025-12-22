@@ -63,7 +63,7 @@ class SceneGraph:
         # Layout defaults per kind (orientation/spacing等)
         self._kind_layout_config: Dict[str, Mapping[str, object]] = {
             "seqlist": {"orientation": "horizontal", "spacing": 80.0},
-            "list": {"orientation": "horizontal", "spacing": 80.0},
+            "list": {"orientation": "horizontal", "spacing": 120.0},
             "stack": {
                 "orientation": "vertical",
                 "spacing": 80.0,

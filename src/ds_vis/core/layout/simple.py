@@ -37,6 +37,8 @@ class SimpleLayoutEngine(LayoutEngine):
     _structure_positions: Dict[str, Dict[str, Tuple[float, float]]] = field(
         default_factory=dict
     )
+    _structure_containers: Dict[str, str] = field(default_factory=dict)
+    _container_size: Dict[str, Tuple[float, float]] = field(default_factory=dict)
     _row_order: List[str] = field(default_factory=list)
     _dirty_structures: set[str] = field(default_factory=set)
     strategy: LayoutStrategy = LayoutStrategy.LINEAR
@@ -45,9 +47,7 @@ class SimpleLayoutEngine(LayoutEngine):
         self._structure_offsets = offsets
 
     def set_structure_config(self, config: Dict[str, Mapping[str, object]]) -> None:
-        """
-        Inject per-structure layout配置（如 orientation/spacing/row_spacing/start_x/start_y）。
-        """
+        """Inject per-structure layout config (orientation/spacing/rows/offsets)."""
         self._structure_config = config
 
     def apply_layout(self, timeline: Timeline) -> Timeline:
@@ -77,6 +77,8 @@ class SimpleLayoutEngine(LayoutEngine):
         self._structure_nodes.clear()
         self._structure_rows.clear()
         self._structure_positions.clear()
+        self._structure_containers.clear()
+        self._container_size.clear()
         self._row_order.clear()
         self._dirty_structures.clear()
         self._structure_offsets.clear()
@@ -90,6 +92,13 @@ class SimpleLayoutEngine(LayoutEngine):
             structure_id = op.data.get("structure_id")
             node_id = op.target
             if op.op is OpCode.CREATE_NODE and structure_id and node_id:
+                if op.data.get("shape") == "bucket":
+                    self._structure_containers[structure_id] = node_id
+                    width = float(op.data.get("width", 0.0) or 0.0)
+                    height = float(op.data.get("height", 0.0) or 0.0)
+                    self._container_size[structure_id] = (width, height)
+                    self._dirty_structures.add(structure_id)
+                    continue
                 self._assign_row_if_absent(structure_id)
                 nodes = self._structure_nodes.setdefault(structure_id, [])
                 insert_idx = self._extract_index(op.data)
@@ -104,6 +113,9 @@ class SimpleLayoutEngine(LayoutEngine):
                 nodes = self._structure_nodes.get(structure_id, [])
                 if node_id in nodes:
                     nodes.remove(node_id)
+                if self._structure_containers.get(structure_id) == node_id:
+                    self._structure_containers.pop(structure_id, None)
+                    self._container_size.pop(structure_id, None)
                 self._dirty_structures.add(structure_id)
                 if not nodes:
                     self._clear_structure(structure_id)
@@ -115,10 +127,10 @@ class SimpleLayoutEngine(LayoutEngine):
             offset_x, offset_y = self._structure_offsets.get(structure_id, (0.0, 0.0))
             cfg = self._structure_config.get(structure_id, {})
             orientation = str(cfg.get("orientation", "horizontal")).lower()
-            spacing = float(cfg.get("spacing", self.spacing) or self.spacing)
-            row_spacing = float(cfg.get("row_spacing", self.row_spacing) or self.row_spacing)
-            start_x = float(cfg.get("start_x", self.start_x) or self.start_x)
-            start_y = float(cfg.get("start_y", self.start_y) or self.start_y)
+            spacing = _as_float(cfg.get("spacing"), self.spacing)
+            row_spacing = _as_float(cfg.get("row_spacing"), self.row_spacing)
+            start_x = _as_float(cfg.get("start_x"), self.start_x)
+            start_y = _as_float(cfg.get("start_y"), self.start_y)
 
             y = start_y + offset_y + row_spacing * row_index
             pos_cache = self._structure_positions.setdefault(structure_id, {})
@@ -140,6 +152,34 @@ class SimpleLayoutEngine(LayoutEngine):
                         )
                     )
                 pos_cache[node_id] = current
+            # container positioning (optional)
+            container_id = self._structure_containers.get(structure_id)
+            if container_id:
+                width, height = self._container_size.get(structure_id, (0.0, 0.0))
+                if nodes:
+                    min_x = min(pos_cache[nid][0] for nid in nodes)
+                    max_x = max(pos_cache[nid][0] for nid in nodes)
+                    center_x = (min_x + max_x) / 2.0
+                else:
+                    center_x = start_x + offset_x
+                center_y = y  # align bucket center with row baseline
+                container_pos = (center_x, center_y)
+                container_cache = self._structure_positions.setdefault(structure_id, {})
+                if force_dirty or container_cache.get(container_id) != container_pos:
+                    ops.append(
+                        AnimationOp(
+                            op=OpCode.SET_POS,
+                            target=container_id,
+                            data={
+                                "x": container_pos[0],
+                                "y": container_pos[1],
+                                "width": width,
+                                "height": height,
+                            },
+                        )
+                    )
+                container_cache[container_id] = container_pos
+
         self._dirty_structures.clear()
         return ops
 
@@ -166,3 +206,9 @@ class SimpleLayoutEngine(LayoutEngine):
         if isinstance(index_value, int):
             return max(index_value, 0)
         return None
+
+
+def _as_float(value: object | None, default: float) -> float:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return default

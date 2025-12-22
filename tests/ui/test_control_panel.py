@@ -47,3 +47,23 @@ def test_control_panel_insert_then_search(qt_app):
         assert len(window._renderer._nodes) >= 2
     finally:
         window.close()
+
+
+def test_control_panel_create_seqlist_with_bucket(qt_app):
+    """
+    Seqlist renders rectangular cells with bucket container (shape=bucket).
+    """
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        window._structure_id_input.setText("ui_panel_seq")
+        window._kind_combo.setCurrentText("seqlist")
+        window._values_input.setText("1,2")
+        window._on_create_clicked()
+        _drain(window)
+        shapes = {visual.shape for visual in window._renderer._nodes.values()}
+        assert "rect" in shapes
+        assert "bucket" in shapes
+    finally:
+        window.close()

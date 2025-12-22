@@ -8,7 +8,14 @@ def test_simple_layout_vertical_orientation_positions():
     engine = SimpleLayoutEngine(spacing=80.0, row_spacing=200.0)
     engine.set_offsets({"stack_1": (0.0, 0.0)})
     engine.set_structure_config(
-        {"stack_1": {"orientation": "vertical", "spacing": 50.0, "start_x": 10.0, "start_y": 20.0}}
+        {
+            "stack_1": {
+                "orientation": "vertical",
+                "spacing": 50.0,
+                "start_x": 10.0,
+                "start_y": 20.0,
+            }
+        }
     )
 
     timeline = Timeline()

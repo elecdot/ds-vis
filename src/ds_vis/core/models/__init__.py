@@ -18,4 +18,4 @@ from ds_vis.core.models.bst import BstModel
 from ds_vis.core.models.list_model import ListModel
 from ds_vis.core.models.seqlist import SeqlistModel
 
-__all__ = ["BaseModel", "ListModel", "BstModel"]
+__all__ = ["BaseModel", "ListModel", "BstModel", "SeqlistModel"]

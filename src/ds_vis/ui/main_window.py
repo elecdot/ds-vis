@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import sys
+from typing import Any, Dict, List
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QScreen
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
+    QFileDialog,
     QGraphicsScene,
     QGraphicsView,
     QHBoxLayout,
@@ -17,7 +19,6 @@ from PySide6.QtWidgets import (
     QMenu,
     QMenuBar,
     QMessageBox,
-    QFileDialog,
     QPushButton,
     QSplitter,
     QToolBar,
@@ -30,11 +31,7 @@ from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
 from ds_vis.dsl.parser import parse_dsl
-from ds_vis.persistence.json_io import (
-    commands_from_json,
-    load_commands_from_file,
-    save_commands_to_file,
-)
+from ds_vis.persistence.json_io import load_commands_from_file, save_commands_to_file
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer, RendererConfig
 
 # Developer examples (structural timelines only)
@@ -141,7 +138,16 @@ class MainWindow(QMainWindow):
         btn_import = QPushButton("Import JSON", panel)
         btn_export = QPushButton("Export JSON", panel)
 
-        for btn in [btn_create, btn_insert, btn_search, btn_delete, btn_delete_all, btn_dsl, btn_import, btn_export]:
+        for btn in [
+            btn_create,
+            btn_insert,
+            btn_search,
+            btn_delete,
+            btn_delete_all,
+            btn_dsl,
+            btn_import,
+            btn_export,
+        ]:
             btn.setMinimumHeight(28)
             layout.addWidget(btn)
 
@@ -260,12 +266,12 @@ class MainWindow(QMainWindow):
     def _parse_kind(self) -> str:
         return self._kind_combo.currentText().strip() or "list"
 
-    def _parse_values(self) -> list:
+    def _parse_values(self) -> List[object]:
         raw = self._values_input.text().strip()
         if not raw:
             return []
         parts = [p.strip() for p in raw.split(",") if p.strip()]
-        parsed = []
+        parsed: List[object] = []
         for part in parts:
             if part.lstrip("-").isdigit():
                 parsed.append(int(part))
@@ -273,13 +279,13 @@ class MainWindow(QMainWindow):
                 parsed.append(part)
         return parsed
 
-    def _parse_value(self) -> object:
+    def _parse_value(self) -> Any:
         raw = self._value_input.text().strip()
         if not raw:
             return None
         return int(raw) if raw.lstrip("-").isdigit() else raw
 
-    def _parse_index(self) -> object:
+    def _parse_index(self) -> Any:
         raw = self._index_input.text().strip()
         if not raw:
             return None
@@ -299,7 +305,7 @@ class MainWindow(QMainWindow):
     def _on_insert_clicked(self) -> None:
         sid = self._parse_structure_id()
         kind = self._parse_kind()
-        payload = {"kind": kind, "value": self._parse_value()}
+        payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
         if idx is not None:
             payload["index"] = idx
@@ -309,7 +315,7 @@ class MainWindow(QMainWindow):
     def _on_search_clicked(self) -> None:
         sid = self._parse_structure_id()
         kind = self._parse_kind()
-        payload = {"kind": kind, "value": self._parse_value()}
+        payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
         if idx is not None:
             payload["index"] = idx
@@ -319,7 +325,7 @@ class MainWindow(QMainWindow):
     def _on_delete_clicked(self) -> None:
         sid = self._parse_structure_id()
         kind = self._parse_kind()
-        payload = {"kind": kind}
+        payload: Dict[str, object] = {"kind": kind}
         idx = self._parse_index()
         if idx is not None:
             payload["index"] = idx
@@ -369,19 +375,21 @@ class MainWindow(QMainWindow):
 
     def _on_export_clicked(self) -> None:
         if not self._pending_steps:
-            QMessageBox.information(self, "Export", "No commands to export in this session.")
+            QMessageBox.information(
+                self, "Export", "No commands to export in this session."
+            )
             return
         filename, _ = QFileDialog.getSaveFileName(
             self, "Export Commands JSON", "", "JSON Files (*.json);;All Files (*)"
         )
         if not filename:
             return
-        # NOTE: For MVP, export the last played command sequence captured in pending_steps
-        # by reconstructing commands from timeline is non-trivial; we export an empty list
-        # with a placeholder message to avoid silent failure.
+        # NOTE: MVP 导出：暂未重建命令序列，先导出空列表占位。
         try:
             save_commands_to_file([], filename)
-            QMessageBox.information(self, "Export", f"Exported empty command list to {filename}")
+            QMessageBox.information(
+                self, "Export", f"Exported empty command list to {filename}"
+            )
         except CommandError as exc:
             QMessageBox.critical(self, "Export Error", str(exc))
 

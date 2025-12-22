@@ -71,8 +71,8 @@ def test_renderer_respects_custom_config(qt_app):
     node = renderer._nodes.get("node_c")
     assert node is not None
     # radius applied (roughly equals ellipse width/2)
-    assert node.ellipse.rect().width() == config.node_radius * 2
-    assert node.ellipse.brush().color() == config.colors["active"]
+    assert node.item.rect().width() == config.node_radius * 2
+    assert node.item.brush().color() == config.colors["active"]
     # message disabled
     assert not renderer._message_item.isVisible()
 
@@ -103,7 +103,7 @@ def test_renderer_applies_state_color(qt_app):
 
     node = renderer._nodes.get("node_a")
     assert node is not None
-    assert node.ellipse.brush().color() == renderer._config.colors["active"]
+    assert node.item.brush().color() == renderer._config.colors["active"]
 
 
 def test_renderer_applies_highlight_state(qt_app):
@@ -132,7 +132,7 @@ def test_renderer_applies_highlight_state(qt_app):
 
     node = renderer._nodes.get("node_h")
     assert node is not None
-    assert node.ellipse.brush().color() == renderer._config.colors["highlight"]
+    assert node.item.brush().color() == renderer._config.colors["highlight"]
 
 
 def test_renderer_applies_edge_highlight(qt_app):
@@ -248,7 +248,7 @@ def test_renderer_animates_position(qt_app):
 
     node = renderer._nodes.get("n1")
     assert node is not None
-    pos = node.ellipse.pos()
+    pos = node.item.pos()
     assert pos.x() == 100.0
     assert pos.y() == 50.0
 
@@ -316,7 +316,7 @@ def test_renderer_color_interpolation_reaches_target(qt_app):
 
     node = renderer._nodes.get("n1")
     assert node is not None
-    assert node.ellipse.brush().color() == renderer._config.colors["highlight"]
+    assert node.item.brush().color() == renderer._config.colors["highlight"]
 
 
 def test_renderer_sets_and_clears_message(qt_app):

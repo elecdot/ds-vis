@@ -21,6 +21,7 @@ class SeqlistModel(BaseModel):
 
     values: List[Any] = field(default_factory=list)
     _node_ids: List[str] = field(default_factory=list)
+    _container_id: Optional[str] = None
 
     @property
     def kind(self) -> str:
@@ -63,6 +64,7 @@ class SeqlistModel(BaseModel):
         self.values = list(values or [])
         self._node_ids = []
         ops: List[AnimationOp] = []
+        ops.extend(self._create_container_ops(count=len(self.values)))
         for val in self.values:
             node_id = self._create_node_id()
             self._node_ids.append(node_id)
@@ -86,6 +88,15 @@ class SeqlistModel(BaseModel):
                     data={"structure_id": self.structure_id},
                 )
             )
+        if self._container_id:
+            ops.append(
+                AnimationOp(
+                    op=OpCode.DELETE_NODE,
+                    target=self._container_id,
+                    data={"structure_id": self.structure_id},
+                )
+            )
+            self._container_id = None
         self.values.clear()
         self._node_ids.clear()
         timeline.add_step(AnimationStep(ops=ops, label="Delete all"))
@@ -122,6 +133,10 @@ class SeqlistModel(BaseModel):
             )
         )
 
+        resize_ops = self._resize_container_ops()
+        if resize_ops:
+            timeline.add_step(AnimationStep(ops=resize_ops, label="Resize container"))
+
         # Restore states and clear message
         restore_ops = [self._clear_msg()]
         restore_ops.extend(self._restore_all_states())
@@ -136,7 +151,10 @@ class SeqlistModel(BaseModel):
 
         timeline.add_step(
             AnimationStep(
-                ops=[self._msg(f"Delete index {index}"), self._set_state(target_id, "highlight")],
+                ops=[
+                    self._msg(f"Delete index {index}"),
+                    self._set_state(target_id, "highlight"),
+                ],
                 label="Highlight",
             )
         )
@@ -155,6 +173,10 @@ class SeqlistModel(BaseModel):
         del self.values[index]
         del self._node_ids[index]
 
+        resize_ops = self._resize_container_ops()
+        if resize_ops:
+            timeline.add_step(AnimationStep(ops=resize_ops, label="Resize container"))
+
         timeline.add_step(
             AnimationStep(
                 ops=[self._clear_msg()] + self._restore_all_states(), label="Restore"
@@ -163,12 +185,16 @@ class SeqlistModel(BaseModel):
         return timeline
 
     def search(self, value: Any = None, index: Any = None) -> Timeline:
-        timeline = Timeline()
         if value is None and index is None:
             raise ModelError("search requires value or index")
 
+        timeline = Timeline()
         for idx, nid in enumerate(self._node_ids):
-            msg = f"Compare idx {idx}" if value is None else f"Compare {self.values[idx]} with {value}"
+            msg = (
+                f"Compare idx {idx}"
+                if value is None
+                else f"Compare {self.values[idx]} with {value}"
+            )
             timeline.add_step(
                 AnimationStep(
                     ops=[self._msg(msg), self._set_state(nid, "highlight")],
@@ -191,7 +217,7 @@ class SeqlistModel(BaseModel):
                     )
                 )
                 return timeline
-            # mark visited as secondary
+
             timeline.add_step(
                 AnimationStep(
                     ops=[self._set_state(nid, "secondary")], label="Mark visited"
@@ -202,7 +228,10 @@ class SeqlistModel(BaseModel):
             AnimationStep(ops=[self._msg("Not found")], label="Miss")
         )
         timeline.add_step(
-            AnimationStep(ops=[self._clear_msg()] + self._restore_all_states(), label="Restore")
+            AnimationStep(
+                ops=[self._clear_msg()] + self._restore_all_states(),
+                label="Restore",
+            )
         )
         return timeline
 
@@ -251,7 +280,8 @@ class SeqlistModel(BaseModel):
         self.values[target_idx] = new_value
         timeline.add_step(
             AnimationStep(
-                ops=[self._clear_msg()] + self._restore_all_states(), label="Restore"
+                ops=[self._clear_msg()] + self._restore_all_states(),
+                label="Restore",
             )
         )
         return timeline
@@ -266,7 +296,11 @@ class SeqlistModel(BaseModel):
         return AnimationOp(
             op=OpCode.CREATE_NODE,
             target=node_id,
-            data={"structure_id": self.structure_id, "label": str(value)},
+            data={
+                "structure_id": self.structure_id,
+                "label": str(value),
+                "shape": "rect",
+            },
         )
 
     def _set_state(self, target: str, state: str) -> AnimationOp:
@@ -298,3 +332,38 @@ class SeqlistModel(BaseModel):
             self._set_state(nid, "normal")
             for nid in list(self._node_ids)
         ]
+
+    def _create_container_ops(self, count: int) -> list[AnimationOp]:
+        width = (
+            max(1, count) * 80.0 + 40.0
+        )  # approximate spacing; layout controls positions
+        height = 40.0
+        container_id = self.allocate_node_id("bucket")
+        self._container_id = container_id
+        return [
+            AnimationOp(
+                op=OpCode.CREATE_NODE,
+                target=container_id,
+                data={
+                    "structure_id": self.structure_id,
+                    "shape": "bucket",
+                    "width": width,
+                    "height": height,
+                },
+            )
+        ]
+
+    def _resize_container_ops(self) -> list[AnimationOp]:
+        if self._container_id is None:
+            return self._create_container_ops(count=len(self._node_ids))
+        ops: list[AnimationOp] = []
+        # delete old
+        ops.append(
+            AnimationOp(
+                op=OpCode.DELETE_NODE,
+                target=self._container_id,
+                data={"structure_id": self.structure_id},
+            )
+        )
+        ops.extend(self._create_container_ops(count=len(self._node_ids)))
+        return ops

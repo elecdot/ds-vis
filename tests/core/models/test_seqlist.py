@@ -15,11 +15,13 @@ def test_create_and_insert_generates_nodes():
     model = SeqlistModel(structure_id="seq1")
     tl = model.create(values=[1, 2])
     creates = _ops_by_code(tl, OpCode.CREATE_NODE)
-    assert len(creates) == 2
+    # bucket + two cells
+    assert len(creates) == 3
 
     ins = model.insert(1, 3)
     creates_ins = _ops_by_code(ins, OpCode.CREATE_NODE)
-    assert len(creates_ins) == 1
+    # new node + resized bucket
+    assert len(creates_ins) == 2
     assert model.values == [1, 3, 2]
 
 
@@ -34,7 +36,8 @@ def test_delete_index_updates_state():
     model.create([1, 2, 3])
     tl = model.delete_index(1)
     deletes = _ops_by_code(tl, OpCode.DELETE_NODE)
-    assert len(deletes) == 1
+    # delete node + resized bucket
+    assert len(deletes) == 2
     assert model.values == [1, 3]
 
 
@@ -63,6 +66,5 @@ def test_update_by_index_and_value():
     tl_idx = model.update(new_value=9, index=1)
     set_labels = _ops_by_code(tl_idx, OpCode.SET_LABEL)
     assert any(op.data.get("label") == "9" for op in set_labels)
-    tl_val = model.update(new_value=7, value=3)
+    model.update(new_value=7, value=3)
     assert model.values == [1, 9, 7]
-
