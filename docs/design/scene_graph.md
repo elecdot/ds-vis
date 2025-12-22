@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.4
+version: v0.5
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -36,8 +36,12 @@ last_updated: 2025-12-24
 
 ### 4.2 新增模型
 - 新 Model 需实现 `BaseModel`（`kind`/`node_count`/`apply_operation`）。
-- 在 `_model_registry` 注册 `kind -> factory`。
+- 使用 `register_model_factory`（定义在 `command_schema.py`）注册 `kind -> factory`，SceneGraph 在运行时查询全局 registry，无需改核心代码。
 - 必须生成结构 Ops（CREATE/DELETE/SET_STATE/SET_LABEL 等），不生成布局信息。
+
+### 4.3 布局路由与分区
+- kind→LayoutStrategy 路由在 SceneGraph 维护（P0.7：list→LINEAR，bst→TREE，占位 tree/dag）。
+- 每个结构在下发 LayoutEngine 前注入 `(dx, dy)` 偏移（按策略分组、行累加）以避免混排重叠；偏移为占位参数，可替换为配置化/容器分区算法。
 
 ## 5. 错误处理
 
@@ -45,10 +49,11 @@ last_updated: 2025-12-24
 - Model 抛 `ModelError` 时：SceneGraph 透传或转为 `SceneError`。
 - 上层（UI/DSL）负责兜底展示。
 
-## 6. 当前限制（P0.6）
+## 6. 当前限制（P0.7）
 
-- 当前命令覆盖 list：CREATE_STRUCTURE / DELETE_STRUCTURE / DELETE_NODE / INSERT / SEARCH / UPDATE。
-- 未实现 persistence 的导入导出。
-- 暂无 seek/倒播，需要 Layout/Renderer 支持状态重建后再扩展。
+- 命令覆盖 list & bst；其他结构（AVL/Huffman/GitGraph）未实现。
+- Layout 路由与偏移为占位算法，复杂混排需后续自动分区。
+- 播放仍阻塞，无 seek/倒播；若未来支持需提供 Layout 无状态重放接口。
+- DSL/LLM 入口仅 JSON 占位，无真实语法绑定。
 
 > 交叉引用：命令/校验规范见 `command_schema.py`，架构边界见 `architecture.md`。

@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.2
+version: v0.3
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -41,7 +41,7 @@ last_updated: 2025-12-24
   - `show_messages`：是否渲染 SET_MESSAGE/CLEAR_MESSAGE（可禁用）
   - `easing`：占位（当前仅线性）
 - 默认构造保持视觉/阻塞播放不变，配置为可选注入。
-- 消息策略：固定 HUD 文本，若 show_messages=False 则忽略消息 Ops。
+- 消息策略：SET_MESSAGE 默认锚定场景 bbox 顶部居中（PySide6 基线），若 show_messages=False 则忽略消息 Ops；后续可按结构 bbox 定制或提供富提示。
 
 ## 6. 扩展点
 
@@ -52,7 +52,7 @@ last_updated: 2025-12-24
 ## 7. 当前限制（P0.7）
 
 - 动画仍为同步阻塞插值，可能导致 UI 卡顿；max_frames/easing 仅占位。
-- 消息为固定位置文本，无节点锚定/富提示。
-- 配置与 Layout 未联动（尺寸/间距仍在 SimpleLayout 内硬编码）。
+- 消息锚定场景 bbox，未按结构/节点做精准定位；无富提示。
+- 配置与 Layout 未联动（尺寸/间距仍在 SimpleLayout/TreeLayout 内硬编码）。
 
 > 交叉引用：Ops 协议见 `ops_spec.md`，Style/Metrics 约束见 `architecture.md` 第 7 节。

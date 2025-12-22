@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.17
+version: v0.7.18
 status: Active
 last_updated: 2025-12-24
 ---
@@ -9,32 +9,30 @@ last_updated: 2025-12-24
 
 This document captures the active delivery phase, what is complete, current assumptions/limitations, and the next planned phase. It is the canonical status reference (SSOT) and should stay minimal.
 
-## Active Phase: P0.7 — ListModel Full Coverage (Model-First)
-- Scope: ListModel 操作集补全（create/insert/delete/search/update/delete_all），L2 微步骤与消息提示，形成可复用的 builder+step 编排范式；提供 Dev 全链路验收 hook。
+## Active Phase: P0.7 — List + Tree Baseline（Model-First）
+- Scope: 在 ListModel 全链路基础上，交付 BST/Tree 最小可用版本（create/insert/search/delete/delete_all），验证“按指令快速扩展”链路，为 AVL/Huffman 等树类模型打样。
 - Completion highlights:
-  - ListModel 支持 create/insert/delete_index/delete_all/search/update（index/value 双模式），全链路 L2 微步骤 + 消息提示；sentinel 仅展示用，不计入逻辑节点，ID 走 allocator。
-  - 颜色语义细化：遍历使用 secondary，旧边使用 to_delete，关键节点/新边用 highlight。
-  - Dev hook `_play_list_full_demo` 串联全操作（含空表、头/中/尾插、search 命中/未命中、update、delete、clear），UI 冒烟测试覆盖。
-  - 新增 CommandType.UPDATE，SceneGraph/command_schema 路由与校验齐备；核心测试、ruff/mypy 通过。
+  - ListModel：create/insert/delete_index/delete_all/search/update（index/value 双模式）全链路 L2 微步骤 + 消息提示；sentinel 展示用，ID 使用 allocator；Dev hook 串联全操作，UI 冒烟测试覆盖。
+  - BST：支持 create/insert/search/delete_value/delete_all；删除使用后继替换法并处理后继带右子；搜索/插入/删除的节点与边状态有统一恢复；消息锚点基于场景 bbox，靠近结构区域；Dev hook `_play_bst_full_demo` 覆盖命中/未命中搜索与三类删除。
+  - Layout：SceneGraph 按 kind→策略路由（list→LINEAR，bst→TREE），为每个结构分配 `(dx, dy)` 偏移（按策略分组行累加）注入 LayoutEngine，避免多结构重叠；TreeLayout 注入 SET_POS。
+  - SceneGraph/Schema：通过全局 registry 注册命令与 model factory，bst 无需硬编码；校验函数具名且统一抛 CommandError。
+  - Tests：全量 `uv run pytest`、ruff/mypy 通过（授权访问 uv 缓存）；新增“后继带右子”回归用例覆盖重连逻辑。
 - Active assumptions/limitations:
-  - 动画仍为同步阻塞插值，未支持 seek/skip/倒播；Renderer 配色/形状硬编码。
-  - 结构覆盖面仍仅 list；其他模型为空壳，ID 稳定性未落地。
-  - Layout 仍左对齐、固定尺寸、有状态顺序执行；缺少 Metrics/Style 配置。
-  - UI 仍为 Dev playground：单场景，无多 Timeline 管理；message 仍为固定位置文本。
-  - Qt 测试依赖 `QT_QPA_PLATFORM=offscreen`；命令需在项目根执行，uv 缓存可设置 `UV_CACHE_DIR=./tmp/uv-cache`。
+  - 动画仍为同步阻塞插值，未支持 seek/skip/倒播；后继遍历的恢复仍可细化，但不影响拓扑正确性。
+  - Layout 分区为占位算法，偏移常量硬编码；消息锚点依赖场景 bbox，未按结构局部优化。
+  - Renderer 无箭头/端点裁剪，边渐入渐出为整体插值；状态/颜色未配置化。
+  - UI 为 Dev playground：单场景，无多 Timeline 管理；BST/DSL 入口为开发者菜单，未做正式用户流程。
+  - DSL 仍是 JSON 占位，无变量/语法；LLM 仅接口，无外部调用。
+  - Qt 测试依赖 `QT_QPA_PLATFORM=offscreen`；如需自定义 uv 缓存可设 `UV_CACHE_DIR=./tmp/uv-cache`。
 
 ### High-order issues (critical)
-- 时间控制阻塞，缺少 skip/seek/倒播与非阻塞调度；性能/体验需迭代。
-- 命令/模型覆盖面有限：仅 list；扩展 BST/GitGraph 需补注册表、模型与测试。
-- 结构 ID 稳定性仅在 list 覆盖，其他结构仍为索引派生。
-- 多结构视觉分区（结构容器框/区域分配）未落地，混排可能冲突。
-- Layout stateful，缺少重放/重建接口，未来 seek/重排 timeline 受阻；多布局策略缺失（树/DAG 等）。
-- Renderer 样式/动画参数未配置化，消息固定位置；缺少状态/颜色规范表，跨模型扩展易不一致。
-- Dev 合并 timeline 依赖“预注入 SET_POS 的顺序播放”，若未来布局需重建/seek，需调整策略。
-- DSL/LLM 入口与最小语法缺失，即便层次清晰，Agent 缺锚点。
-- command_schema 验证用 lambda+抛异常技巧，可读性差，扩展时易踩坑。
-- 设计文档阶段标记滞后（architecture/animation 等仍为 P0.6），需在后续同步新增命令/颜色语义/消息习惯。
-- 测试盲区：BST/GitGraph 等模型仍为空壳且未在文档显式标记，容易误判已部分实现；需在扩展前明确状态与期望。
+- 动画调度阻塞，缺少 skip/seek/倒播；Renderer/scene 仍单线程播放，复杂结构可能卡顿。
+- 多结构视觉分区仍为常量偏移，未有容器/自动分区；消息锚点基于场景 bbox，未按结构定制。
+- Renderer 样式/动画参数未配置化：无箭头、无端点裁剪，渐绘/缩回缺失；颜色/状态未集中规范。
+- Layout stateful，缺少重放/重建接口，未来 seek/重排 timeline 受阻；DAG/多树布局策略缺位。
+- DSL 仅 JSON 占位，无语法/变量/作用域；LLM 仅接口，无安全过滤；命令批量仍阻塞。
+- UI 为 Dev playground，无正式播放控制、无多 Timeline 管理。
+- 文档需持续同步：新增树类模型、消息锚点与布局偏移需在设计文档和 registry 中更新；未来 Agent 需要“全流程指南”作为默认入口。
 
 ## Completed Plan: Milestone 1 — Layout 抽象与策略化（兼容完成）
 - 交付：LayoutEngine/reset + LayoutStrategy (LINEAR/TREE/DAG 占位)；SimpleLayout 实现接口并保留 LINEAR 默认；SceneGraph 兼容接入；文档/registry 同步。
@@ -71,18 +69,14 @@ This document captures the active delivery phase, what is complete, current assu
   - 未定义协议版本/流式导入，错误即抛。
 
 ## Active Plan: Milestone 6 — 树形模型起步（基础骨架）
-- 目标：验证“按指令快速扩展”能力，先落地一个链式存储的树模型最小集（可作为 BST/AVL/Huffman 的共用骨架），覆盖 create/insert 微步骤范式与命令注册。
-- 范围：
-  - Model：新增 Tree 基础模型（链式节点、左右子指针、ID/Edge key 策略、L2 微步骤模板）。
-  - SceneGraph/Schema：注册树类命令路由与校验（至少 create/insert，占位旋转/平衡可暂存 xfail）。
-  - Layout：简单树形坐标占位（可用静态层次或复用 SimpleLayout 变体，确保与线性结构不冲突），必要时标注 TODO。
-  - Renderer/UI/Dev：最小冒烟 Hook（Dev 菜单或 CLI 回放）验证全链路。
-- 验收：模型/SceneGraph/命令校验测试；可视化冒烟（基础节点/边呈现）；全量 CI 通过；文档/registry 同步。
-- 风险/假设：
-  - 树形 Layout 选择与多结构混排：需避免与线性布局重叠，可能需临时固定原点或分区策略占位。
-  - 非阻塞动画缺失，复杂树操作（旋转）可能卡顿；旋转可先以占位/xfail 锁定预期。
-  - 仅做最小骨架，后续 AVL 旋转/平衡逻辑、真实 DSL 语法仍需迭代。
-- 当前进展：已落地 BST 骨架（kind=bst，create/insert/delete_all）、注册命令/工厂、SceneGraph 流程与 UI/CLI 冒烟测试通过；增加 TreeLayoutEngine（中序层次占位）并在 SceneGraph 中按 kind=bst 路由（tree/huffman 预留未实现）；引入 per-structure 偏移与 kind→策略路由，避免多结构重叠，仍为占位算法。
+- 目标：验证“按指令快速扩展”能力，交付 BST 最小可用全链路（Model/Schema/Layout/Renderer/UI Hook），为后续 AVL/Huffman/DAG 铺路。
+- 进展：
+  - BST 模型已支持 create/insert/search/delete_all/delete_value，删除后继带右子时正确重连；SceneGraph/Schema registry 化，无硬编码；Layout 路由与 per-structure 偏移避免多结构重叠；Dev UI `_play_bst_full_demo` 覆盖插入/查找/删除。
+  - Renderer 消息锚点改为场景 bbox 顶部居中，方便观察；PySide6 renderer 仍阻塞播放，但冒烟通过。
+- 待办 / 风险：
+  - 动画可进一步细化：后继遍历的状态恢复、删除过程分步消息；边箭头/端点裁剪与渐绘待 P0.8。
+  - Layout 分区仍为常量偏移，复杂混排（多树+线性+DAG）需后续引入自动分区/容器框。
+  - UI 仍为 Dev hook，缺少正式用户流与播放控制（seek/skip）；DSL/LLM 未与树语义绑定。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
@@ -92,6 +86,10 @@ This document captures the active delivery phase, what is complete, current assu
 ### P0.8 子任务（Renderer 动画增强，待启动）
 - 有向边视觉：箭头绘制 + 起终点从节点边界算起（复用 node_radius）。
 - 边动画：CREATE_EDGE/DELETE_EDGE 支持端点插值式“渐绘/缩回”；配置开关可放在 RendererConfig。
+
+## Upcoming: Milestone 7 — 全流程开发指南
+- 目标：输出“从需求到交付”的可操作指南，确保新 Agent 可按模板快速扩展模型/命令/布局/渲染/UI/测试/文档。
+- 内容占位：TDD 步骤、微步骤拆解与颜色/消息约定、SceneGraph/Schema 注册流程、Layout/Renderer 钩子、Dev/UI 验收、DSL/JSON 流程、CI 检查清单。
 
 ## Invariants
 - project_state.md is the only authority on current phase.

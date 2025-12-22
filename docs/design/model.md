@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.6
+version: v0.7
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -42,18 +42,18 @@ last_updated: 2025-12-24
 
 该模式是推荐实践，不是协议或强制规范。
 
-## 6. 当前限制（P0.6）
+## 6. 当前限制（P0.7）
 
-- 除 list 外的模型仍为空壳。
-- 可复用的 builder 库仍为轻量 helper，未形成通用库。
-- ID 稳定性策略仅在 list 落地，其他结构待补。
+- 可复用的 builder 库仍为轻量 helper，未形成强制共用抽象（动画细化需按模型自定义）。
+- ID 稳定性策略已用于 list/bst，其他模型待补；跨模型统一 allocator 策略仍需评估。
+- 非阻塞/seek 未落地，模型侧缺少重放/重建接口（需与 Layout/Renderer 协同）。
 
 ## 7. ListModel 实现备注（P0.7）
 
 - 操作覆盖：create / insert / delete_index / delete_all / search（index/value）/ update（index/value），均输出 L2 微步骤。
 - sentinel 仅用于展示空表：不计入 `_node_ids` / `node_count`，ID 通过 allocator 生成，空表插入前会删除 sentinel。
 - 颜色语义：遍历类步骤使用 `secondary`，旧边（待重连）使用 `to_delete`，关键节点/新边使用 `highlight`。
-- 消息提示：insert/search/update 会在步骤前后用 `SET_MESSAGE`，结束后 `CLEAR_MESSAGE`；消息位置由 Renderer 决定（当前为固定文本）。
+- 消息提示：insert/search/update 在步骤前后用 `SET_MESSAGE`，结束后 `CLEAR_MESSAGE`；PySide6 Renderer 将消息锚定场景 bbox 顶部居中。
 
 ## 8. 新模型开发指北（模板，P0.7）
 
@@ -65,14 +65,14 @@ last_updated: 2025-12-24
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
 
-## 9. BST 骨架（P0.7 起步）
-- 目标：提供 BST 风格的链式基础骨架（create/insert/delete_all），为后续 AVL 等二叉平衡树复用；通用树/Huffman 将另行预留。
+## 9. BST 实现备注（P0.7）
+- 目标：树类模型的首个可交付版本，为 AVL/Huffman 等复用微步骤范式与注册方式。
 - 实现要点：
-  - kind=`bst`，注册 CREATE_STRUCTURE/INSERT/DELETE_STRUCTURE；payload 使用 `value` 插入，create 逐个 insert。
-  - 状态：节点保存 key、左右子、parent；ID 单调；边 key `edge_id(edge_kind, src, dst)`，edge_kind=`left`/`right`。
-  - 微步骤：遍历路径 secondary，高亮父节点，CREATE_NODE/CREATE_EDGE 标记 L/R，末尾恢复状态 + CLEAR_MESSAGE。无 SET_POS，交由布局注入（当前 TreeLayout 占位）。
-  - 删除：DELETE_STRUCTURE 走 delete_all，先删边后删节点，无 sentinel。
+  - kind=`bst`，支持 create/insert/search/delete_value/delete_all；重复键策略：走右子树。
+  - 状态：节点存 key/left/right/parent；ID 单调；边 key `edge_id(edge_kind, src, dst)`（edge_kind=`left`/`right`）。
+  - 微步骤：查找/插入/删除路径节点高亮，边用 secondary；删除双子树使用后继替换法，重连边后删除后继，统一 Restore 状态；消息在步骤开头提示、结尾清空。
+  - Layout/Pos：不直接生成 SET_POS，由 SceneGraph 路由到 TreeLayout 并注入偏移。
 - 限制/待办：
-  - 未实现 search/delete/旋转/平衡，重复键策略为“右子树”；需在 AVL/后续迭代补充。
-  - 树布局为占位算法，混排分区/避让未完成；通用树/Huffman kind 预留但未实现。
-  - DSL 仍为 JSON 占位，真实 DSL 需同步命令/校验。
+  - 后继遍历/删除可进一步分步提示；旋转/平衡未实现（AVL/红黑树留待后续）。
+  - 混排分区为常量偏移，树尺寸未参与计算；箭头/端点裁剪与渐绘依赖 Renderer P0.8。
+  - DSL 仍为 JSON 占位，未绑定树语义；Git/Huffman/DAG kind 预留未实现。
