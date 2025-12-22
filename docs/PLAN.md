@@ -25,7 +25,7 @@
 
 ### Milestone 5：DSL/LLM 入口 + Persistence
 - 定义最小 JSON Command 协议（导入/导出）作为 persistence 入口。
-- 定义 DSL 语法（可编译为 Command 列表）与解析 stub；UI/CLI 入口钩子。
+- 定义 DSL 语法（可编译为 Command 列表）与解析 stub（当前接受 JSON 作为 DSL 输入的占位）；UI/CLI 入口钩子。
 - LLM 适配占位：接口定义（自然语言 -> DSL/Command），不实现模型调用。
 - 测试：DSL 解析正/误用例，JSON 导入/导出往返测试。
 
