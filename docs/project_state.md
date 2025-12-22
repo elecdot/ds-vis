@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.7
+version: v0.7.9
 status: Active
 last_updated: 2025-12-24
 ---
@@ -56,6 +56,11 @@ This document captures the active delivery phase, what is complete, current assu
 - 范围：`src/ds_vis/core/scene/command_schema.py`、必要的 SceneGraph 适配、相关测试与文档（scene_graph 设计说明、registry）。
 - 验收：命令校验逻辑清晰可读，现有命令/错误消息保持一致；测试/CI 通过；文档同步更新。
 - 注意：不改变 Ops/命令协议行为，避免影响现有 UI/Dev hook；为未来扩展（AVL/DSL/LLM）留出注册/验证锚点。
+- 当前进展：命名校验函数替换匿名 lambda，统一 CommandError；引入 register_command/register_model_factory，SCHEMA/MODEL_OP/MODEL_FACTORY registry 支持默认 list 注册；SceneGraph 使用全局工厂 registry，去除硬编码；相关测试通过，scene_graph 文档/index 同步。
+
+## Completed Plan: Milestone 4 — SceneGraph/command_schema 可维护性
+- 交付：可读校验函数 + 统一 CommandError；注册 helper（register_command/register_model_factory）与全局 registry；SceneGraph 使用全局模型工厂，无硬编码；文档/registry 同步。
+- 测试：命令校验/SceneGraph 路由测试 + 全量 pytest/ruff/mypy 通过。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。

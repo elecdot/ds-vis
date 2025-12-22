@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.3
+version: v0.4
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -31,8 +31,7 @@ last_updated: 2025-12-24
 ## 4. 扩展点
 
 ### 4.1 新增命令
-- 在 `command_schema.py` 中添加 schema。
-- 在 `MODEL_OP_REGISTRY` 中映射到 Model 操作名。
+- 在 `command_schema.py` 中使用 `register_command` 注册：CommandType + kind -> CommandSchema + model_op。
 - 在 SceneGraph handler 中路由到对应操作，保持校验与错误一致。
 
 ### 4.2 新增模型
