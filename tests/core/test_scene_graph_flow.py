@@ -216,3 +216,35 @@ def test_update_routes_and_sets_label(scene_graph, create_cmd_factory):
     all_ops = [op for step in timeline.steps for op in step.ops]
     assert any(op.op is OpCode.SET_LABEL for op in all_ops)
     assert any(op.op is OpCode.SET_STATE for op in all_ops)
+
+
+def test_tree_create_and_insert_flow(scene_graph, create_cmd_factory):
+    create_cmd = create_cmd_factory(
+        "tree_1", CommandType.CREATE_STRUCTURE, kind="tree", values=[5]
+    )
+    timeline_create = scene_graph.apply_command(create_cmd)
+
+    create_nodes = [
+        op
+        for step in timeline_create.steps
+        for op in step.ops
+        if op.op is OpCode.CREATE_NODE
+    ]
+    assert create_nodes
+    assert any(
+        op.op is OpCode.SET_POS for step in timeline_create.steps for op in step.ops
+    )
+
+    insert_cmd = create_cmd_factory(
+        "tree_1", CommandType.INSERT, kind="tree", value=3
+    )
+    timeline_insert = scene_graph.apply_command(insert_cmd)
+
+    edge_ops = [
+        op
+        for step in timeline_insert.steps
+        for op in step.ops
+        if op.op is OpCode.CREATE_EDGE
+    ]
+    assert edge_ops
+    assert edge_ops[0].data.get("label") in ("L", "R")

@@ -124,7 +124,7 @@ def register_model_factory(kind: str, factory: Callable[[str], "BaseModel"]) -> 
 
 
 def _register_defaults() -> None:
-    from ds_vis.core.models import ListModel
+    from ds_vis.core.models import BstModel, ListModel
 
     register_command(
         CommandType.CREATE_STRUCTURE,
@@ -172,6 +172,27 @@ def _register_defaults() -> None:
     )
     register_model_factory(
         "list", lambda structure_id: ListModel(structure_id=structure_id)
+    )
+    register_command(
+        CommandType.CREATE_STRUCTURE,
+        "tree",
+        CommandSchema(required={"kind": str}, optional={"values": (list, tuple)}),
+        "create",
+    )
+    register_command(
+        CommandType.INSERT,
+        "tree",
+        CommandSchema(required={"kind": str, "value": object}),
+        "insert",
+    )
+    register_command(
+        CommandType.DELETE_STRUCTURE,
+        "tree",
+        CommandSchema(required={"kind": str}),
+        "delete_all",
+    )
+    register_model_factory(
+        "tree", lambda structure_id: BstModel(structure_id=structure_id)
     )
 
 

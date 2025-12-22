@@ -25,6 +25,8 @@ def test_model_op_registry_is_configured():
     assert MODEL_OP_REGISTRY[(CommandType.DELETE_STRUCTURE, "list")] == "delete_all"
     assert MODEL_OP_REGISTRY[(CommandType.SEARCH, "list")] == "search"
     assert MODEL_OP_REGISTRY[(CommandType.UPDATE, "list")] == "update"
+    assert MODEL_OP_REGISTRY[(CommandType.CREATE_STRUCTURE, "tree")] == "create"
+    assert MODEL_OP_REGISTRY[(CommandType.INSERT, "tree")] == "insert"
 
 
 def test_schema_registry_rejects_extra_fields():
