@@ -43,6 +43,10 @@ class BstModel(BaseModel):
             return self.create(payload.get("values"))
         if op == "insert":
             return self.insert(value=payload.get("value"))
+        if op == "search":
+            return self.search(value=payload.get("value"))
+        if op == "delete_value":
+            return self.delete_value(value=payload.get("value"))
         if op == "delete_all":
             return self.delete_all()
         raise ModelError(f"Unsupported operation: {op}")
@@ -76,13 +80,9 @@ class BstModel(BaseModel):
         if self._root_id is None:
             node_id = self._create_node(value, parent=None)
             ops = [
-                AnimationOp(
-                    op=OpCode.SET_MESSAGE,
-                    target=None,
-                    data={"text": f"Insert {value} as root"},
-                ),
+                self._msg(f"Insert {value} as root"),
                 self._op_create_node(node_id, value),
-                AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={}),
+                self._clear_msg(),
             ]
             timeline.add_step(AnimationStep(ops=ops))
             return timeline
@@ -95,13 +95,7 @@ class BstModel(BaseModel):
         while parent_id:
             path.append(parent_id)
             parent_node = self._nodes[parent_id]
-            traversal_ops.append(
-                AnimationOp(
-                    op=OpCode.SET_STATE,
-                    target=parent_id,
-                    data={"state": "secondary", "structure_id": self.structure_id},
-                )
-            )
+            traversal_ops.append(self._set_state(parent_id, "secondary"))
             if value < parent_node.key:
                 direction = "left"
                 if parent_node.left:
@@ -120,34 +114,120 @@ class BstModel(BaseModel):
 
         new_id = self._create_node(value, parent=parent_id, direction=direction)
         connect_ops = [
-            AnimationOp(
-                op=OpCode.SET_MESSAGE,
-                target=None,
-                data={"text": f"Insert {value} to {direction} of {parent_id}"},
-            ),
-            AnimationOp(
-                op=OpCode.SET_STATE,
-                target=parent_id,
-                data={"state": "highlight", "structure_id": self.structure_id},
-            ),
+            self._msg(f"Insert {value} to {direction} of {parent_id}"),
+            self._set_state(parent_id, "highlight"),
             self._op_create_node(new_id, value),
             self._op_create_edge(parent_id, new_id, direction),
         ]
         timeline.add_step(AnimationStep(ops=connect_ops))
 
         # 收尾：恢复状态、清理消息
-        restore_ops = [
-            AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={})
-        ]
+        restore_ops = [self._clear_msg()]
         for node_id in path:
-            restore_ops.append(
-                AnimationOp(
-                    op=OpCode.SET_STATE,
-                    target=node_id,
-                    data={"state": "normal", "structure_id": self.structure_id},
-                )
-            )
+            restore_ops.append(self._set_state(node_id, "normal"))
         timeline.add_step(AnimationStep(ops=restore_ops))
+        return timeline
+
+    def search(self, value: Any) -> Timeline:
+        if value is None:
+            raise ModelError("search requires value")
+        timeline = Timeline()
+        if self._root_id is None:
+            timeline.add_step(
+                AnimationStep(ops=[self._msg("Tree is empty"), self._clear_msg()])
+            )
+            return timeline
+
+        current = self._root_id
+        visited: list[str] = []
+        while current:
+            node = self._nodes[current]
+            compare_ops = [
+                self._msg(f"Compare {value} with {node.key}"),
+                self._set_state(current, "highlight"),
+            ]
+            timeline.add_step(AnimationStep(ops=compare_ops, label="Compare"))
+
+            if value == node.key:
+                timeline.add_step(
+                    AnimationStep(
+                        ops=[
+                            self._msg(f"Found {value}"),
+                            self._set_state(current, "highlight"),
+                        ],
+                        label="Found",
+                    )
+                )
+                restore_ops = [self._clear_msg()]
+                for nid in visited + [current]:
+                    restore_ops.append(self._set_state(nid, "normal"))
+                timeline.add_step(AnimationStep(ops=restore_ops, label="Restore"))
+                return timeline
+
+            direction = "left" if value < node.key else "right"
+            edge_target = node.left if direction == "left" else node.right
+            visited.append(current)
+            if edge_target is None:
+                timeline.add_step(
+                    AnimationStep(
+                        ops=[
+                            self._msg(f"{value} not found"),
+                            self._set_state(current, "secondary"),
+                        ],
+                        label="Miss",
+                    )
+                )
+                restore_ops = [self._clear_msg()]
+                for nid in visited:
+                    restore_ops.append(self._set_state(nid, "normal"))
+                timeline.add_step(AnimationStep(ops=restore_ops, label="Restore"))
+                return timeline
+            current = edge_target
+
+        return timeline
+
+    def delete_value(self, value: Any) -> Timeline:
+        if value is None:
+            raise ModelError("delete_value requires value")
+        timeline = Timeline()
+        if self._root_id is None:
+            return timeline
+
+        # locate node
+        target_id, search_steps = self._find_node(value)
+        for step in search_steps:
+            timeline.add_step(step)
+        if target_id is None:
+            return timeline
+
+        ops: list[AnimationOp] = []
+        ops.append(self._msg(f"Delete {value}"))
+        ops.append(self._set_state(target_id, "highlight"))
+
+        node = self._nodes[target_id]
+        if node.left is None and node.right is None:
+            ops.extend(self._delete_leaf_ops(target_id))
+        elif node.left is None or node.right is None:
+            ops.extend(self._delete_single_child_ops(target_id))
+        else:
+            # two children: use successor
+            succ_id, succ_ops = self._find_successor_ops(node.right)
+            for step in succ_ops:
+                timeline.add_step(step)
+            if succ_id:
+                succ_node = self._nodes[succ_id]
+                ops.append(self._set_state(succ_id, "highlight"))
+                ops.append(self._set_label(target_id, succ_node.key))
+                ops.extend(self._delete_leaf_ops(succ_id, reroute_parent=False))
+        ops.append(self._clear_msg())
+        timeline.add_step(AnimationStep(ops=ops, label="Delete"))
+        # restore states
+        timeline.add_step(
+            AnimationStep(
+                ops=[self._set_state(nid, "normal") for nid in self._nodes.keys()],
+                label="Restore",
+            )
+        )
         return timeline
 
     def delete_all(self) -> Timeline:
@@ -225,3 +305,138 @@ class BstModel(BaseModel):
             target=self.edge_id(direction, parent_id, child_id),
             data={"structure_id": self.structure_id},
         )
+
+    def _set_state(self, target: str, state: str) -> AnimationOp:
+        return AnimationOp(
+            op=OpCode.SET_STATE,
+            target=target,
+            data={"state": state, "structure_id": self.structure_id},
+        )
+
+    def _set_label(self, target: str, value: Any) -> AnimationOp:
+        return AnimationOp(
+            op=OpCode.SET_LABEL,
+            target=target,
+            data={"structure_id": self.structure_id, "label": str(value)},
+        )
+
+    def _msg(self, text: str) -> AnimationOp:
+        return AnimationOp(op=OpCode.SET_MESSAGE, target=None, data={"text": text})
+
+    def _clear_msg(self) -> AnimationOp:
+        return AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={})
+
+    def _find_node(self, value: Any) -> tuple[Optional[str], list[AnimationStep]]:
+        steps: list[AnimationStep] = []
+        current = self._root_id
+        visited: list[str] = []
+        while current:
+            node = self._nodes[current]
+            steps.append(
+                AnimationStep(
+                    ops=[self._set_state(current, "secondary")],
+                    label="Traverse",
+                )
+            )
+            if value == node.key:
+                return current, steps
+            visited.append(current)
+            if value < node.key:
+                current = node.left
+            else:
+                current = node.right
+        # not found, restore visited
+        steps.append(
+            AnimationStep(
+                ops=[self._set_state(nid, "normal") for nid in visited],
+                label="Restore",
+            )
+        )
+        return None, steps
+
+    def _delete_leaf_ops(
+        self, node_id: str, reroute_parent: bool = True
+    ) -> list[AnimationOp]:
+        ops: list[AnimationOp] = []
+        parent_id = self._nodes[node_id].parent
+        if reroute_parent and parent_id:
+            ops.append(self._op_delete_edge(parent_id, node_id))
+        ops.append(
+            AnimationOp(
+                op=OpCode.DELETE_NODE,
+                target=node_id,
+                data={"structure_id": self.structure_id},
+            )
+        )
+        self._detach(node_id)
+        return ops
+
+    def _delete_single_child_ops(self, node_id: str) -> list[AnimationOp]:
+        ops: list[AnimationOp] = []
+        node = self._nodes[node_id]
+        child_id = node.left or node.right
+        parent_id = node.parent
+        if child_id:
+            if parent_id:
+                ops.append(self._op_delete_edge(parent_id, node_id))
+                ops.append(
+                    self._op_create_edge(
+                        parent_id, child_id, self._dir(parent_id, node_id)
+                    )
+                )
+            self._reparent(child_id, parent_id)
+        ops.append(
+            AnimationOp(
+                op=OpCode.DELETE_NODE,
+                target=node_id,
+                data={"structure_id": self.structure_id},
+            )
+        )
+        self._detach(node_id)
+        return ops
+
+    def _find_successor_ops(
+        self, start_id: str
+    ) -> tuple[Optional[str], list[AnimationStep]]:
+        steps: list[AnimationStep] = []
+        current = start_id
+        while True:
+            node = self._nodes[current]
+            steps.append(
+                AnimationStep(
+                    ops=[self._set_state(current, "secondary")], label="Succ traverse"
+                )
+            )
+            if node.left:
+                current = node.left
+                continue
+            return current, steps
+
+    def _detach(self, node_id: str) -> None:
+        node = self._nodes.pop(node_id, None)
+        if not node:
+            return
+        if node.parent:
+            parent = self._nodes[node.parent]
+            if parent.left == node_id:
+                parent.left = None
+            if parent.right == node_id:
+                parent.right = None
+        if self._root_id == node_id:
+            self._root_id = None
+
+    def _reparent(self, node_id: str, new_parent: Optional[str]) -> None:
+        node = self._nodes[node_id]
+        node.parent = new_parent
+        if new_parent:
+            parent = self._nodes[new_parent]
+            if node.key < parent.key:
+                parent.left = node_id
+            else:
+                parent.right = node_id
+
+    def _dir(self, parent_id: str, child_id: str) -> str:
+        parent = self._nodes[parent_id]
+        if parent.left == child_id:
+            return "left"
+        return "right"

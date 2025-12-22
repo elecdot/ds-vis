@@ -191,6 +191,18 @@ def _register_defaults() -> None:
         CommandSchema(required={"kind": str}),
         "delete_all",
     )
+    register_command(
+        CommandType.SEARCH,
+        "bst",
+        CommandSchema(required={"kind": str, "value": object}),
+        "search",
+    )
+    register_command(
+        CommandType.DELETE_NODE,
+        "bst",
+        CommandSchema(required={"kind": str, "value": object}),
+        "delete_value",
+    )
     register_model_factory(
         "bst", lambda structure_id: BstModel(structure_id=structure_id)
     )

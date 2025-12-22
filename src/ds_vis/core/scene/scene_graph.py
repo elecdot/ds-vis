@@ -107,6 +107,9 @@ class SceneGraph:
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if kind == "bst":
+            value = payload.get("value")
+            return model.apply_operation(op_name, {"value": value}), kind
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("DELETE_NODE index out of range")
@@ -132,6 +135,8 @@ class SceneGraph:
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if kind == "bst":
+            return model.apply_operation(op_name, {"value": payload.get("value")}), kind
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("SEARCH index out of range")
