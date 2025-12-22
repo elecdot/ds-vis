@@ -165,7 +165,7 @@ class SceneGraph:
         return merged
 
     def _apply_layout(self, kind: str, timeline: Timeline) -> Timeline:
-        if kind == "tree" and self._tree_layout_engine:
+        if kind in {"tree", "bst"} and self._tree_layout_engine:
             return self._tree_layout_engine.apply_layout(timeline)
         if self._layout_engine:
             return self._layout_engine.apply_layout(timeline)

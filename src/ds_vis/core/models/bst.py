@@ -32,7 +32,7 @@ class BstModel(BaseModel):
 
     @property
     def kind(self) -> str:
-        return "tree"
+        return "bst"
 
     @property
     def node_count(self) -> int:

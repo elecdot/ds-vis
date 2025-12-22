@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.5
+version: v0.6
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -65,14 +65,14 @@ last_updated: 2025-12-24
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
 
-## 9. Tree/BST 骨架（P0.7 起步）
-- 目标：提供 BST 风格的链式基础树骨架，为后续 AVL/Huffman 等复用。当前覆盖 create/insert，旋转/平衡留空。
+## 9. BST 骨架（P0.7 起步）
+- 目标：提供 BST 风格的链式基础骨架（create/insert/delete_all），为后续 AVL 等二叉平衡树复用；通用树/Huffman 将另行预留。
 - 实现要点：
-  - kind=`tree`，注册 CREATE_STRUCTURE/INSERT/DELETE_STRUCTURE；payload 采用 `value` 插入，create 可批量按顺序 insert。
-  - 结构状态：节点保存 key、左右子指针、parent；ID 使用 allocate_node_id 单调生成；边 key 使用 `edge_id(edge_kind, src, dst)`，edge_kind 为 `left`/`right`。
-  - 微步骤：遍历路径设为 secondary，插入父节点设 highlight，CREATE_NODE/CREATE_EDGE 标记左右（label=L/R），末尾恢复状态 + CLEAR_MESSAGE。无 SET_POS，交由 Layout 注入（当前用线性占位，树形布局待后续）。
-  - 删除：DELETE_STRUCTURE 走 delete_all，先删边再删节点，无 sentinel。
+  - kind=`bst`，注册 CREATE_STRUCTURE/INSERT/DELETE_STRUCTURE；payload 使用 `value` 插入，create 逐个 insert。
+  - 状态：节点保存 key、左右子、parent；ID 单调；边 key `edge_id(edge_kind, src, dst)`，edge_kind=`left`/`right`。
+  - 微步骤：遍历路径 secondary，高亮父节点，CREATE_NODE/CREATE_EDGE 标记 L/R，末尾恢复状态 + CLEAR_MESSAGE。无 SET_POS，交由布局注入（当前 TreeLayout 占位）。
+  - 删除：DELETE_STRUCTURE 走 delete_all，先删边后删节点，无 sentinel。
 - 限制/待办：
-  - 未实现 search/delete/旋转；未做平衡与重复键策略（当前重复键落右子树）。
-  - 树形布局为占位（沿用 SimpleLayout 行堆叠），混排多结构时需后续分区/树布局策略。
-  - DSL 仍为 JSON 占位，真实 DSL 语法需同步命令/校验。
+  - 未实现 search/delete/旋转/平衡，重复键策略为“右子树”；需在 AVL/后续迭代补充。
+  - 树布局为占位算法，混排分区/避让未完成；通用树/Huffman kind 预留但未实现。
+  - DSL 仍为 JSON 占位，真实 DSL 需同步命令/校验。

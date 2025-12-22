@@ -220,7 +220,7 @@ def test_update_routes_and_sets_label(scene_graph, create_cmd_factory):
 
 def test_tree_create_and_insert_flow(scene_graph, create_cmd_factory):
     create_cmd = create_cmd_factory(
-        "tree_1", CommandType.CREATE_STRUCTURE, kind="tree", values=[5]
+        "tree_1", CommandType.CREATE_STRUCTURE, kind="bst", values=[5]
     )
     timeline_create = scene_graph.apply_command(create_cmd)
 
@@ -236,7 +236,7 @@ def test_tree_create_and_insert_flow(scene_graph, create_cmd_factory):
     )
 
     insert_cmd = create_cmd_factory(
-        "tree_1", CommandType.INSERT, kind="tree", value=3
+        "tree_1", CommandType.INSERT, kind="bst", value=3
     )
     timeline_insert = scene_graph.apply_command(insert_cmd)
 

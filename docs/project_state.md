@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.15
+version: v0.7.16
 status: Active
 last_updated: 2025-12-24
 ---
@@ -82,7 +82,7 @@ This document captures the active delivery phase, what is complete, current assu
   - 树形 Layout 选择与多结构混排：需避免与线性布局重叠，可能需临时固定原点或分区策略占位。
   - 非阻塞动画缺失，复杂树操作（旋转）可能卡顿；旋转可先以占位/xfail 锁定预期。
   - 仅做最小骨架，后续 AVL 旋转/平衡逻辑、真实 DSL 语法仍需迭代。
-- 当前进展：已落地 tree 基础模型（create/insert/delete_all）、注册命令/工厂、SceneGraph 流程与 UI/CLI 冒烟测试通过；增加 TreeLayoutEngine（中序层次占位）并在 SceneGraph 中按 kind=tree 路由，仍为占位算法，混排分区待后续。
+- 当前进展：已落地 BST 骨架（kind=bst，create/insert/delete_all）、注册命令/工厂、SceneGraph 流程与 UI/CLI 冒烟测试通过；增加 TreeLayoutEngine（中序层次占位）并在 SceneGraph 中按 kind=bst 路由（tree/huffman 预留未实现），仍为占位算法，混排分区待后续。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。

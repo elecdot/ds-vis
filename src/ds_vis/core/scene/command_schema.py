@@ -175,24 +175,24 @@ def _register_defaults() -> None:
     )
     register_command(
         CommandType.CREATE_STRUCTURE,
-        "tree",
+        "bst",
         CommandSchema(required={"kind": str}, optional={"values": (list, tuple)}),
         "create",
     )
     register_command(
         CommandType.INSERT,
-        "tree",
+        "bst",
         CommandSchema(required={"kind": str, "value": object}),
         "insert",
     )
     register_command(
         CommandType.DELETE_STRUCTURE,
-        "tree",
+        "bst",
         CommandSchema(required={"kind": str}),
         "delete_all",
     )
     register_model_factory(
-        "tree", lambda structure_id: BstModel(structure_id=structure_id)
+        "bst", lambda structure_id: BstModel(structure_id=structure_id)
     )
 
 
