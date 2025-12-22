@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import json
-from typing import Iterable, List
+from typing import Iterable, List, TYPE_CHECKING
 
 from ds_vis.core.exceptions import CommandError
-from ds_vis.core.scene.command import Command, CommandType
+from ds_vis.core.scene.command import Command
 from ds_vis.persistence.json_io import commands_from_json
 
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    from ds_vis.core.scene.scene_graph import SceneGraph
 
 def parse_dsl(text: str) -> List[Command]:
     """
@@ -28,7 +29,7 @@ def parse_dsl(text: str) -> List[Command]:
         raise CommandError(f"Failed to parse DSL input: {exc}") from exc
 
 
-def run_commands(commands: Iterable[Command], scene_graph) -> None:
+def run_commands(commands: Iterable[Command], scene_graph: "SceneGraph") -> None:
     """
     Helper to apply a sequence of commands to a SceneGraph.
     """

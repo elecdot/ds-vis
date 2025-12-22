@@ -14,7 +14,11 @@ def commands_to_json(commands: Iterable[Command]) -> str:
     """
     return json.dumps(
         [
-            {"structure_id": cmd.structure_id, "type": cmd.type.name, "payload": cmd.payload}
+            {
+                "structure_id": cmd.structure_id,
+                "type": cmd.type.name,
+                "payload": cmd.payload,
+            }
             for cmd in commands
         ]
     )
@@ -38,7 +42,10 @@ def commands_from_json(text: str) -> List[Command]:
             raise CommandError("Each command must be a mapping")
         structure_id = item.get("structure_id")
         type_name = item.get("type")
-        payload = item.get("payload")
+        payload_raw = item.get("payload")
+        if not isinstance(payload_raw, Mapping):
+            raise CommandError("Command payload must be a mapping")
+        payload: Mapping[str, object] = payload_raw
         if not isinstance(structure_id, str):
             raise CommandError("Command requires structure_id as string")
         if not isinstance(type_name, str):
@@ -48,11 +55,15 @@ def commands_from_json(text: str) -> List[Command]:
         except KeyError as exc:
             raise CommandError(f"Unsupported command type: {type_name!r}") from exc
         _validate_command_payload(cmd_type, payload)
-        commands.append(Command(structure_id=structure_id, type=cmd_type, payload=payload))
+        commands.append(
+            Command(structure_id=structure_id, type=cmd_type, payload=payload)
+        )
     return commands
 
 
-def _validate_command_payload(cmd_type: CommandType, payload: Mapping[str, object]) -> None:
+def _validate_command_payload(
+    cmd_type: CommandType, payload: Mapping[str, object]
+) -> None:
     if not isinstance(payload, Mapping):
         raise CommandError("Command payload must be a mapping")
     kind = payload.get("kind")
