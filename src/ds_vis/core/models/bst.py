@@ -238,7 +238,7 @@ class BstModel(BaseModel):
                     )
                 )
                 restore_ops = [self._clear_msg()]
-                for nid in visited:
+                for nid in visited + [current]:
                     restore_ops.append(self._set_state(nid, "normal"))
                 for edge_id in traversed_edges:
                     restore_ops.append(self._set_state(edge_id, "normal"))

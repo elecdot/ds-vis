@@ -21,6 +21,16 @@ def test_search_hit_and_miss():
         for op in step.ops
     )
 
+    # miss should restore the last visited node to normal (was marked secondary)
+    node_7 = next(nid for nid, node in model._nodes.items() if node.key == 7)
+    restore_ops = miss.steps[-1].ops
+    assert any(
+        op.op is OpCode.SET_STATE
+        and op.target == node_7
+        and op.data.get("state") == "normal"
+        for op in restore_ops
+    )
+
 
 def test_delete_leaf_and_single_child():
     model = BstModel(structure_id="bst_delete")
