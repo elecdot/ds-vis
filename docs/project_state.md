@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.24
+version: v0.7.25
 status: Active
 last_updated: 2025-12-22
 ---
@@ -44,7 +44,7 @@ This document captures the active delivery phase, what is complete, current assu
   - 设计并实现可交付 UI：左侧控制面板（结构选择/参数输入/播放控制/导入导出/DSL 输入）、右侧画布多结构偏移区、消息区防遮挡；接入各模型的快速操作入口。
   - Renderer/布局支持各模型视觉：顺序表/栈的“桶+矩形单元”（栈竖向）、Huffman 构建的队列区+树区、Git DAG 的纵向 lane、小圆节点/label；新增 UI 冒烟测试（offscreen）。
 - 迭代 P：Persistence（v0.1）
-  - 统一结构状态的 JSON 导入/导出（list/stack/bst/huffman/git），按 SCHEMA_REGISTRY 校验；UI/CLI 入口与冒烟测试；保证与后续回放功能兼容。
+  - 统一结构状态的 JSON 导入/导出（list/stack/bst/huffman/git），按 SCHEMA_REGISTRY 校验；UI 入口已提供 Import/Export 按钮（导入执行命令；导出当前为占位空列表）；persistence/控制面板冒烟测试通过；文件读写错误抛 CommandError。
 - 迭代 1：顺序表 Seqlist（v0.1）
   - 实现模型（create/insert/delete/update/search）与命令注册；专用 LINEAR+桶布局，矩形单元渲染；Dev/UI hook 与动画/恢复测试；更新 model/layout/renderer 文档。
 - 迭代 2：栈 Stack（v0.1）

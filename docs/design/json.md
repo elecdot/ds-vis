@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.1
+version: v0.2
 status: Draft
-last_updated: 2025-12-24
+last_updated: 2025-12-22
 ---
 
 # Command JSON 协议（持久化占位）
@@ -34,8 +34,8 @@ last_updated: 2025-12-24
 - 导出：`commands_to_json` 将 `Command` 列表序列化为相同结构，不做额外压缩或排序。
 
 ## 3. 当前支持的命令/结构（P0.7）
-- kind：`list`
-- 命令：`CREATE_STRUCTURE`（可含 `values`）、`DELETE_STRUCTURE`、`DELETE_NODE`（index）、`INSERT`（index/value）、`SEARCH`（index 或 value）、`UPDATE`（index 或 value + new_value）。
+- kind：`list` / `seqlist` / `stack` / `bst` / `huffman` / `git`（后两者占位）。
+- 命令：`CREATE_STRUCTURE`（可含 `values`）、`DELETE_STRUCTURE`、`DELETE_NODE`（index 或 value）、`INSERT`（index/value）、`SEARCH`（index 或 value）、`UPDATE`（index 或 value + new_value）。
 - 新结构需在 `command_schema.register_command` 与 `register_model_factory` 完成注册。
 
 ## 4. 假设与限制
@@ -51,7 +51,12 @@ last_updated: 2025-12-24
 - 提供“预检”模式：仅校验不执行，返回错误列表。
 - 支持非 JSON DSL 自动编译为该结构，作为通用交换格式。
 
-## 6. 关联文件
+## 6. 文件读写（v0.2 增量）
+- `commands_from_json(text: str) -> list[Command]`：字符串解析与校验。
+- `commands_to_json(commands: Iterable[Command]) -> str`：序列化为字符串。
+- `load_commands_from_file(path)` / `save_commands_to_file(commands, path)`：文件级别读写，IO/校验错误抛 `CommandError`。
+
+## 7. 关联文件
 - `src/ds_vis/persistence/json_io.py` — 解析/导出与校验实现。
 - `docs/design/dsl.md` — DSL 占位与未来语法方向。
 - `docs/design/llm.md` — LLM 适配层（自然语言转 DSL/JSON）。

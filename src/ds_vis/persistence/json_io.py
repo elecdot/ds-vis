@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Iterable, List, Mapping
+from pathlib import Path
+from typing import Iterable, List, Mapping, Sequence
 
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.scene.command import Command, CommandType
@@ -22,6 +23,16 @@ def commands_to_json(commands: Iterable[Command]) -> str:
             for cmd in commands
         ]
     )
+
+
+def save_commands_to_file(commands: Sequence[Command], path: str | Path) -> None:
+    """
+    Serialize commands to JSON file. Raises CommandError on IO issues.
+    """
+    try:
+        Path(path).write_text(commands_to_json(commands), encoding="utf-8")
+    except OSError as exc:  # pragma: no cover - IO errors are environment specific
+        raise CommandError(f"Failed to write commands to file: {exc}") from exc
 
 
 def commands_from_json(text: str) -> List[Command]:
@@ -59,6 +70,17 @@ def commands_from_json(text: str) -> List[Command]:
             Command(structure_id=structure_id, type=cmd_type, payload=payload)
         )
     return commands
+
+
+def load_commands_from_file(path: str | Path) -> List[Command]:
+    """
+    Load and parse commands from a JSON file (list of dict).
+    """
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError as exc:  # pragma: no cover - IO errors are environment specific
+        raise CommandError(f"Failed to read commands file: {exc}") from exc
+    return commands_from_json(text)
 
 
 def _validate_command_payload(

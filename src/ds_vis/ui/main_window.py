@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QMenuBar,
     QMessageBox,
+    QFileDialog,
     QPushButton,
     QSplitter,
     QToolBar,
@@ -29,6 +30,11 @@ from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
 from ds_vis.dsl.parser import parse_dsl
+from ds_vis.persistence.json_io import (
+    commands_from_json,
+    load_commands_from_file,
+    save_commands_to_file,
+)
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer, RendererConfig
 
 # Developer examples (structural timelines only)
@@ -132,8 +138,10 @@ class MainWindow(QMainWindow):
         btn_delete = QPushButton("Delete", panel)
         btn_delete_all = QPushButton("Delete All", panel)
         btn_dsl = QPushButton("Run DSL/JSON", panel)
+        btn_import = QPushButton("Import JSON", panel)
+        btn_export = QPushButton("Export JSON", panel)
 
-        for btn in [btn_create, btn_insert, btn_search, btn_delete, btn_delete_all, btn_dsl]:
+        for btn in [btn_create, btn_insert, btn_search, btn_delete, btn_delete_all, btn_dsl, btn_import, btn_export]:
             btn.setMinimumHeight(28)
             layout.addWidget(btn)
 
@@ -144,6 +152,8 @@ class MainWindow(QMainWindow):
         self._btn_delete = btn_delete
         self._btn_delete_all = btn_delete_all
         self._btn_dsl = btn_dsl
+        self._btn_import = btn_import
+        self._btn_export = btn_export
         return panel
 
     def _init_menubar(self) -> None:
@@ -238,6 +248,8 @@ class MainWindow(QMainWindow):
         self._btn_delete.clicked.connect(self._on_delete_clicked)
         self._btn_delete_all.clicked.connect(self._on_delete_all_clicked)
         self._btn_dsl.clicked.connect(self._run_dsl_input_dev)
+        self._btn_import.clicked.connect(self._on_import_clicked)
+        self._btn_export.clicked.connect(self._on_export_clicked)
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -341,6 +353,37 @@ class MainWindow(QMainWindow):
         if not merged.steps:
             return
         self._play_timeline(merged)
+
+    def _on_import_clicked(self) -> None:
+        filename, _ = QFileDialog.getOpenFileName(
+            self, "Import Commands JSON", "", "JSON Files (*.json);;All Files (*)"
+        )
+        if not filename:
+            return
+        try:
+            commands = load_commands_from_file(filename)
+        except CommandError as exc:
+            QMessageBox.critical(self, "Import Error", str(exc))
+            return
+        self._run_commands(commands)
+
+    def _on_export_clicked(self) -> None:
+        if not self._pending_steps:
+            QMessageBox.information(self, "Export", "No commands to export in this session.")
+            return
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Export Commands JSON", "", "JSON Files (*.json);;All Files (*)"
+        )
+        if not filename:
+            return
+        # NOTE: For MVP, export the last played command sequence captured in pending_steps
+        # by reconstructing commands from timeline is non-trivial; we export an empty list
+        # with a placeholder message to avoid silent failure.
+        try:
+            save_commands_to_file([], filename)
+            QMessageBox.information(self, "Export", f"Exported empty command list to {filename}")
+        except CommandError as exc:
+            QMessageBox.critical(self, "Export Error", str(exc))
 
 
     def _run_bst_example(self) -> None:

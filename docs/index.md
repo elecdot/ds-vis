@@ -18,7 +18,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | [index.md](./index.md) | v1.0 | Stable | P0.7 | Documentation Registry System | 2025-12-24 |
-| [project_state.md](./project_state.md) | v0.7.24 | Active | P0.7 | Project phase SSOT | 2025-12-22 |
+| [project_state.md](./project_state.md) | v0.7.25 | Active | P0.7 | Project phase SSOT | 2025-12-22 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.5 | Stable | P0.6 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
 | [scene_graph.md](./design/scene_graph.md) | v0.5 | Draft | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |
@@ -28,7 +28,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | [ops_spec.md](./design/ops_spec.md) | v1.3 | Stable | P0.6 | `src/ds_vis/core/ops/` | 2025-12-20 |
 | [animation.md](./design/animation.md) | v0.8 | Draft | P0.7 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-24 |
 | [dsl.md](./design/dsl.md) | v0.1 | Draft | P0.7 | `src/ds_vis/dsl/`, `src/ds_vis/ui/main_window.py` (Dev DSL hook), `src/ds_vis/dsl/cli.py` | 2025-12-24 |
-| [json.md](./design/json.md) | v0.1 | Draft | P0.7 | `src/ds_vis/persistence/json_io.py` | 2025-12-24 |
+| [json.md](./design/json.md) | v0.2 | Draft | P0.7 | `src/ds_vis/persistence/json_io.py` | 2025-12-22 |
 | [llm.md](./design/llm.md) | v0.1 | Draft | P0.7 | `src/ds_vis/llm/` | 2025-12-24 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
