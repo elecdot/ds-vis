@@ -125,6 +125,7 @@ def register_model_factory(kind: str, factory: Callable[[str], "BaseModel"]) -> 
 
 def _register_defaults() -> None:
     from ds_vis.core.models import BstModel, ListModel
+    from ds_vis.core.models.seqlist import SeqlistModel
 
     register_command(
         CommandType.CREATE_STRUCTURE,
@@ -172,6 +173,53 @@ def _register_defaults() -> None:
     )
     register_model_factory(
         "list", lambda structure_id: ListModel(structure_id=structure_id)
+    )
+    register_command(
+        CommandType.CREATE_STRUCTURE,
+        "seqlist",
+        CommandSchema(required={"kind": str}, optional={"values": (list, tuple)}),
+        "create",
+    )
+    register_command(
+        CommandType.DELETE_STRUCTURE,
+        "seqlist",
+        CommandSchema(required={"kind": str}),
+        "delete_all",
+    )
+    register_command(
+        CommandType.DELETE_NODE,
+        "seqlist",
+        CommandSchema(required={"kind": str, "index": int}),
+        "delete_index",
+    )
+    register_command(
+        CommandType.INSERT,
+        "seqlist",
+        CommandSchema(required={"kind": str, "index": int, "value": object}),
+        "insert",
+    )
+    register_command(
+        CommandType.SEARCH,
+        "seqlist",
+        CommandSchema(
+            required={"kind": str},
+            optional={"index": (int,), "value": (object,)},
+            validators=(_require_index_or_value("SEARCH"),),
+        ),
+        "search",
+    )
+    register_command(
+        CommandType.UPDATE,
+        "seqlist",
+        CommandSchema(
+            required={"kind": str, "new_value": object},
+            optional={"index": (int,), "value": (object,)},
+            validators=(_require_index_or_value("UPDATE"),),
+        ),
+        "update",
+    )
+    register_model_factory(
+        "seqlist", lambda structure_id: SeqlistModel(structure_id=structure_id)
     )
     register_command(
         CommandType.CREATE_STRUCTURE,
