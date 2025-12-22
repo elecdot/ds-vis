@@ -73,3 +73,6 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Design][Metrics]** 不同结构节点形态与度量差异明显（seqlist/stack/tree）；建议引入可选 `StyleRegistry`/`Metrics`（`kind -> shape/size`），有默认值，避免新 Model 必须管理布局/渲染。
 - **[Design][Layout]** SimpleLayout 的固定 spacing 假设可能与渲染尺寸不匹配；应将尺寸/间距由配置驱动，布局不读取 renderer。
 - **[Idea][Containers]** 可在 Renderer 层按 `structure_id` 绘制容器框（半透明背景+圆角边框），无需新增 Ops；用于多结构同屏可视分区。可选替代方案：多窗口展示以规避布局冲突。
+- **[Strategy][Tests]** **测试速度与动画验证平衡**：默认禁用动画以规避 `qWait` 延迟；关键动画冒烟测试（插值/淡入淡出）必须开启但使用极短 `duration_ms` (10ms)；UI 流程测试开启高倍速 (100x) 验证稳定性。修改渲染逻辑须确保这些测试通过以防视觉漂移。
+
+---

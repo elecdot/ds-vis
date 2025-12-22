@@ -18,7 +18,7 @@ def test_renderer_creates_node_and_positions(qt_app, scene_graph, create_cmd_fac
     timeline = scene_graph.apply_command(cmd)
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
     renderer.render_timeline(timeline)
 
     # At least one ellipse should be present for the sentinel node.
@@ -65,7 +65,7 @@ def test_renderer_respects_custom_config(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene, config=config)
+    renderer = PySide6Renderer(scene, animations_enabled=False, config=config)
     renderer.render_timeline(timeline)
 
     node = renderer._nodes.get("node_c")
@@ -98,7 +98,7 @@ def test_renderer_applies_state_color(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
     renderer.render_timeline(timeline)
 
     node = renderer._nodes.get("node_a")
@@ -127,7 +127,7 @@ def test_renderer_applies_highlight_state(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
     renderer.render_timeline(timeline)
 
     node = renderer._nodes.get("node_h")
@@ -166,7 +166,7 @@ def test_renderer_applies_edge_highlight(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
     renderer.render_timeline(timeline)
 
     edge = renderer._edges.get("e1")
@@ -211,7 +211,7 @@ def test_renderer_updates_edges_on_position(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
     renderer.render_timeline(timeline)
 
     edge = renderer._edges.get("e1")
@@ -225,7 +225,7 @@ def test_renderer_animates_position(qt_app):
     timeline = Timeline(
         steps=[
             AnimationStep(
-                duration_ms=200,
+                duration_ms=10,
                 ops=[
                     AnimationOp(
                         op=OpCode.CREATE_NODE,
@@ -243,7 +243,7 @@ def test_renderer_animates_position(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=True)
     renderer.render_timeline(timeline)
 
     node = renderer._nodes.get("n1")
@@ -266,7 +266,7 @@ def test_renderer_fade_out_delete(qt_app):
                 ]
             ),
             AnimationStep(
-                duration_ms=200,
+                duration_ms=10,
                 ops=[
                     AnimationOp(
                         op=OpCode.DELETE_NODE,
@@ -279,7 +279,7 @@ def test_renderer_fade_out_delete(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=True)
     renderer.render_timeline(timeline)
 
     assert "n1" not in renderer._nodes
@@ -298,7 +298,7 @@ def test_renderer_color_interpolation_reaches_target(qt_app):
                 ]
             ),
             AnimationStep(
-                duration_ms=200,
+                duration_ms=10,
                 ops=[
                     AnimationOp(
                         op=OpCode.SET_STATE,
@@ -311,7 +311,7 @@ def test_renderer_color_interpolation_reaches_target(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=True)
     renderer.render_timeline(timeline)
 
     node = renderer._nodes.get("n1")
@@ -344,7 +344,7 @@ def test_renderer_sets_and_clears_message(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
 
     renderer.apply_step(timeline.steps[0])
     assert renderer._message == "hello world"
@@ -387,7 +387,7 @@ def test_renderer_clear_removes_visuals(qt_app):
     )
 
     scene = QGraphicsScene()
-    renderer = PySide6Renderer(scene)
+    renderer = PySide6Renderer(scene, animations_enabled=False)
     renderer.render_timeline(timeline)
 
     assert renderer._nodes

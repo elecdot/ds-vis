@@ -12,6 +12,7 @@ def test_dev_create_list_renders_scene(qt_app):
     Smoke test: dev hook should render a list with multiple nodes and layout.
     """
     window = MainWindow()
+    window._toggle_animations(False)
     window._create_list_dev()
 
     ellipse_items = [
@@ -31,6 +32,7 @@ def test_dev_create_delete_recreate_stable_ids(qt_app):
     Smoke: create -> delete -> recreate should avoid ID reuse and refresh layout.
     """
     window = MainWindow()
+    window._toggle_animations(False)
     try:
         window._create_list_dev()
         initial_ids = set(window._renderer._nodes.keys())
@@ -76,6 +78,8 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
     Ensure the dev demo for list insert plays through and leaves nodes in normal state.
     """
     window = MainWindow()
+    window._toggle_animations(True)
+    window._set_speed(100.0)
     try:
         window._play_list_insert_dev()
         window._pause()
@@ -95,6 +99,7 @@ def test_dev_play_list_insert_demo_runs_all_steps(qt_app):
 
 def test_toggle_messages_disables_message_render(qt_app):
     window = MainWindow()
+    window._toggle_animations(False)
     try:
         window._toggle_messages(False)
         step = AnimationStep(
@@ -117,6 +122,8 @@ def test_dev_play_list_full_demo_runs_without_residual_nodes(qt_app):
     Full ListModel demo should run all operations and end with an empty scene.
     """
     window = MainWindow()
+    window._toggle_animations(True)
+    window._set_speed(100.0)
     try:
         window._play_list_full_demo()
         window._pause()
@@ -134,6 +141,7 @@ def test_playback_controls_respect_speed(qt_app):
     Speed factor should scale the timer delay; simulate by stepping manually.
     """
     window = MainWindow()
+    window._toggle_animations(False)
     try:
         window._play_list_insert_dev()
         window._set_speed(2.0)
@@ -151,6 +159,7 @@ def test_step_does_not_reschedule_timer(qt_app):
     After pause, stepping once should not re-arm the timer (blocking mode).
     """
     window = MainWindow()
+    window._toggle_animations(False)
     try:
         window._play_list_insert_dev()
         window._pause()
