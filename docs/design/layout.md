@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.5
+version: v0.6
 status: Draft
-last_updated: 2025-12-24
+last_updated: 2025-12-22
 ---
 
 # LAYOUT — 设计说明（轻量）
@@ -42,7 +42,17 @@ last_updated: 2025-12-24
 - **TreeLayoutEngine (占位 TREE)**：基于 CREATE_EDGE 的父子关系，中序遍历编号，水平等距、纵向分层；用于树模型冒烟（kind=bst/tree 预留）。
 - SceneGraph 路由与分区：kind→LayoutStrategy（list→LINEAR，bst→TREE），每个结构分配 `(dx, dy)` 偏移（按策略分组、行累加）注入 LayoutEngine，避免多结构重叠；偏移为占位参数，可后续替换为配置化/分区算法。
 
-## 6. 当前限制
+## 6. 即将扩展的布局需求（P0.8 计划）
+
+- 顺序表（seqlist）：横向桶式布局，容器背景+等宽矩形单元，需暴露单元尺寸/间距给 Renderer；偏移由 SceneGraph 分配。
+- 栈（stack）：竖向桶式布局，顶部为入口指针，单元矩形纵向堆叠；与顺序表共享矩形单元样式但方向不同。
+- Huffman 构建：双区域布局，占左侧/顶部为优先队列横排区，右侧/下方为逐步生成的树区；合并后需在队列区重新排布剩余节点。
+- Git DAG：纵向 lane 占位布局（多列或单列），节点小圆点+标签，按时间/序号递增偏移；分支/merge 需要横向移位或平行 lane。
+- 多结构分区：SceneGraph 需根据 kind 划分区域并传递 `(dx, dy)`，避免矩形桶与树/DAG 重叠；偏移应配置化而非魔数。
+
+上述需求应通过 LayoutStrategy 扩展或参数化实现，保持“仅注入 SET_POS”，不得耦合 Renderer 细节。
+
+## 7. 当前限制
 
 - SimpleLayout 为 stateful 顺序引擎，固定尺寸与左对齐；不支持 seek/倒播。
 - 多结构冲突处理有限：树/线性混排可能拥挤；无自动分区。

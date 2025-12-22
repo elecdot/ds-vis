@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.3
+version: v0.4
 status: Draft
-last_updated: 2025-12-24
+last_updated: 2025-12-22
 ---
 
 # RENDERER — 设计说明（轻量）
@@ -43,13 +43,22 @@ last_updated: 2025-12-24
 - 默认构造保持视觉/阻塞播放不变，配置为可选注入。
 - 消息策略：SET_MESSAGE 默认锚定场景 bbox 顶部居中（PySide6 基线），若 show_messages=False 则忽略消息 Ops；后续可按结构 bbox 定制或提供富提示。
 
-## 6. 扩展点
+## 6. 形态扩展（P0.8 计划）
+
+- 形状与容器：
+  - 顺序表/栈：矩形单元 + 背景“桶”，栈为竖向堆叠、顺序表为横向；需支持单元尺寸/间距与容器边框样式。
+  - Huffman：队列区节点可复用矩形/圆形，需能标记“候选队列”容器；树区仍用树节点形态。
+  - Git DAG：小圆点 + 标签，支持 lane 间横向偏移，可能需要 edge label 或轻量箭头（占位）。
+- 消息锚点：保持全局 bbox 顶部，但需预留按结构 bbox 的锚点以减少遮挡（与 UI 消息区协作）。
+- 配置：通过 RendererConfig 或按 kind 的样式 registry 注入，不得硬编码在模型/SceneGraph。
+
+## 7. 扩展点
 
 - 新 OpCode 的渲染：在 Renderer 添加 handler，保持默认回退。
 - 新样式需求：通过配置（或未来 StyleRegistry）按 `kind` 选择样式。
 - 非阻塞动画：可引入调度器或 Qt Animation，但必须保持 Step 语义不变（计划 P0.8）。
 
-## 7. 当前限制（P0.7）
+## 8. 当前限制（P0.7）
 
 - 动画仍为同步阻塞插值，可能导致 UI 卡顿；max_frames/easing 仅占位。
 - 消息锚定场景 bbox，未按结构/节点做精准定位；无富提示。
