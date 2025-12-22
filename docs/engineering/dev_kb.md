@@ -76,5 +76,6 @@ If a Model decides positions, we cannot easily swap layouts (e.g., switching fro
 - **[Strategy][Tests]** **测试速度与动画验证平衡**：默认禁用动画以规避 `qWait` 延迟；关键动画冒烟测试（插值/淡入淡出）必须开启但使用极短 `duration_ms` (10ms)；UI 流程测试开启高倍速 (100x) 验证稳定性。修改渲染逻辑须确保这些测试通过以防视觉漂移。
 - **[Usage][DSL/CLI/UI]** DSL 入口现为 JSON 占位：CLI `uv run python -m ds_vis.dsl.cli --text '<json>'` 或 `--file`; UI Dev 菜单 “Run DSL/JSON” 弹框直通 SceneGraph。大量命令会阻塞播放，建议在 UI 中先关闭动画或开启高倍速。
 - **[Limits][DSL/LLM]** 目前无真实 DSL 语法/LLM 接入，`LLMAdapter` 仅做接口占位；输入必须满足 JSON Command 协议，否则抛 `CommandError`。接入外部 LLM 时务必保留 SCHEMA_REGISTRY 校验作为安全闸门。
+- **[Layout][Tree Placeholder]** 树模型当前复用线性 SimpleLayout 行堆叠，仅用于冒烟；多结构混排可能视觉拥挤。引入真正树布局或分区前，建议在 Dev Hook/CLI 中单独演示树，或在 UI 禁用动画+高倍速。
 
 ---

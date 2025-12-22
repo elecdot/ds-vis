@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.13
+version: v0.7.14
 status: Active
 last_updated: 2025-12-24
 ---
@@ -69,6 +69,20 @@ This document captures the active delivery phase, what is complete, current assu
   - 无外部 LLM 调用，未做安全过滤；仅提供接口。
   - 执行阻塞，批量命令可能卡 UI；无撤销/seek。
   - 未定义协议版本/流式导入，错误即抛。
+
+## Active Plan: Milestone 6 — 树形模型起步（基础骨架）
+- 目标：验证“按指令快速扩展”能力，先落地一个链式存储的树模型最小集（可作为 BST/AVL/Huffman 的共用骨架），覆盖 create/insert 微步骤范式与命令注册。
+- 范围：
+  - Model：新增 Tree 基础模型（链式节点、左右子指针、ID/Edge key 策略、L2 微步骤模板）。
+  - SceneGraph/Schema：注册树类命令路由与校验（至少 create/insert，占位旋转/平衡可暂存 xfail）。
+  - Layout：简单树形坐标占位（可用静态层次或复用 SimpleLayout 变体，确保与线性结构不冲突），必要时标注 TODO。
+  - Renderer/UI/Dev：最小冒烟 Hook（Dev 菜单或 CLI 回放）验证全链路。
+- 验收：模型/SceneGraph/命令校验测试；可视化冒烟（基础节点/边呈现）；全量 CI 通过；文档/registry 同步。
+- 风险/假设：
+  - 树形 Layout 选择与多结构混排：需避免与线性布局重叠，可能需临时固定原点或分区策略占位。
+  - 非阻塞动画缺失，复杂树操作（旋转）可能卡顿；旋转可先以占位/xfail 锁定预期。
+  - 仅做最小骨架，后续 AVL 旋转/平衡逻辑、真实 DSL 语法仍需迭代。
+- 当前进展：已落地 tree 基础模型（create/insert/delete_all）、注册命令/工厂、SceneGraph 流程与 UI/CLI 冒烟测试通过；布局仍复用线性占位，树形布局待后续。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
