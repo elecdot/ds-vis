@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, List
 
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.scene.command import Command
