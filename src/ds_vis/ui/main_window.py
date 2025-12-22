@@ -124,6 +124,10 @@ class MainWindow(QMainWindow):
         self._act_run_dsl.triggered.connect(self._run_dsl_input_dev)
         dev_menu.addAction(self._act_run_dsl)
 
+        self._act_bst_demo = QAction("Play BST Demo (create/insert)", self)
+        self._act_bst_demo.triggered.connect(self._play_bst_demo)
+        dev_menu.addAction(self._act_bst_demo)
+
     def _init_toolbar(self) -> None:
         """Playback controls toolbar."""
         toolbar = QToolBar("Playback", self)
@@ -288,6 +292,38 @@ class MainWindow(QMainWindow):
         except Exception as exc:  # pragma: no cover - defensive
             QMessageBox.critical(self, "DSL Error", str(exc))
             return
+
+        merged = Timeline()
+        for cmd in commands:
+            tl = self._scene_graph.apply_command(cmd)
+            for step in tl.steps:
+                merged.add_step(step)
+
+        self._play_timeline(merged)
+
+    def _play_bst_demo(self) -> None:
+        """
+        Developer-only hook: exercise BST create/insert end-to-end.
+        """
+        self._reset_engine()
+        sid = "dev_bst_demo"
+        commands = [
+            Command(
+                sid,
+                CommandType.CREATE_STRUCTURE,
+                {"kind": "bst", "values": [5]},
+            ),
+            Command(
+                sid,
+                CommandType.INSERT,
+                {"kind": "bst", "value": 3},
+            ),
+            Command(
+                sid,
+                CommandType.INSERT,
+                {"kind": "bst", "value": 7},
+            ),
+        ]
 
         merged = Timeline()
         for cmd in commands:

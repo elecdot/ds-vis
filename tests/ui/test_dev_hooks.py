@@ -196,3 +196,18 @@ def test_dev_run_dsl_input_runs_commands(qt_app, monkeypatch):
         assert len(window._renderer._nodes) == 2
     finally:
         window.close()
+
+
+def test_dev_bst_demo_runs(qt_app):
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        window._play_bst_demo()
+        window._pause()
+        while window._current_step_index < len(window._pending_steps):
+            window._advance_step(schedule_next=False)
+        # bst demo inserts root + two children => 3 nodes
+        assert len(window._renderer._nodes) == 3
+    finally:
+        window.close()

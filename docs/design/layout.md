@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.3
+version: v0.4
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -39,13 +39,14 @@ last_updated: 2025-12-24
 ## 5. 当前实现（P0.7）
 
 - **SimpleLayoutEngine (LINEAR)**：stateful 顺序引擎，固定尺寸与左对齐，按结构行堆叠；无 seek/倒播。
-- **TreeLayoutEngine (占位 TREE)**：基于 CREATE_EDGE 的父子关系，中序遍历编号，水平等距、纵向分层；用于树模型冒烟（kind=tree），未做混排分区或精细避让。
-- SceneGraph 路由：kind=tree 走 TreeLayoutEngine，其余默认 SimpleLayout；未来可扩展策略表/配置。
+- **TreeLayoutEngine (占位 TREE)**：基于 CREATE_EDGE 的父子关系，中序遍历编号，水平等距、纵向分层；用于树模型冒烟（kind=bst/tree 预留）。
+- SceneGraph 路由与分区：kind→LayoutStrategy（list→LINEAR，bst→TREE），每个结构分配 `(dx, dy)` 偏移（按策略分组、行累加）注入 LayoutEngine，避免多结构重叠；偏移为占位参数，可后续替换为配置化/分区算法。
 
 ## 6. 当前限制
 
 - SimpleLayout 为 stateful 顺序引擎，固定尺寸与左对齐；不支持 seek/倒播。
 - 多结构冲突处理有限：树/线性混排可能拥挤；无自动分区。
+- 分区/偏移为固定常量，未暴露配置；未来需根据结构尺寸/布局策略自动分配。
 - 无 seek/倒播/重建；布局状态依赖顺序执行。
 - 树布局为占位算法，无平衡/重排动画，复杂树（旋转等）可能需要更精细算法。
 
