@@ -7,7 +7,9 @@ from PySide6.QtGui import QColor, QPen
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
+    QGraphicsItem,
     QGraphicsLineItem,
+    QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
 )
@@ -21,6 +23,8 @@ class RendererConfig:
     """Renderer configuration (visuals + animation parameters)."""
 
     node_radius: float = 20.0
+    rect_width: float = 48.0
+    rect_height: float = 24.0
     colors: Dict[str, QColor] = field(
         default_factory=lambda: {
             "normal": QColor("#6b7280"),     # gray
@@ -43,8 +47,11 @@ class RendererConfig:
 class NodeVisual:
     """Lightweight holder for node visuals."""
 
-    ellipse: QGraphicsEllipseItem
+    item: QGraphicsItem
     label: Optional[QGraphicsSimpleTextItem] = None
+    shape: str = "circle"
+    width: float = 0.0
+    height: float = 0.0
 
 
 @dataclass
@@ -119,7 +126,7 @@ class PySide6Renderer(Renderer):
     def clear(self) -> None:
         """Remove all rendered node/edge visuals and reset transient state."""
         for node in list(self._nodes.values()):
-            self._scene.removeItem(node.ellipse)
+            self._scene.removeItem(node.item)
         for edge in list(self._edges.values()):
             self._scene.removeItem(edge.line)
             if edge.label:
@@ -176,7 +183,7 @@ class PySide6Renderer(Renderer):
             self._apply_op(op)
             node = self._nodes.get(op.target or "")
             if node:
-                node.ellipse.setOpacity(0.0)
+                node.item.setOpacity(0.0)
                 if node.label:
                     node.label.setOpacity(0.0)
 
@@ -201,7 +208,7 @@ class PySide6Renderer(Renderer):
             target = op.target or ""
             node = self._nodes.get(target)
             if node:
-                pos_starts[target] = (node.ellipse.pos().x(), node.ellipse.pos().y())
+                pos_starts[target] = (node.item.pos().x(), node.item.pos().y())
                 pos_targets[target] = (
                     float(op.data.get("x", 0.0)),
                     float(op.data.get("y", 0.0)),
@@ -217,7 +224,7 @@ class PySide6Renderer(Renderer):
             node = self._nodes.get(target)
             edge = self._edges.get(target)
             if node:
-                state_starts[target] = node.ellipse.brush().color()
+                state_starts[target] = node.item.brush().color()  # type: ignore[arg-type]
                 state_targets[target] = desired
             elif edge:
                 state_starts[target] = edge.line.pen().color()
@@ -229,7 +236,7 @@ class PySide6Renderer(Renderer):
             target = op.target or ""
             node = self._nodes.get(target)
             if node:
-                delete_opacity[target] = node.ellipse.opacity()
+                delete_opacity[target] = node.item.opacity()
         for op in delete_edges:
             target = op.target or ""
             edge = self._edges.get(target)
@@ -250,7 +257,7 @@ class PySide6Renderer(Renderer):
                 new_y = start_pos[1] + (end_pos[1] - start_pos[1]) * t
                 node = self._nodes.get(target)
                 if node:
-                    node.ellipse.setPos(new_x, new_y)
+                    node.item.setPos(new_x, new_y)
                     self._update_edges_for_node(target)
             # states
             for target, end_color in state_targets.items():
@@ -258,7 +265,7 @@ class PySide6Renderer(Renderer):
                 interp = self._interpolate_color(start_color, end_color, t)
                 node = self._nodes.get(target)
                 if node:
-                    node.ellipse.setBrush(interp)
+                    node.item.setBrush(interp)  # type: ignore[arg-type]
                 edge = self._edges.get(target)
                 if edge:
                     edge.line.setPen(QPen(interp))
@@ -266,7 +273,7 @@ class PySide6Renderer(Renderer):
             for op in create_nodes:
                 node = self._nodes.get(op.target or "")
                 if node:
-                    node.ellipse.setOpacity(t)
+                    node.item.setOpacity(t)
                     if node.label:
                         node.label.setOpacity(t)
             for op in create_edges:
@@ -279,7 +286,7 @@ class PySide6Renderer(Renderer):
                 node = self._nodes.get(op.target or "")
                 if node:
                     start_opacity = delete_opacity.get(op.target or "", 1.0)
-                    node.ellipse.setOpacity(max(0.0, start_opacity * (1 - t)))
+                    node.item.setOpacity(max(0.0, start_opacity * (1 - t)))
                     if node.label:
                         node.label.setOpacity(max(0.0, start_opacity * (1 - t)))
             for op in delete_edges:
@@ -359,27 +366,41 @@ class PySide6Renderer(Renderer):
         if op.target in self._nodes:
             return  # Already exists; avoid duplicates.
 
-        radius = self._config.node_radius
-        ellipse = QGraphicsEllipseItem(
-            -radius,
-            -radius,
-            radius * 2,
-            radius * 2,
-        )
-        ellipse.setBrush(self._config.colors["normal"])
-        self._scene.addItem(ellipse)
+        shape = str(op.data.get("shape", "circle"))
+        if shape not in {"circle", "rect", "bucket"}:
+            shape = "circle"
+
+        item: QGraphicsItem
+        width = float(op.data.get("width", self._config.rect_width))
+        height = float(op.data.get("height", self._config.rect_height))
+        if shape == "circle":
+            radius = self._config.node_radius
+            item = QGraphicsEllipseItem(-radius, -radius, radius * 2, radius * 2)
+        else:
+            # rect/bucket are centered on origin to keep setPos as center placement
+            item = QGraphicsRectItem(-width / 2, -height / 2, width, height)
+            # buckets keep transparent fill with colored border
+            if shape == "bucket":
+                pen = QPen(self._config.colors["normal"])
+                pen.setWidth(2)
+                item.setPen(pen)
+                item.setBrush(QColor(0, 0, 0, 0))
+        # default brush
+        if shape != "bucket":
+            item.setBrush(self._config.colors["normal"])
+        self._scene.addItem(item)
 
         label_text = op.data.get("label")
         label_item: Optional[QGraphicsSimpleTextItem] = None
         if label_text:
             label_item = QGraphicsSimpleTextItem(str(label_text))
-            label_item.setParentItem(ellipse)
-            # rough centering based on radius; refined anchoring can be added later
-            label_item.setPos(
-                -self._config.node_radius / 2, -self._config.node_radius / 2
-            )
+            label_item.setParentItem(item)
+            label_rect = label_item.boundingRect()
+            label_item.setPos(-label_rect.width() / 2, -label_rect.height() / 2)
 
-        self._nodes[op.target] = NodeVisual(ellipse=ellipse, label=label_item)
+        self._nodes[op.target] = NodeVisual(
+            item=item, label=label_item, shape=shape, width=width, height=height
+        )
 
     def _delete_node(self, op: AnimationOp) -> None:
         if not op.target:
@@ -387,7 +408,7 @@ class PySide6Renderer(Renderer):
 
         node = self._nodes.pop(op.target, None)
         if node:
-            self._scene.removeItem(node.ellipse)
+            self._scene.removeItem(node.item)
         # Remove edges connected to this node.
         for edge_id, edge in list(self._edges.items()):
             if edge.src_id == op.target or edge.dst_id == op.target:
@@ -437,8 +458,8 @@ class PySide6Renderer(Renderer):
             return
         x = float(op.data.get("x", 0.0))
         y = float(op.data.get("y", 0.0))
-        node.ellipse.setPos(x, y)
-        # label is parented, so it moves with ellipse automatically
+        node.item.setPos(x, y)
+        # label is parented, so it moves with the node item automatically
         self._update_edges_for_node(op.target or "")
 
     def _set_state(self, op: AnimationOp) -> None:
@@ -446,7 +467,7 @@ class PySide6Renderer(Renderer):
         node = self._nodes.get(op.target or "")
         if node:
             color = self._config.colors.get(state, self._config.colors["normal"])
-            node.ellipse.setBrush(color)
+            node.item.setBrush(color)  # type: ignore[arg-type]
             return
 
         edge = self._edges.get(op.target or "")
@@ -476,17 +497,30 @@ class PySide6Renderer(Renderer):
         if isinstance(x, (int, float)) and isinstance(y, (int, float)):
             self._message_item.setPos(float(x), float(y))
         else:
-            rect = self._scene.itemsBoundingRect()
-            # Anchor near current content top, centered horizontally
-            center_x = rect.center().x()
-            center_y = rect.center().y()
-            self._message_item.setPos(center_x, center_y)
+            anchor_x, anchor_y = self._compute_message_anchor()
+            self._message_item.setPos(anchor_x, anchor_y)
         self._message_item.setVisible(True)
 
     def _clear_message(self) -> None:
         self._message = ""
         self._message_item.setText("")
         self._message_item.setVisible(False)
+
+    def _compute_message_anchor(self) -> tuple[float, float]:
+        """
+        Place messages near the top of current content to reduce遮挡.
+        Falls back to (10,10) when scene is empty.
+        """
+        margin = 12.0
+        content_rect = self._scene.itemsBoundingRect()
+        if content_rect.isNull():
+            return margin, margin
+        msg_rect = self._message_item.boundingRect()
+        x = content_rect.center().x() - msg_rect.width() / 2
+        y = content_rect.top() - msg_rect.height() - margin
+        if y < margin:
+            y = content_rect.top() + margin
+        return x, y
 
     def _update_edges_for_node(self, node_id: str) -> None:
         for edge_id, edge in self._edges.items():
@@ -503,8 +537,8 @@ class PySide6Renderer(Renderer):
         if not src_node or not dst_node:
             return
 
-        src_pos = src_node.ellipse.pos()
-        dst_pos = dst_node.ellipse.pos()
+        src_pos = src_node.item.pos()
+        dst_pos = dst_node.item.pos()
         edge.line.setLine(src_pos.x(), src_pos.y(), dst_pos.x(), dst_pos.y())
 
         if edge.label:
