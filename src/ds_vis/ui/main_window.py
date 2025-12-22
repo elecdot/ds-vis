@@ -350,6 +350,8 @@ class MainWindow(QMainWindow):
             Command(sid, CommandType.INSERT, {"kind": "bst", "value": 3}),
             Command(sid, CommandType.INSERT, {"kind": "bst", "value": 7}),
             Command(sid, CommandType.INSERT, {"kind": "bst", "value": 6}),
+            Command(sid, CommandType.INSERT, {"kind": "bst", "value": 2}),
+            Command(sid, CommandType.INSERT, {"kind": "bst", "value": 8}),
             Command(sid, CommandType.SEARCH, {"kind": "bst", "value": 6}),
             Command(sid, CommandType.SEARCH, {"kind": "bst", "value": 9}),
             Command(sid, CommandType.DELETE_NODE, {"kind": "bst", "value": 6}),

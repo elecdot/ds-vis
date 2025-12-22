@@ -79,32 +79,56 @@ class BstModel(BaseModel):
         timeline = Timeline()
         if self._root_id is None:
             node_id = self._create_node(value, parent=None)
-            ops = [
-                self._msg(f"Insert {value} as root"),
-                self._op_create_node(node_id, value),
-                self._clear_msg(),
-            ]
-            timeline.add_step(AnimationStep(ops=ops))
+            timeline.add_step(
+                AnimationStep(
+                    ops=[
+                        self._msg(f"Insert {value} as root"),
+                        self._op_create_node(node_id, value),
+                    ],
+                    label="Create root",
+                )
+            )
+            timeline.add_step(AnimationStep(ops=[self._clear_msg()], label="Restore"))
             return timeline
 
         # 遍历寻找插入位置
         traversal_ops = []
+        edge_traversed: list[str] = []
         path = []
         parent_id = self._root_id
         direction = "left"
         while parent_id:
             path.append(parent_id)
             parent_node = self._nodes[parent_id]
+            traversal_ops.append(self._msg(f"Compare {value} with {parent_node.key}"))
             traversal_ops.append(self._set_state(parent_id, "secondary"))
             if value < parent_node.key:
                 direction = "left"
                 if parent_node.left:
+                    traversal_ops.append(
+                        self._set_state(
+                            self.edge_id("left", parent_id, parent_node.left),
+                            "secondary",
+                        )
+                    )
+                    edge_traversed.append(
+                        self.edge_id("left", parent_id, parent_node.left)
+                    )
                     parent_id = parent_node.left
                     continue
                 break
             else:
                 direction = "right"
                 if parent_node.right:
+                    traversal_ops.append(
+                        self._set_state(
+                            self.edge_id("right", parent_id, parent_node.right),
+                            "secondary",
+                        )
+                    )
+                    edge_traversed.append(
+                        self.edge_id("right", parent_id, parent_node.right)
+                    )
                     parent_id = parent_node.right
                     continue
                 break
@@ -125,6 +149,8 @@ class BstModel(BaseModel):
         restore_ops = [self._clear_msg()]
         for node_id in path:
             restore_ops.append(self._set_state(node_id, "normal"))
+        for edge_id in edge_traversed:
+            restore_ops.append(self._set_state(edge_id, "normal"))
         timeline.add_step(AnimationStep(ops=restore_ops))
         return timeline
 
@@ -167,6 +193,18 @@ class BstModel(BaseModel):
             direction = "left" if value < node.key else "right"
             edge_target = node.left if direction == "left" else node.right
             visited.append(current)
+            if edge_target:
+                timeline.add_step(
+                    AnimationStep(
+                        ops=[
+                            self._set_state(
+                                self.edge_id(direction, current, edge_target),
+                                "secondary",
+                            )
+                        ],
+                        label="Move edge",
+                    )
+                )
             if edge_target is None:
                 timeline.add_step(
                     AnimationStep(
@@ -180,6 +218,12 @@ class BstModel(BaseModel):
                 restore_ops = [self._clear_msg()]
                 for nid in visited:
                     restore_ops.append(self._set_state(nid, "normal"))
+                if edge_target:
+                    restore_ops.append(
+                        self._set_state(
+                            self.edge_id(direction, current, edge_target), "normal"
+                        )
+                    )
                 timeline.add_step(AnimationStep(ops=restore_ops, label="Restore"))
                 return timeline
             current = edge_target
@@ -218,7 +262,11 @@ class BstModel(BaseModel):
                 succ_node = self._nodes[succ_id]
                 ops.append(self._set_state(succ_id, "highlight"))
                 ops.append(self._set_label(target_id, succ_node.key))
-                ops.extend(self._delete_leaf_ops(succ_id, reroute_parent=False))
+                ops.extend(
+                    self._delete_leaf_ops(
+                        succ_id, reroute_parent=False, delete_parent_edge=True
+                    )
+                )
         ops.append(self._clear_msg())
         timeline.add_step(AnimationStep(ops=ops, label="Delete"))
         # restore states
@@ -317,7 +365,11 @@ class BstModel(BaseModel):
         return AnimationOp(
             op=OpCode.SET_LABEL,
             target=target,
-            data={"structure_id": self.structure_id, "label": str(value)},
+            data={
+                "structure_id": self.structure_id,
+                "label": str(value),
+                "text": str(value),
+            },
         )
 
     def _msg(self, text: str) -> AnimationOp:
@@ -355,11 +407,11 @@ class BstModel(BaseModel):
         return None, steps
 
     def _delete_leaf_ops(
-        self, node_id: str, reroute_parent: bool = True
+        self, node_id: str, reroute_parent: bool = True, delete_parent_edge: bool = True
     ) -> list[AnimationOp]:
         ops: list[AnimationOp] = []
         parent_id = self._nodes[node_id].parent
-        if reroute_parent and parent_id:
+        if delete_parent_edge and parent_id:
             ops.append(self._op_delete_edge(parent_id, node_id))
         ops.append(
             AnimationOp(

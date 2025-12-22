@@ -460,7 +460,17 @@ class PySide6Renderer(Renderer):
     def _set_message(self, op: AnimationOp) -> None:
         self._message = str(op.data.get("text", ""))
         self._message_item.setText(self._message)
-        self._message_item.setVisible(bool(self._message))
+        if not self._message:
+            self._message_item.setVisible(False)
+            return
+        x = op.data.get("x")
+        y = op.data.get("y")
+        if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+            self._message_item.setPos(float(x), float(y))
+        else:
+            rect = self._scene.itemsBoundingRect()
+            self._message_item.setPos(rect.left(), rect.top() - 30.0)
+        self._message_item.setVisible(True)
 
     def _clear_message(self) -> None:
         self._message = ""
