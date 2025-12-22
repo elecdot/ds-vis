@@ -18,7 +18,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | [index.md](./index.md) | v1.0 | Stable | P0.7 | Documentation Registry System | 2025-12-24 |
-| [project_state.md](./project_state.md) | v0.7.0 | Active | P0.7 | Project phase SSOT | 2025-12-24 |
+| [project_state.md](./project_state.md) | v0.7.12 | Active | P0.7 | Project phase SSOT | 2025-12-24 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.5 | Stable | P0.6 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
 | [scene_graph.md](./design/scene_graph.md) | v0.4 | Draft | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |

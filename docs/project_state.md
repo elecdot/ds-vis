@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.11
+version: v0.7.12
 status: Active
 last_updated: 2025-12-24
 ---
@@ -62,7 +62,7 @@ This document captures the active delivery phase, what is complete, current assu
 - 范围：`src/ds_vis/dsl/**`（新建）、persistence JSON 导入/导出、SceneGraph 调用；文档补充 DSL/JSON 协议与入口说明；registry 更新。
 - 验收：DSL 解析正/误用例；JSON 导入/导出往返测试；UI/CLI 冒烟（可选）；CI 全绿；文档同步。
 - 注意：不改 Ops 协议；LLM 仅定义接口/占位，不接入外部模型；保持现有 UI/Renderer 行为不破坏。
-- 当前进展：新增 JSON 导入/导出（persistence/json_io.py）+ DSL 解析 stub（dsl/parser.py，当前接受 JSON 作为临时 DSL 输入）；相关测试通过；registry/PLAN 已记录。后续可扩展真正 DSL 文法与 UI/CLI 钩子。
+- 当前进展：新增 JSON 导入/导出（persistence/json_io.py）+ DSL 解析 stub（dsl/parser.py，当前接受 JSON 作为临时 DSL 输入）；LLMAdapter 占位（可选前缀+可插拔 client，默认直接解析 DSL/JSON）；相关测试通过；registry/PLAN 已记录。后续可扩展真正 DSL 文法与 UI/CLI 钩子。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
