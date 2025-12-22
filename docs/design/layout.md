@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.6
+version: v0.7
 status: Draft
 last_updated: 2025-12-22
 ---
@@ -40,7 +40,8 @@ last_updated: 2025-12-22
 
 - **SimpleLayoutEngine (LINEAR)**：stateful 顺序引擎，固定尺寸与左对齐，按结构行堆叠；无 seek/倒播。
 - **TreeLayoutEngine (占位 TREE)**：基于 CREATE_EDGE 的父子关系，中序遍历编号，水平等距、纵向分层；用于树模型冒烟（kind=bst/tree 预留）。
-- SceneGraph 路由与分区：kind→LayoutStrategy（list→LINEAR，bst→TREE），每个结构分配 `(dx, dy)` 偏移（按策略分组、行累加）注入 LayoutEngine，避免多结构重叠；偏移为占位参数，可后续替换为配置化/分区算法。
+- SceneGraph 路由与分区：kind→LayoutStrategy（list/seqlist/stack→LINEAR，bst/huffman→TREE，git→DAG），每个结构分配 `(dx, dy)` 偏移（按策略分组、行累加；DAG 具备横向 lane 偏移）注入 LayoutEngine，避免多结构重叠；偏移为占位参数，可后续替换为配置化/分区算法。
+- Per-kind 布局配置：LINEAR 引擎支持按结构注入 orientation/spacing/row_spacing/start_x/start_y（stack 默认 vertical；list/seqlist 默认 horizontal）。
 
 ## 6. 即将扩展的布局需求（P0.8 计划）
 

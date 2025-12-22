@@ -31,6 +31,7 @@ class SimpleLayoutEngine(LayoutEngine):
     _structure_offsets: Dict[str, Tuple[float, float]] = field(
         default_factory=dict
     )
+    _structure_config: Dict[str, Mapping[str, object]] = field(default_factory=dict)
     _structure_nodes: Dict[str, List[str]] = field(default_factory=dict)
     _structure_rows: Dict[str, int] = field(default_factory=dict)
     _structure_positions: Dict[str, Dict[str, Tuple[float, float]]] = field(
@@ -42,6 +43,12 @@ class SimpleLayoutEngine(LayoutEngine):
 
     def set_offsets(self, offsets: Dict[str, tuple[float, float]]) -> None:
         self._structure_offsets = offsets
+
+    def set_structure_config(self, config: Dict[str, Mapping[str, object]]) -> None:
+        """
+        Inject per-structure layout配置（如 orientation/spacing/row_spacing/start_x/start_y）。
+        """
+        self._structure_config = config
 
     def apply_layout(self, timeline: Timeline) -> Timeline:
         """
@@ -73,6 +80,7 @@ class SimpleLayoutEngine(LayoutEngine):
         self._row_order.clear()
         self._dirty_structures.clear()
         self._structure_offsets.clear()
+        self._structure_config.clear()
 
     # ------------------------------------------------------------------ #
     # Internal helpers
@@ -105,13 +113,24 @@ class SimpleLayoutEngine(LayoutEngine):
         for structure_id, nodes in self._structure_nodes.items():
             row_index = self._structure_rows[structure_id]
             offset_x, offset_y = self._structure_offsets.get(structure_id, (0.0, 0.0))
-            y = self.start_y + offset_y + self.row_spacing * row_index
+            cfg = self._structure_config.get(structure_id, {})
+            orientation = str(cfg.get("orientation", "horizontal")).lower()
+            spacing = float(cfg.get("spacing", self.spacing) or self.spacing)
+            row_spacing = float(cfg.get("row_spacing", self.row_spacing) or self.row_spacing)
+            start_x = float(cfg.get("start_x", self.start_x) or self.start_x)
+            start_y = float(cfg.get("start_y", self.start_y) or self.start_y)
+
+            y = start_y + offset_y + row_spacing * row_index
             pos_cache = self._structure_positions.setdefault(structure_id, {})
             force_dirty = structure_id in self._dirty_structures
 
             for idx, node_id in enumerate(nodes):
-                x = self.start_x + offset_x + self.spacing * idx
-                current = (x, y)
+                if str(orientation) == "vertical":
+                    x = start_x + offset_x + row_spacing * row_index
+                    current = (x, start_y + offset_y + spacing * idx)
+                else:
+                    x = start_x + offset_x + spacing * idx
+                    current = (x, y)
                 if force_dirty or pos_cache.get(node_id) != current:
                     ops.append(
                         AnimationOp(
@@ -133,6 +152,7 @@ class SimpleLayoutEngine(LayoutEngine):
     def _clear_structure(self, structure_id: str) -> None:
         self._structure_nodes.pop(structure_id, None)
         self._structure_positions.pop(structure_id, None)
+        self._structure_config.pop(structure_id, None)
         if structure_id in self._structure_rows:
             self._row_order = [sid for sid in self._row_order if sid != structure_id]
             # Re-pack rows to avoid unbounded vertical drift.
