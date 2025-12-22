@@ -211,3 +211,18 @@ def test_dev_bst_demo_runs(qt_app):
         assert len(window._renderer._nodes) == 3
     finally:
         window.close()
+
+
+def test_dev_bst_full_demo_runs(qt_app):
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        window._play_bst_full_demo()
+        window._pause()
+        while window._current_step_index < len(window._pending_steps):
+            window._advance_step(schedule_next=False)
+        # after deletions, should have remaining nodes (root replaced)
+        assert window._renderer._nodes
+    finally:
+        window.close()

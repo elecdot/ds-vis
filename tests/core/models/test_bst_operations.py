@@ -44,6 +44,20 @@ def test_delete_leaf_and_single_child():
     )
 
 
+def test_delete_two_children_uses_successor_label():
+    model = BstModel(structure_id="bst_delete_successor")
+    model.create(values=[5, 3, 7, 6])
+    tl = model.delete_value(5)
+    # Should update root label to successor (6)
+    label_ops = [
+        op
+        for step in tl.steps
+        for op in step.ops
+        if op.op is OpCode.SET_LABEL
+    ]
+    assert any("6" in str(op.data.get("label")) for op in label_ops)
+
+
 def test_delete_value_requires_value():
     model = BstModel(structure_id="bst_delete2")
     try:

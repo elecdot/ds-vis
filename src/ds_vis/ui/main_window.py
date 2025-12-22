@@ -128,6 +128,12 @@ class MainWindow(QMainWindow):
         self._act_bst_demo.triggered.connect(self._play_bst_demo)
         dev_menu.addAction(self._act_bst_demo)
 
+        self._act_bst_full = QAction(
+            "Play BST Full Demo (search/delete)", self
+        )
+        self._act_bst_full.triggered.connect(self._play_bst_full_demo)
+        dev_menu.addAction(self._act_bst_full)
+
     def _init_toolbar(self) -> None:
         """Playback controls toolbar."""
         toolbar = QToolBar("Playback", self)
@@ -323,6 +329,32 @@ class MainWindow(QMainWindow):
                 CommandType.INSERT,
                 {"kind": "bst", "value": 7},
             ),
+        ]
+
+        merged = Timeline()
+        for cmd in commands:
+            tl = self._scene_graph.apply_command(cmd)
+            for step in tl.steps:
+                merged.add_step(step)
+
+        self._play_timeline(merged)
+
+    def _play_bst_full_demo(self) -> None:
+        """
+        Developer-only hook: BST end-to-end (insert/search/delete).
+        """
+        self._reset_engine()
+        sid = "dev_bst_full"
+        commands = [
+            Command(sid, CommandType.CREATE_STRUCTURE, {"kind": "bst", "values": [5]}),
+            Command(sid, CommandType.INSERT, {"kind": "bst", "value": 3}),
+            Command(sid, CommandType.INSERT, {"kind": "bst", "value": 7}),
+            Command(sid, CommandType.INSERT, {"kind": "bst", "value": 6}),
+            Command(sid, CommandType.SEARCH, {"kind": "bst", "value": 6}),
+            Command(sid, CommandType.SEARCH, {"kind": "bst", "value": 9}),
+            Command(sid, CommandType.DELETE_NODE, {"kind": "bst", "value": 6}),
+            Command(sid, CommandType.DELETE_NODE, {"kind": "bst", "value": 3}),
+            Command(sid, CommandType.DELETE_NODE, {"kind": "bst", "value": 5}),
         ]
 
         merged = Timeline()
