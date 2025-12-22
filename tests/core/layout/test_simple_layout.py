@@ -231,3 +231,57 @@ def test_reset_clears_state_for_rebuild():
     laid_out2 = layout.apply_layout(timeline)
     pos2 = _set_pos_targets(laid_out2)
     assert pos2["n1"] == (layout.start_x, layout.start_y)
+
+
+def test_bucket_center_aligns_vertical_stack():
+    layout = SimpleLayoutEngine()
+    layout.set_offsets({"stack": (0.0, 0.0)})
+    layout.set_structure_config(
+        {
+            "stack": {
+                "orientation": "vertical",
+                "spacing": 50.0,
+                "row_spacing": 100.0,
+                "start_x": 0.0,
+                "start_y": 0.0,
+            }
+        }
+    )
+    timeline = Timeline(
+        steps=[
+            AnimationStep(
+                ops=[
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="bucket",
+                        data={
+                            "structure_id": "stack",
+                            "shape": "bucket",
+                            "width": 80.0,
+                            "height": 140.0,
+                        },
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n0",
+                        data={"structure_id": "stack"},
+                    ),
+                    AnimationOp(
+                        op=OpCode.CREATE_NODE,
+                        target="n1",
+                        data={"structure_id": "stack"},
+                    ),
+                ]
+            )
+        ]
+    )
+    laid_out = layout.apply_layout(timeline)
+    pos_ops = {
+        op.target: op.data for step in laid_out.steps for op in step.ops
+        if op.op is OpCode.SET_POS
+    }
+    assert pos_ops["n0"]["x"] == pos_ops["n1"]["x"] == 0.0
+    assert pos_ops["n1"]["y"] - pos_ops["n0"]["y"] == 50.0
+    # bucket center 在两节点之间
+    assert pos_ops["bucket"]["x"] == 0.0
+    assert pos_ops["bucket"]["y"] == 25.0

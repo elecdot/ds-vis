@@ -67,3 +67,35 @@ def test_control_panel_create_seqlist_with_bucket(qt_app):
         assert "bucket" in shapes
     finally:
         window.close()
+
+
+def test_control_panel_stack_push_pop(qt_app):
+    """
+    Stack push/pop routes through SceneGraph and keeps bucket + cells rendered.
+    """
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        window._structure_id_input.setText("ui_stack")
+        window._kind_combo.setCurrentText("stack")
+        window._values_input.setText("1,2")
+        window._on_create_clicked()
+        _drain(window)
+        base_shapes = {visual.shape for visual in window._renderer._nodes.values()}
+        assert "bucket" in base_shapes
+
+        window._value_input.setText("3")
+        window._on_insert_clicked()
+        _drain(window)
+        rect_count = sum(
+            1 for visual in window._renderer._nodes.values() if visual.shape == "rect"
+        )
+        assert rect_count >= 2
+
+        window._on_delete_clicked()
+        _drain(window)
+        shapes_after_pop = {visual.shape for visual in window._renderer._nodes.values()}
+        assert "bucket" in shapes_after_pop
+    finally:
+        window.close()

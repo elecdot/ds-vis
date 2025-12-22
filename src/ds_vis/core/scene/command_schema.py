@@ -126,6 +126,7 @@ def register_model_factory(kind: str, factory: Callable[[str], "BaseModel"]) -> 
 def _register_defaults() -> None:
     from ds_vis.core.models import BstModel, ListModel
     from ds_vis.core.models.seqlist import SeqlistModel
+    from ds_vis.core.models.stack import StackModel
 
     register_command(
         CommandType.CREATE_STRUCTURE,
@@ -173,6 +174,45 @@ def _register_defaults() -> None:
     )
     register_model_factory(
         "list", lambda structure_id: ListModel(structure_id=structure_id)
+    )
+    register_command(
+        CommandType.CREATE_STRUCTURE,
+        "stack",
+        CommandSchema(required={"kind": str}, optional={"values": (list, tuple)}),
+        "create",
+    )
+    register_command(
+        CommandType.DELETE_STRUCTURE,
+        "stack",
+        CommandSchema(required={"kind": str}),
+        "delete_all",
+    )
+    register_command(
+        CommandType.DELETE_NODE,
+        "stack",
+        CommandSchema(
+            required={"kind": str},
+            optional={"index": (int,)},
+        ),
+        "pop",
+    )
+    register_command(
+        CommandType.INSERT,
+        "stack",
+        CommandSchema(
+            required={"kind": str, "value": object},
+            optional={"index": (int,)},
+        ),
+        "push",
+    )
+    register_command(
+        CommandType.SEARCH,
+        "stack",
+        CommandSchema(required={"kind": str, "value": object}),
+        "search",
+    )
+    register_model_factory(
+        "stack", lambda structure_id: StackModel(structure_id=structure_id)
     )
     register_command(
         CommandType.CREATE_STRUCTURE,

@@ -160,6 +160,7 @@ class MainWindow(QMainWindow):
         self._btn_dsl = btn_dsl
         self._btn_import = btn_import
         self._btn_export = btn_export
+        self._kind_combo.currentTextChanged.connect(self._update_controls_for_kind)
         return panel
 
     def _init_menubar(self) -> None:
@@ -256,6 +257,7 @@ class MainWindow(QMainWindow):
         self._btn_dsl.clicked.connect(self._run_dsl_input_dev)
         self._btn_import.clicked.connect(self._on_import_clicked)
         self._btn_export.clicked.connect(self._on_export_clicked)
+        self._update_controls_for_kind()
 
     # --------------------------------------------------------------------- #
     # Developer playground hooks (for manual testing only)
@@ -291,6 +293,17 @@ class MainWindow(QMainWindow):
             return None
         return int(raw) if raw.lstrip("-").isdigit() else raw
 
+    def _update_controls_for_kind(self) -> None:
+        kind = self._parse_kind()
+        if kind == "stack":
+            self._btn_insert.setText("Push")
+            self._btn_delete.setText("Pop")
+            self._index_input.setPlaceholderText("Top only (ignored)")
+        else:
+            self._btn_insert.setText("Insert")
+            self._btn_delete.setText("Delete")
+            self._index_input.setPlaceholderText("")
+
     def _on_create_clicked(self) -> None:
         sid = self._parse_structure_id()
         kind = self._parse_kind()
@@ -307,8 +320,14 @@ class MainWindow(QMainWindow):
         kind = self._parse_kind()
         payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
-        if idx is not None:
-            payload["index"] = idx
+        if kind == "stack":
+            if payload.get("value") is None:
+                QMessageBox.warning(self, "Input Error", "Stack push requires value")
+                return
+            # 栈仅支持栈顶 push，忽略 index 输入避免无效 payload
+        else:
+            if idx is not None:
+                payload["index"] = idx
         cmd = Command(sid, CommandType.INSERT, payload)
         self._run_commands([cmd])
 
@@ -326,11 +345,15 @@ class MainWindow(QMainWindow):
         sid = self._parse_structure_id()
         kind = self._parse_kind()
         payload: Dict[str, object] = {"kind": kind}
-        idx = self._parse_index()
-        if idx is not None:
-            payload["index"] = idx
+        if kind == "stack":
+            # 栈出栈始终作用于栈顶，忽略 index
+            pass
+        else:
+            idx = self._parse_index()
+            if idx is not None:
+                payload["index"] = idx
         val = self._parse_value()
-        if val is not None:
+        if val is not None and kind != "stack":
             payload["value"] = val
         cmd = Command(sid, CommandType.DELETE_NODE, payload)
         self._run_commands([cmd])

@@ -132,17 +132,19 @@ class SimpleLayoutEngine(LayoutEngine):
             start_x = _as_float(cfg.get("start_x"), self.start_x)
             start_y = _as_float(cfg.get("start_y"), self.start_y)
 
-            y = start_y + offset_y + row_spacing * row_index
+            row_y = start_y + offset_y + row_spacing * row_index
+            base_x = start_x + offset_x
+            base_y = start_y + offset_y
             pos_cache = self._structure_positions.setdefault(structure_id, {})
             force_dirty = structure_id in self._dirty_structures
 
             for idx, node_id in enumerate(nodes):
                 if str(orientation) == "vertical":
-                    x = start_x + offset_x + row_spacing * row_index
-                    current = (x, start_y + offset_y + spacing * idx)
+                    x = base_x + row_spacing * row_index
+                    current = (x, base_y + spacing * idx)
                 else:
-                    x = start_x + offset_x + spacing * idx
-                    current = (x, y)
+                    x = base_x + spacing * idx
+                    current = (x, row_y)
                 if force_dirty or pos_cache.get(node_id) != current:
                     ops.append(
                         AnimationOp(
@@ -157,12 +159,21 @@ class SimpleLayoutEngine(LayoutEngine):
             if container_id:
                 width, height = self._container_size.get(structure_id, (0.0, 0.0))
                 if nodes:
-                    min_x = min(pos_cache[nid][0] for nid in nodes)
-                    max_x = max(pos_cache[nid][0] for nid in nodes)
-                    center_x = (min_x + max_x) / 2.0
+                    xs = [pos_cache[nid][0] for nid in nodes]
+                    ys = [pos_cache[nid][1] for nid in nodes]
+                    if str(orientation) == "vertical":
+                        center_x = xs[0] if xs else base_x
+                        center_y = (min(ys) + max(ys)) / 2.0
+                    else:
+                        center_x = (min(xs) + max(xs)) / 2.0
+                        center_y = row_y
                 else:
-                    center_x = start_x + offset_x
-                center_y = y  # align bucket center with row baseline
+                    if str(orientation) == "vertical":
+                        center_x = base_x + row_spacing * row_index
+                        center_y = base_y
+                    else:
+                        center_x = base_x
+                        center_y = row_y
                 container_pos = (center_x, center_y)
                 container_cache = self._structure_positions.setdefault(structure_id, {})
                 if force_dirty or container_cache.get(container_id) != container_pos:

@@ -25,6 +25,10 @@ def test_model_op_registry_is_configured():
     assert MODEL_OP_REGISTRY[(CommandType.DELETE_STRUCTURE, "list")] == "delete_all"
     assert MODEL_OP_REGISTRY[(CommandType.SEARCH, "list")] == "search"
     assert MODEL_OP_REGISTRY[(CommandType.UPDATE, "list")] == "update"
+    assert MODEL_OP_REGISTRY[(CommandType.CREATE_STRUCTURE, "stack")] == "create"
+    assert MODEL_OP_REGISTRY[(CommandType.INSERT, "stack")] == "push"
+    assert MODEL_OP_REGISTRY[(CommandType.DELETE_NODE, "stack")] == "pop"
+    assert MODEL_OP_REGISTRY[(CommandType.SEARCH, "stack")] == "search"
     assert MODEL_OP_REGISTRY[(CommandType.CREATE_STRUCTURE, "bst")] == "create"
     assert MODEL_OP_REGISTRY[(CommandType.INSERT, "bst")] == "insert"
 

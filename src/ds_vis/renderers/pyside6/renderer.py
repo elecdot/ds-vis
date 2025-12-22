@@ -622,7 +622,9 @@ class PySide6Renderer(Renderer):
             mid_y = (p1.y() + p2.y()) / 2
             edge.label.setPos(mid_x, mid_y)
 
-    def _get_node_boundary_point(self, node: NodeVisual, target_pos: QPointF) -> QPointF:
+    def _get_node_boundary_point(
+        self, node: NodeVisual, target_pos: QPointF
+    ) -> QPointF:
         center = node.item.pos()
         dx = target_pos.x() - center.x()
         dy = target_pos.y() - center.y()

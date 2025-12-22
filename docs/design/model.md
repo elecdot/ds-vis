@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.8.1
+version: v0.8.2
 status: Draft
-last_updated: 2025-12-22
+last_updated: 2025-12-24
 ---
 
 # MODEL — 设计说明（轻量）
@@ -62,7 +62,14 @@ last_updated: 2025-12-22
 - 视觉与布局：矩形单元 + 桶容器，布局由 SceneGraph 路由 LINEAR（horizontal）注入 SET_POS。
 - 异常：参数缺失或越界抛 ModelError。
 
-## 9. 新模型开发指北（模板，P0.7）
+## 9. StackModel 实现备注（P0.8）
+- kind=`stack`，栈（无边）；操作：create/push/pop/delete_all/search（线性扫描，教学可视化）。
+- 顺序：内部 `values`/`_node_ids` 按 **top→bottom** 存储，create 将输入视为 push 序列（最后一个为栈顶）。
+- 微步骤：Push=消息+桶高亮→CREATE_NODE→容器 resize→Restore；Pop=高亮栈顶→DELETE_NODE→容器 resize→Restore；Search=自顶向下高亮/secondary 标记；所有步骤结尾 CLEAR_MESSAGE + 状态恢复。
+- 视觉与布局：矩形单元 + 桶容器，LINEAR 纵向布局（orientation=vertical，spacing≈80），桶位置按节点 bbox 纵向居中。
+- 异常：push/pop 仅接受 index=0 或省略；参数缺失抛 ModelError。
+
+## 10. 新模型开发指北（模板，P0.7）
 
 - 状态/颜色：优先使用统一状态值（见 animation.md），避免自定义散乱命名。
 - 微步骤拆解模板：遍历/定位（secondary）→ 关键节点/边高亮（highlight）→ 结构变更（CREATE/DELETE/SET_LABEL 等）→ 恢复（normal）。
@@ -72,7 +79,7 @@ last_updated: 2025-12-22
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
 
-## 10. BST 实现备注（P0.7）
+## 11. BST 实现备注（P0.7）
 - 目标：树类模型的首个可交付版本，为 AVL/Huffman 等复用微步骤范式与注册方式。
 - 实现要点：
   - kind=`bst`，支持 create/insert/search/delete_value/delete_all；重复键策略：走右子树。

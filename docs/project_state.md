@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.7.27
+version: v0.7.28
 status: Active
-last_updated: 2025-12-22
+last_updated: 2025-12-24
 ---
 
 # Project State — Single Source of Truth
@@ -14,6 +14,7 @@ This document captures the active delivery phase, what is complete, current assu
 - Completion highlights:
   - ListModel：create/insert/delete_index/delete_all/search/update（index/value 双模式）全链路 L2 微步骤 + 消息提示；sentinel 展示用，ID 使用 allocator；Dev hook 串联全操作，UI 冒烟测试覆盖。
   - SeqlistModel：支持 create/insert/delete_index/delete_all/search/update，矩形节点 + 桶容器（专用 LINEAR 布局），消息+状态 L2 微步骤；命令注册/SceneGraph 路由/控制面板操作可用，模型/UI 测试覆盖。
+  - StackModel：create/push/pop/delete_all/search（线性扫描）全链路，栈顶在 index0（top→bottom 顺序），矩形单元 + 桶容器（LINEAR 竖向、容器按节点 bbox 居中）；命令注册/SceneGraph 路由/UI push/pop 可用，模型/布局/UI 测试覆盖。
   - BST：支持 create/insert/search/delete_value/delete_all；删除使用后继替换法并处理后继带右子；搜索/插入/删除的节点与边状态有统一恢复；消息锚点基于场景 bbox，靠近结构区域；Dev hook `_play_bst_full_demo` 覆盖命中/未命中搜索与三类删除，动画已通过当前验收（仍需关注后继遍历恢复、消息拆分等细化项）。
   - Layout：SceneGraph 按 kind→策略路由（list→LINEAR，bst→TREE），为每个结构分配 `(dx, dy)` 偏移（按策略分组行累加）注入 LayoutEngine，避免多结构重叠；TreeLayout 注入 SET_POS。
   - SceneGraph/Schema：通过全局 registry 注册命令与 model factory，bst 无需硬编码；校验函数具名且统一抛 CommandError。
@@ -48,8 +49,6 @@ This document captures the active delivery phase, what is complete, current assu
   - 统一结构状态的 JSON 导入/导出（list/stack/bst/huffman/git），按 SCHEMA_REGISTRY 校验；UI 入口已提供 Import/Export 按钮（导入执行命令；导出当前为占位空列表）；persistence/控制面板冒烟测试通过；文件读写错误抛 CommandError。
 - 迭代 1：顺序表 Seqlist（v0.1）
   - 实现模型（create/insert/delete/update/search）与命令注册；专用 LINEAR+桶布局，矩形单元渲染；Dev/UI hook 与动画/恢复测试；更新 model/layout/renderer 文档。
-- 迭代 2：栈 Stack（v0.1）
-  - 模型（create/push/pop）与命令注册；竖向桶布局（顶部指针）、矩形单元渲染；Dev/UI hook 与动画测试；同步文档。
 - 迭代 3：Huffman 构建（v0.1）
   - 构建微步骤（优先队列展示 + 合并），自定义双区布局（队列横排 + 树区渐成），适配渲染；Dev/UI hook 与测试；更新 animation/model/layout 文档。
 - 迭代 4：Git DAG 基础（v0.1）
