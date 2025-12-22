@@ -171,6 +171,7 @@ class PySide6Renderer(Renderer):
                 other_ops.append(op)
 
         # Apply creates up front with zero opacity for fade-in.
+        created_node_ids = {op.target for op in create_nodes if op.target}
         for op in create_nodes:
             self._apply_op(op)
             node = self._nodes.get(op.target or "")
@@ -178,6 +179,13 @@ class PySide6Renderer(Renderer):
                 node.ellipse.setOpacity(0.0)
                 if node.label:
                     node.label.setOpacity(0.0)
+
+        # Pre-position newly created nodes if they have a SET_POS in this step.
+        # This prevents them from "flying in" from (0,0).
+        for op in set_pos_ops:
+            if op.target in created_node_ids:
+                self._apply_op(op)
+
         for op in create_edges:
             self._apply_op(op)
             edge = self._edges.get(op.target or "")
@@ -469,7 +477,10 @@ class PySide6Renderer(Renderer):
             self._message_item.setPos(float(x), float(y))
         else:
             rect = self._scene.itemsBoundingRect()
-            self._message_item.setPos(rect.left(), rect.top() - 30.0)
+            # Anchor near current content top, centered horizontally
+            center_x = rect.center().x()
+            center_y = rect.center().y()
+            self._message_item.setPos(center_x, center_y)
         self._message_item.setVisible(True)
 
     def _clear_message(self) -> None:

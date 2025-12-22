@@ -58,6 +58,23 @@ def test_delete_two_children_uses_successor_label():
     assert any("6" in str(op.data.get("label")) for op in label_ops)
 
 
+def test_delete_two_children_successor_with_child_rewires_edges():
+    model = BstModel(structure_id="bst_delete_successor_child")
+    model.create(values=[5, 3, 7, 8])
+
+    model.delete_value(5)
+
+    # root should keep id but adopt successor key
+    root_id = model._root_id
+    assert root_id is not None
+    root = model._nodes[root_id]
+    assert root.key == 7
+
+    child_8 = next(nid for nid, node in model._nodes.items() if node.key == 8)
+    assert root.right == child_8
+    assert model._nodes[child_8].parent == root_id
+
+
 def test_delete_value_requires_value():
     model = BstModel(structure_id="bst_delete2")
     try:
