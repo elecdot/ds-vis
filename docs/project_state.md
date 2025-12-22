@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.12
+version: v0.7.13
 status: Active
 last_updated: 2025-12-24
 ---
@@ -57,12 +57,18 @@ This document captures the active delivery phase, what is complete, current assu
 - 测试：命令校验/SceneGraph 路由测试 + 全量 pytest/ruff/mypy 通过。
 - 当前进展：命名校验函数替换匿名 lambda，统一 CommandError；引入 register_command/register_model_factory，SCHEMA/MODEL_OP/MODEL_FACTORY registry 支持默认 list 注册；SceneGraph 使用全局工厂 registry，去除硬编码；相关测试通过，scene_graph 文档/index 同步。
 
-## Active Plan: Milestone 5 — DSL/LLM 入口 + Persistence
-- 目标：定义最小 JSON Command 协议（导入/导出）作为 persistence 入口；定义 DSL 语法（可编译为 Command 列表）与解析 stub；提供 UI/CLI 钩子；LLM 适配仅留接口。
-- 范围：`src/ds_vis/dsl/**`（新建）、persistence JSON 导入/导出、SceneGraph 调用；文档补充 DSL/JSON 协议与入口说明；registry 更新。
-- 验收：DSL 解析正/误用例；JSON 导入/导出往返测试；UI/CLI 冒烟（可选）；CI 全绿；文档同步。
-- 注意：不改 Ops 协议；LLM 仅定义接口/占位，不接入外部模型；保持现有 UI/Renderer 行为不破坏。
-- 当前进展：新增 JSON 导入/导出（persistence/json_io.py）+ DSL 解析 stub（dsl/parser.py，当前接受 JSON 作为临时 DSL 输入）；LLMAdapter 占位（可选前缀+可插拔 client，默认直接解析 DSL/JSON）；相关测试通过；registry/PLAN 已记录。后续可扩展真正 DSL 文法与 UI/CLI 钩子。
+## Completed Plan: Milestone 5 — DSL/LLM 入口 + Persistence
+- 交付：
+  - JSON Command 协议（导入/导出 + SCHEMA_REGISTRY 校验）：`persistence/json_io.py`。
+  - DSL 占位：`dsl/parser.py` 接受 JSON 作为 DSL 输入；`dsl/cli.py` CLI 入口；UI Dev 菜单提供 DSL/JSON 输入并执行。
+  - LLM 适配占位：`llm/adapter.py` 定义 `LLMClient` 协议与 `LLMAdapter`（前缀 + 可插拔 client，默认直通）。
+  - 文档：新增 `docs/design/dsl.md` / `json.md` / `llm.md`，registry 同步。
+- 测试：全量 pytest/ruff/mypy 通过（79/79），新增 CLI/LLM 测试覆盖。
+- 假设/限制：
+  - DSL 仍为 JSON 占位，无真实语法/语义检查；无变量/作用域。
+  - 无外部 LLM 调用，未做安全过滤；仅提供接口。
+  - 执行阻塞，批量命令可能卡 UI；无撤销/seek。
+  - 未定义协议版本/流式导入，错误即抛。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。

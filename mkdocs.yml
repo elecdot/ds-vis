@@ -34,10 +34,18 @@ nav:
   - Design:
       - Requirements: design/requirements.md
       - Architecture: design/architecture.md
+      - Model: design/model.md
+      - Layout: design/layout.md
+      - Scene Graph: design/scene_graph.md
       - Ops Spec: design/ops_spec.md
-      - Animation Requirements: design/animation.md
+      - Animation: design/animation.md
+      - Renderer: design/renderer.md
+      - DSL: design/dsl.md
+      - LLM: design/llm.md
+      - JSON Schema: design/json.md
   - Engineering:
       - Environment: engineering/environment.md
+      - TDD Guide: engineering/tdd_guide.md
       - Dev Knowledge Base: engineering/dev_kb.md
       #- Testing & CI: engineering/testing_ci.md
 #  - Demo:
