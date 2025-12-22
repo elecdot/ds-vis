@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.20
+version: v0.7.23
 status: Active
 last_updated: 2025-12-22
 ---
@@ -21,6 +21,7 @@ This document captures the active delivery phase, what is complete, current assu
   - 动画仍为同步阻塞插值，未支持 seek/skip/倒播；后继遍历的恢复仍可细化，但不影响拓扑正确性。
   - Layout 分区为占位算法，偏移常量硬编码；消息锚点依赖场景 bbox，未按结构局部优化。
   - Renderer 无箭头/端点裁剪，边渐入渐出为整体插值；状态/颜色未配置化。
+  - Renderer/布局暂缺特定形状与容器：顺序表/栈的“桶+矩形单元”、Huffman 构建过程的双区域（队列+树区）、Git DAG 纵向 lane 布局均未落地。
   - UI 为 Dev playground：单场景，无多 Timeline 管理；BST/DSL 入口为开发者菜单，未做正式用户流程。
   - DSL 仍是 JSON 占位，无变量/语法；LLM 仅接口，无外部调用。
   - Qt 测试依赖 `QT_QPA_PLATFORM=offscreen`；如需自定义 uv 缓存可设 `UV_CACHE_DIR=./tmp/uv-cache`。
@@ -35,13 +36,26 @@ This document captures the active delivery phase, what is complete, current assu
 - UI 为 Dev playground，无正式播放控制、无多 Timeline 管理。
 - 文档需持续同步：新增树类模型、消息锚点与布局偏移需在设计文档和 registry 中更新；未来 Agent 需要“全流程指南”作为默认入口。
 
-## Planned Next Phase — 快速可交付（P0.8 候选）
-- 目标：在 BST/List 验收基线上，进一步提升课堂演示可用性与冒烟效率，同时保持现有阻塞渲染兼容。
-- 交付重点（按优先级）：
-  1) Renderer/消息体验：在阻塞模式下增加“加速/跳过消息”配置入口，调整消息锚点以减少遮挡（按结构 bbox 或预留边距），并补充 show_messages/消息定位的 renderer 层测试。
-  2) 稳定性回归：针对 BST 删除（含后继带右子）与搜索 miss 的状态恢复、消息拆分编写回归测试并修复；确保尾部统一恢复节点/边状态。
-  3) Layout/UI 冒烟：复核 SceneGraph 偏移常量，避免多结构重叠；在 Dev 菜单补充多结构+BST 串联冒烟入口以缩短人工验收路径。
-- 风险/边界：非阻塞播放、自动分区布局、样式配置化仍不在本轮范围，需与 SimpleLayout/阻塞渲染保持兼容。
+## Planned Next Phase — v0.1 / v0.2 交付路线（快速迭代）
+- 目标：完成 v0.1 全部必做（顺序表/栈/Huffman/Git DAG 基础/持久化）并推进 v0.2 核心（AVL、DSL 文本、Git 扩展、多结构场景、回放），每轮原子可审查，遵循 PR checklist（ruff/mypy/pytest + 文档/registry 同步）。
+- 迭代 0：基线巩固
+  - BST 删除（含后继带右子）/搜索 miss 的状态恢复与消息拆分回归测试与修复；验证现有 List/BST 链路稳定性。
+- 迭代 U：UI/UX 交付化
+  - 设计并实现可交付 UI：左侧控制面板（结构选择/参数输入/播放控制/导入导出/DSL 输入）、右侧画布多结构偏移区、消息区防遮挡；接入各模型的快速操作入口。
+  - Renderer/布局支持各模型视觉：顺序表/栈的“桶+矩形单元”（栈竖向）、Huffman 构建的队列区+树区、Git DAG 的纵向 lane、小圆节点/label；新增 UI 冒烟测试（offscreen）。
+- 迭代 1：顺序表 Seqlist（v0.1）
+  - 实现模型（create/insert/delete/update/search）与命令注册；专用 LINEAR+桶布局，矩形单元渲染；Dev/UI hook 与动画/恢复测试；更新 model/layout/renderer 文档。
+- 迭代 2：栈 Stack（v0.1）
+  - 模型（create/push/pop）与命令注册；竖向桶布局（顶部指针）、矩形单元渲染；Dev/UI hook 与动画测试；同步文档。
+- 迭代 3：Huffman 构建（v0.1）
+  - 构建微步骤（优先队列展示 + 合并），自定义双区布局（队列横排 + 树区渐成），适配渲染；Dev/UI hook 与测试；更新 animation/model/layout 文档。
+- 迭代 4：Git DAG 基础（v0.1）
+  - 完成 init/commit/checkout（分支/commit）、HEAD/branch label 更新；DAG lane 布局与节点/label 渲染；持久化当前状态导出；UI/DSL 入口与冒烟测试。
+- 迭代 5：DSL 文本 & 多结构场景（v0.2 部分）
+  - 设计最小 DSL 文本语法 → Command 序列（覆盖 list/stack/bst/git 操作），CLI/Dev 输入；SceneGraph 多结构偏移校验与测试；文档同步。
+- 迭代 6：v0.2 扩展与回放
+  - AVL 平衡检测与 LL/RR/LR/RL 旋转动画；Git branch/merge（无冲突）+ DSL 脚本回放；持久化动画历史并支持阻塞回放；补充测试与文档。
+- 风险/边界：非阻塞播放、自动分区布局、样式配置化仍不在本轮范围；`.git` 真实仓库解析可用占位/子集导入说明，需保持与现有阻塞渲染兼容。
 
 ## Invariants
 - project_state.md is the only authority on current phase.
