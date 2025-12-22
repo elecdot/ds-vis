@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, Optional, Union
 
-from PySide6.QtCore import QRectF, Qt
-from PySide6.QtGui import QColor, QPen
+from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtGui import QColor, QPainterPath, QPen
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
     QGraphicsItem,
-    QGraphicsLineItem,
+    QGraphicsPathItem,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
@@ -61,7 +62,7 @@ class NodeVisual:
 class EdgeVisual:
     """Lightweight holder for edge visuals."""
 
-    line: QGraphicsLineItem
+    item: QGraphicsPathItem
     label: Optional[QGraphicsSimpleTextItem] = None
     src_id: str = ""
     dst_id: str = ""
@@ -131,7 +132,7 @@ class PySide6Renderer(Renderer):
         for node in list(self._nodes.values()):
             self._scene.removeItem(node.item)
         for edge in list(self._edges.values()):
-            self._scene.removeItem(edge.line)
+            self._scene.removeItem(edge.item)
             if edge.label:
                 self._scene.removeItem(edge.label)
         self._nodes.clear()
@@ -200,7 +201,7 @@ class PySide6Renderer(Renderer):
             self._apply_op(op)
             edge = self._edges.get(op.target or "")
             if edge:
-                edge.line.setOpacity(0.0)
+                edge.item.setOpacity(0.0)
                 if edge.label:
                     edge.label.setOpacity(0.0)
 
@@ -230,7 +231,7 @@ class PySide6Renderer(Renderer):
                 state_starts[target] = node.item.brush().color()
                 state_targets[target] = desired
             elif edge:
-                state_starts[target] = edge.line.pen().color()
+                state_starts[target] = edge.item.pen().color()
                 state_targets[target] = desired
 
         # Fade-out start values for deletes.
@@ -244,7 +245,7 @@ class PySide6Renderer(Renderer):
             target = op.target or ""
             edge = self._edges.get(target)
             if edge:
-                delete_opacity[target] = edge.line.opacity()
+                delete_opacity[target] = edge.item.opacity()
 
         # Run interpolation frames synchronously (with a small wait per frame
         # so the UI can present motion when running in the main loop).
@@ -271,7 +272,7 @@ class PySide6Renderer(Renderer):
                     node.item.setBrush(interp)
                 edge = self._edges.get(target)
                 if edge:
-                    edge.line.setPen(QPen(interp))
+                    edge.item.setPen(QPen(interp))
             # fade in/out
             for op in create_nodes:
                 node = self._nodes.get(op.target or "")
@@ -282,7 +283,7 @@ class PySide6Renderer(Renderer):
             for op in create_edges:
                 edge = self._edges.get(op.target or "")
                 if edge:
-                    edge.line.setOpacity(t)
+                    edge.item.setOpacity(t)
                     if edge.label:
                         edge.label.setOpacity(t)
             for op in delete_nodes:
@@ -296,7 +297,7 @@ class PySide6Renderer(Renderer):
                 edge = self._edges.get(op.target or "")
                 if edge:
                     start_opacity = delete_opacity.get(op.target or "", 1.0)
-                    edge.line.setOpacity(max(0.0, start_opacity * (1 - t)))
+                    edge.item.setOpacity(max(0.0, start_opacity * (1 - t)))
                     if edge.label:
                         edge.label.setOpacity(max(0.0, start_opacity * (1 - t)))
             if delay_per_frame > 0:
@@ -388,6 +389,7 @@ class PySide6Renderer(Renderer):
             pen = QPen(self._config.colors.get("faded", QColor("#9ca3af")))
             pen.setStyle(Qt.PenStyle.DashLine)
             item.setPen(pen)
+            width, height = lane_w, lane_h
         else:
             # rect/bucket are centered on origin to keep setPos as center placement
             item = QGraphicsRectItem(-width / 2, -height / 2, width, height)
@@ -424,7 +426,7 @@ class PySide6Renderer(Renderer):
         # Remove edges connected to this node.
         for edge_id, edge in list(self._edges.items()):
             if edge.src_id == op.target or edge.dst_id == op.target:
-                self._scene.removeItem(edge.line)
+                self._scene.removeItem(edge.item)
                 self._edges.pop(edge_id, None)
 
     def _create_edge(self, op: AnimationOp) -> None:
@@ -435,9 +437,9 @@ class PySide6Renderer(Renderer):
 
         src = op.data.get("from")
         dst = op.data.get("to")
-        line = QGraphicsLineItem()
-        line.setPen(QPen(QColor("#111827")))
-        self._scene.addItem(line)
+        item = QGraphicsPathItem()
+        item.setPen(QPen(QColor("#111827"), 1.5))
+        self._scene.addItem(item)
 
         label_text = op.data.get("label")
         label_item = None
@@ -446,7 +448,7 @@ class PySide6Renderer(Renderer):
             self._scene.addItem(label_item)
 
         self._edges[op.target] = EdgeVisual(
-            line=line,
+            item=item,
             label=label_item,
             src_id=src or "",
             dst_id=dst or "",
@@ -460,7 +462,7 @@ class PySide6Renderer(Renderer):
 
         edge = self._edges.pop(op.target, None)
         if edge:
-            self._scene.removeItem(edge.line)
+            self._scene.removeItem(edge.item)
             if edge.label:
                 self._scene.removeItem(edge.label)
 
@@ -491,7 +493,7 @@ class PySide6Renderer(Renderer):
         edge = self._edges.get(op.target or "")
         if edge:
             color = self._config.colors.get(state, self._config.colors["normal"])
-            edge.line.setPen(QPen(color))
+            edge.item.setPen(QPen(color, 1.5))
 
     def _set_label(self, op: AnimationOp) -> None:
         node = self._nodes.get(op.target or "")
@@ -552,7 +554,7 @@ class PySide6Renderer(Renderer):
             rect = rect.united(item_rect)
             any_item = True
         for edge in self._edges.values():
-            item_rect = edge.line.mapToScene(edge.line.boundingRect()).boundingRect()
+            item_rect = edge.item.mapToScene(edge.item.boundingRect()).boundingRect()
             rect = rect.united(item_rect)
             any_item = True
             if edge.label:
@@ -581,9 +583,65 @@ class PySide6Renderer(Renderer):
 
         src_pos = src_node.item.pos()
         dst_pos = dst_node.item.pos()
-        edge.line.setLine(src_pos.x(), src_pos.y(), dst_pos.x(), dst_pos.y())
+
+        # Calculate boundary points
+        p1 = self._get_node_boundary_point(src_node, dst_pos)
+        p2 = self._get_node_boundary_point(dst_node, src_pos)
+
+        path = QPainterPath()
+        path.moveTo(p1)
+        path.lineTo(p2)
+
+        # Arrow head
+        arrow_size = 10.0
+        angle = 25.0 * math.pi / 180.0
+
+        dx = p2.x() - p1.x()
+        dy = p2.y() - p1.y()
+        length = math.sqrt(dx**2 + dy**2)
+
+        if length > arrow_size:
+            ux = dx / length
+            uy = dy / length
+
+            # Two lines for arrow head
+            x1 = p2.x() - arrow_size * (ux * math.cos(angle) - uy * math.sin(angle))
+            y1 = p2.y() - arrow_size * (ux * math.sin(angle) + uy * math.cos(angle))
+            x2 = p2.x() - arrow_size * (ux * math.cos(angle) + uy * math.sin(angle))
+            y2 = p2.y() - arrow_size * (-ux * math.sin(angle) + uy * math.cos(angle))
+
+            path.moveTo(p2)
+            path.lineTo(x1, y1)
+            path.moveTo(p2)
+            path.lineTo(x2, y2)
+
+        edge.item.setPath(path)
 
         if edge.label:
-            mid_x = (src_pos.x() + dst_pos.x()) / 2
-            mid_y = (src_pos.y() + dst_pos.y()) / 2
+            mid_x = (p1.x() + p2.x()) / 2
+            mid_y = (p1.y() + p2.y()) / 2
             edge.label.setPos(mid_x, mid_y)
+
+    def _get_node_boundary_point(self, node: NodeVisual, target_pos: QPointF) -> QPointF:
+        center = node.item.pos()
+        dx = target_pos.x() - center.x()
+        dy = target_pos.y() - center.y()
+        dist = math.sqrt(dx**2 + dy**2)
+
+        if dist < 1e-6:
+            return center
+
+        if node.shape == "circle":
+            radius = self._config.node_radius
+            return QPointF(
+                center.x() + dx * radius / dist, center.y() + dy * radius / dist
+            )
+        else:
+            # rect, bucket, lane
+            w = node.width
+            h = node.height
+            # Intersection with rectangle [-w/2, w/2] x [-h/2, h/2]
+            tx = (w / 2) / abs(dx) if abs(dx) > 1e-6 else float("inf")
+            ty = (h / 2) / abs(dy) if abs(dy) > 1e-6 else float("inf")
+            t = min(tx, ty)
+            return QPointF(center.x() + t * dx, center.y() + t * dy)

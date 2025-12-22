@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.4.1
+version: v0.4.2
 status: Draft
-last_updated: 2025-12-22
+last_updated: 2025-12-24
 ---
 
 # RENDERER — 设计说明（轻量）
@@ -46,7 +46,7 @@ last_updated: 2025-12-22
 ## 6. 形态扩展（P0.8 计划）
 
 - 形状与容器：
-  - 顺序表/栈：矩形单元 + 背景“桶”，栈为竖向堆叠、顺序表为横向；需支持单元尺寸/间距与容器边框样式。
+  - 顺序表/栈：矩形单元 + 背景“桶”，栈竖向堆叠、顺序表横向；当前 PySide6 已支持 `shape=rect/bucket` 渲染与描边高亮，尺寸依赖模型传入的 width/height。
   - Huffman：队列区节点可复用矩形/圆形，需能标记“候选队列”容器；树区仍用树节点形态。
   - Git DAG：小圆点 + 标签，支持 lane 间横向偏移，可能需要 edge label 或轻量箭头（占位）。
 - 消息锚点：保持全局 bbox 顶部，但需预留按结构 bbox 的锚点以减少遮挡（与 UI 消息区协作）。

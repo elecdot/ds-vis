@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
-    QGraphicsLineItem,
+    QGraphicsPathItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
 )
@@ -171,7 +171,7 @@ def test_renderer_applies_edge_highlight(qt_app):
 
     edge = renderer._edges.get("e1")
     assert edge is not None
-    assert edge.line.pen().color() == renderer._config.colors["highlight"]
+    assert edge.item.pen().color() == renderer._config.colors["highlight"]
 
 
 def test_renderer_updates_edges_on_position(qt_app):
@@ -216,9 +216,12 @@ def test_renderer_updates_edges_on_position(qt_app):
 
     edge = renderer._edges.get("e1")
     assert edge is not None
-    line: QGraphicsLineItem = edge.line
-    assert line.line().x1() == 10.0
-    assert line.line().x2() == 110.0
+    path = edge.item.path()
+    assert not path.isEmpty()
+    # With radius 20, n1(10,20) -> n2(110,20) should start at (30,20) and end at (90,20)
+    # elementAt(0) is MoveTo, elementAt(1) is LineTo
+    assert path.elementAt(0).x == 30.0
+    assert path.elementAt(1).x == 90.0
 
 
 def test_renderer_animates_position(qt_app):
@@ -393,11 +396,11 @@ def test_renderer_clear_removes_visuals(qt_app):
     assert renderer._nodes
     assert renderer._edges
     assert any(isinstance(item, QGraphicsEllipseItem) for item in scene.items())
-    assert any(isinstance(item, QGraphicsLineItem) for item in scene.items())
+    assert any(isinstance(item, QGraphicsPathItem) for item in scene.items())
 
     renderer.clear()
 
     assert not renderer._nodes
     assert not renderer._edges
     assert not any(isinstance(item, QGraphicsEllipseItem) for item in scene.items())
-    assert not any(isinstance(item, QGraphicsLineItem) for item in scene.items())
+    assert not any(isinstance(item, QGraphicsPathItem) for item in scene.items())
