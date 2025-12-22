@@ -1,8 +1,8 @@
 ---
 bound_phase: P0.7
-version: v0.7
+version: v0.8
 status: Draft
-last_updated: 2025-12-24
+last_updated: 2025-12-22
 ---
 
 # MODEL — 设计说明（轻量）
@@ -55,7 +55,14 @@ last_updated: 2025-12-24
 - 颜色语义：遍历类步骤使用 `secondary`，旧边（待重连）使用 `to_delete`，关键节点/新边使用 `highlight`。
 - 消息提示：insert/search/update 在步骤前后用 `SET_MESSAGE`，结束后 `CLEAR_MESSAGE`；PySide6 Renderer 将消息锚定场景 bbox 顶部居中。
 
-## 8. 新模型开发指北（模板，P0.7）
+## 8. SeqlistModel 实现备注（P0.8）
+- kind=`seqlist`，顺序表（无边）；操作：create/insert/delete_index/delete_all/search/update。
+- 微步骤：消息提示 → 目标/区间高亮（highlight/secondary）→ 结构变更（CREATE_NODE/DELETE_NODE/SET_LABEL）→ 统一 Restore（CLEAR_MESSAGE+SET_STATE normal）。
+- ID 稳定：节点用 allocator 单调生成；不复用旧 ID。
+- 视觉与布局：矩形单元 + 桶容器，布局由 SceneGraph 路由 LINEAR（horizontal）注入 SET_POS。
+- 异常：参数缺失或越界抛 ModelError。
+
+## 9. 新模型开发指北（模板，P0.7）
 
 - 状态/颜色：优先使用统一状态值（见 animation.md），避免自定义散乱命名。
 - 微步骤拆解模板：遍历/定位（secondary）→ 关键节点/边高亮（highlight）→ 结构变更（CREATE/DELETE/SET_LABEL 等）→ 恢复（normal）。
@@ -65,7 +72,7 @@ last_updated: 2025-12-24
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
 
-## 9. BST 实现备注（P0.7）
+## 10. BST 实现备注（P0.7）
 - 目标：树类模型的首个可交付版本，为 AVL/Huffman 等复用微步骤范式与注册方式。
 - 实现要点：
   - kind=`bst`，支持 create/insert/search/delete_value/delete_all；重复键策略：走右子树。

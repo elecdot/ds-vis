@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.25
+version: v0.7.26
 status: Active
 last_updated: 2025-12-22
 ---
@@ -13,6 +13,7 @@ This document captures the active delivery phase, what is complete, current assu
 - Scope: 在 ListModel 全链路基础上，交付 BST/Tree 最小可用版本（create/insert/search/delete/delete_all），验证“按指令快速扩展”链路，为 AVL/Huffman 等树类模型打样。
 - Completion highlights:
   - ListModel：create/insert/delete_index/delete_all/search/update（index/value 双模式）全链路 L2 微步骤 + 消息提示；sentinel 展示用，ID 使用 allocator；Dev hook 串联全操作，UI 冒烟测试覆盖。
+  - SeqlistModel：支持 create/insert/delete_index/delete_all/search/update，矩形节点（无边），消息+状态 L2 微步骤；命令注册/SceneGraph 路由/LINEAR 横向桶布局就绪；控制面板可直接操作，模型单测覆盖。
   - BST：支持 create/insert/search/delete_value/delete_all；删除使用后继替换法并处理后继带右子；搜索/插入/删除的节点与边状态有统一恢复；消息锚点基于场景 bbox，靠近结构区域；Dev hook `_play_bst_full_demo` 覆盖命中/未命中搜索与三类删除，动画已通过当前验收（仍需关注后继遍历恢复、消息拆分等细化项）。
   - Layout：SceneGraph 按 kind→策略路由（list→LINEAR，bst→TREE），为每个结构分配 `(dx, dy)` 偏移（按策略分组行累加）注入 LayoutEngine，避免多结构重叠；TreeLayout 注入 SET_POS。
   - SceneGraph/Schema：通过全局 registry 注册命令与 model factory，bst 无需硬编码；校验函数具名且统一抛 CommandError。
