@@ -6,11 +6,15 @@ from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.layout import LayoutEngine
 from ds_vis.core.layout.simple import SimpleLayoutEngine
-from ds_vis.core.models import BaseModel, ListModel
+from ds_vis.core.models import BaseModel
 from ds_vis.core.ops import Timeline
 
 from .command import Command, CommandType
-from .command_schema import MODEL_OP_REGISTRY, SCHEMA_REGISTRY
+from .command_schema import (
+    MODEL_FACTORY_REGISTRY,
+    MODEL_OP_REGISTRY,
+    SCHEMA_REGISTRY,
+)
 
 
 @dataclass
@@ -35,14 +39,11 @@ class SceneGraph:
     _handlers: Dict[CommandType, Callable[[Command], Timeline]] = field(
         default_factory=dict
     )
-    _model_registry: Dict[str, Callable[[str], BaseModel]] = field(default_factory=dict)
-
     def __post_init__(self) -> None:
         # Default to a simple linear layout to keep the pipeline connected.
         if self._layout_engine is None:
             self._layout_engine = SimpleLayoutEngine()
         self._register_handlers()
-        self._register_models()
         # TODO(P0.8): allow injecting/swapping layout engines/strategies and invoking
         # layout_engine.reset() on scene reset/seek to support non-linear layouts.
         # TODO(P0.8): consider layout routing (e.g., per-structure strategy selection)
@@ -155,11 +156,8 @@ class SceneGraph:
     # ------------------------------------------------------------------ #
     # Model registry + schema helpers
     # ------------------------------------------------------------------ #
-    def _register_models(self) -> None:
-        self._model_registry = {"list": self._create_list_model}
-
     def _get_or_create_model(self, kind: str, structure_id: str) -> BaseModel:
-        factory = self._model_registry.get(kind)
+        factory = MODEL_FACTORY_REGISTRY.get(kind)
         if factory is None:
             raise CommandError(f"No model registered for kind: {kind!r}")
         existing = self._structures.get(structure_id)
@@ -188,6 +186,3 @@ class SceneGraph:
         if op_name is None:
             raise CommandError(f"Unsupported operation for kind: {kind!r}")
         return kind, op_name, payload
-
-    def _create_list_model(self, structure_id: str) -> ListModel:
-        return ListModel(structure_id=structure_id)
