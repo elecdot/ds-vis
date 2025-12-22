@@ -25,6 +25,8 @@ class RendererConfig:
     node_radius: float = 20.0
     rect_width: float = 48.0
     rect_height: float = 24.0
+    lane_width: float = 80.0
+    queue_spacing: float = 12.0
     colors: Dict[str, QColor] = field(
         default_factory=lambda: {
             "normal": QColor("#6b7280"),     # gray
@@ -376,6 +378,15 @@ class PySide6Renderer(Renderer):
         if shape == "circle":
             radius = self._config.node_radius
             item = QGraphicsEllipseItem(-radius, -radius, radius * 2, radius * 2)
+        elif shape == "lane":
+            # Lane marker: thin vertical band for Git timeline lanes
+            lane_w = float(op.data.get("lane_width", self._config.lane_width))
+            lane_h = float(op.data.get("lane_height", height * 6))
+            item = QGraphicsRectItem(-lane_w / 2, -lane_h / 2, lane_w, lane_h)
+            item.setBrush(QColor(0, 0, 0, 0))
+            pen = QPen(self._config.colors.get("faded", QColor("#9ca3af")))
+            pen.setStyle(Qt.DashLine)
+            item.setPen(pen)
         else:
             # rect/bucket are centered on origin to keep setPos as center placement
             item = QGraphicsRectItem(-width / 2, -height / 2, width, height)
@@ -467,7 +478,13 @@ class PySide6Renderer(Renderer):
         node = self._nodes.get(op.target or "")
         if node:
             color = self._config.colors.get(state, self._config.colors["normal"])
-            node.item.setBrush(color)  # type: ignore[arg-type]
+            if node.shape == "bucket":
+                pen = QPen(color)
+                pen.setWidth(2)
+                node.item.setPen(pen)  # type: ignore[arg-type]
+                node.item.setBrush(QColor(0, 0, 0, 0))  # keep container hollow
+            else:
+                node.item.setBrush(color)  # type: ignore[arg-type]
             return
 
         edge = self._edges.get(op.target or "")

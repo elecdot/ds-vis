@@ -54,5 +54,9 @@ class LayoutStrategy(Enum):
 # Kind -> preferred LayoutStrategy
 DEFAULT_LAYOUT_MAP = {
     "list": LayoutStrategy.LINEAR,
+    "seqlist": LayoutStrategy.LINEAR,
+    "stack": LayoutStrategy.LINEAR,
     "bst": LayoutStrategy.TREE,
+    "huffman": LayoutStrategy.TREE,
+    "git": LayoutStrategy.DAG,
 }
