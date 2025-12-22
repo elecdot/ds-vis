@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.layout import LayoutEngine
 from ds_vis.core.layout.simple import SimpleLayoutEngine
+from ds_vis.core.layout.tree import TreeLayoutEngine
 from ds_vis.core.models import BaseModel
 from ds_vis.core.ops import Timeline
 
@@ -36,13 +37,16 @@ class SceneGraph:
 
     _structures: Dict[str, BaseModel] = field(default_factory=dict)
     _layout_engine: Optional[LayoutEngine] = None
-    _handlers: Dict[CommandType, Callable[[Command], Timeline]] = field(
+    _tree_layout_engine: Optional[LayoutEngine] = None
+    _handlers: Dict[CommandType, Callable[[Command], Tuple[Timeline, str]]] = field(
         default_factory=dict
     )
     def __post_init__(self) -> None:
         # Default to a simple linear layout to keep the pipeline connected.
         if self._layout_engine is None:
             self._layout_engine = SimpleLayoutEngine()
+        if self._tree_layout_engine is None:
+            self._tree_layout_engine = TreeLayoutEngine()
         self._register_handlers()
         # TODO(P0.8): allow injecting/swapping layout engines/strategies and invoking
         # layout_engine.reset() on scene reset/seek to support non-linear layouts.
@@ -71,31 +75,29 @@ class SceneGraph:
         handler = self._handlers.get(command.type)
         if handler is None:
             raise CommandError(f"Unsupported command type: {command.type!s}")
-        structural_timeline = handler(command)
+        structural_timeline, kind = handler(command)
 
-        if self._layout_engine:
-            return self._layout_engine.apply_layout(structural_timeline)
+        return self._apply_layout(kind, structural_timeline)
 
-        return structural_timeline
-
-    def _handle_create_structure(self, command: Command) -> Timeline:
+    def _handle_create_structure(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._get_or_create_model(kind, command.structure_id)
         values = payload.get("values")
         if model.node_count:
             delete_tl = model.apply_operation("delete_all", {})
             create_tl = model.apply_operation(op_name, {"values": values})
-            return self._merge_timelines(delete_tl, create_tl)
-        return model.apply_operation(op_name, {"values": values})
+            merged = self._merge_timelines(delete_tl, create_tl)
+            return merged, kind
+        return model.apply_operation(op_name, {"values": values}), kind
 
-    def _handle_delete_structure(self, command: Command) -> Timeline:
+    def _handle_delete_structure(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
-        return model.apply_operation(op_name, payload)
+        return model.apply_operation(op_name, payload), kind
 
-    def _handle_delete_node(self, command: Command) -> Timeline:
+    def _handle_delete_node(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
@@ -103,9 +105,9 @@ class SceneGraph:
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("DELETE_NODE index out of range")
-        return model.apply_operation(op_name, {"index": index})
+        return model.apply_operation(op_name, {"index": index}), kind
 
-    def _handle_insert(self, command: Command) -> Timeline:
+    def _handle_insert(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
@@ -113,11 +115,14 @@ class SceneGraph:
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index > model.node_count):
             raise CommandError("INSERT index out of range")
-        return model.apply_operation(
-            op_name, {"index": index, "value": payload.get("value")}
+        return (
+            model.apply_operation(
+                op_name, {"index": index, "value": payload.get("value")}
+            ),
+            kind,
         )
 
-    def _handle_search(self, command: Command) -> Timeline:
+    def _handle_search(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
@@ -125,11 +130,14 @@ class SceneGraph:
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("SEARCH index out of range")
-        return model.apply_operation(
-            op_name, {"index": index, "value": payload.get("value")}
+        return (
+            model.apply_operation(
+                op_name, {"index": index, "value": payload.get("value")}
+            ),
+            kind,
         )
 
-    def _handle_update(self, command: Command) -> Timeline:
+    def _handle_update(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
@@ -137,13 +145,16 @@ class SceneGraph:
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("UPDATE index out of range")
-        return model.apply_operation(
-            op_name,
-            {
-                "index": index,
-                "value": payload.get("value"),
-                "new_value": payload.get("new_value"),
-            },
+        return (
+            model.apply_operation(
+                op_name,
+                {
+                    "index": index,
+                    "value": payload.get("value"),
+                    "new_value": payload.get("new_value"),
+                },
+            ),
+            kind,
         )
 
     def _merge_timelines(self, *timelines: Timeline) -> Timeline:
@@ -152,6 +163,13 @@ class SceneGraph:
             for step in tl.steps:
                 merged.add_step(step)
         return merged
+
+    def _apply_layout(self, kind: str, timeline: Timeline) -> Timeline:
+        if kind == "tree" and self._tree_layout_engine:
+            return self._tree_layout_engine.apply_layout(timeline)
+        if self._layout_engine:
+            return self._layout_engine.apply_layout(timeline)
+        return timeline
 
     # ------------------------------------------------------------------ #
     # Model registry + schema helpers

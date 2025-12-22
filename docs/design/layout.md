@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.2
+version: v0.3
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -36,9 +36,17 @@ last_updated: 2025-12-24
 - 兼容：默认 SimpleLayout 作为 LINEAR 策略实现，保持 stateful 顺序行为。
 - 扩展：Tree/DAG 布局可作为占位实现接入；重建/无状态模式可在未来支持 seek/倒播。
 
-## 5. 当前限制（P0.6）
+## 5. 当前实现（P0.7）
+
+- **SimpleLayoutEngine (LINEAR)**：stateful 顺序引擎，固定尺寸与左对齐，按结构行堆叠；无 seek/倒播。
+- **TreeLayoutEngine (占位 TREE)**：基于 CREATE_EDGE 的父子关系，中序遍历编号，水平等距、纵向分层；用于树模型冒烟（kind=tree），未做混排分区或精细避让。
+- SceneGraph 路由：kind=tree 走 TreeLayoutEngine，其余默认 SimpleLayout；未来可扩展策略表/配置。
+
+## 6. 当前限制
 
 - SimpleLayout 为 stateful 顺序引擎，固定尺寸与左对齐；不支持 seek/倒播。
-- 多结构冲突处理有限，仅垂直堆叠。
+- 多结构冲突处理有限：树/线性混排可能拥挤；无自动分区。
+- 无 seek/倒播/重建；布局状态依赖顺序执行。
+- 树布局为占位算法，无平衡/重排动画，复杂树（旋转等）可能需要更精细算法。
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，Style/Metrics 约束见 `architecture.md` 第 7 节。
