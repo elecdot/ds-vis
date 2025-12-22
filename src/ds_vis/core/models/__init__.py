@@ -15,8 +15,16 @@ from __future__ import annotations
 
 from ds_vis.core.models.base import BaseModel
 from ds_vis.core.models.bst import BstModel
+from ds_vis.core.models.huffman import HuffmanModel
 from ds_vis.core.models.list_model import ListModel
 from ds_vis.core.models.seqlist import SeqlistModel
 from ds_vis.core.models.stack import StackModel
 
-__all__ = ["BaseModel", "ListModel", "BstModel", "SeqlistModel", "StackModel"]
+__all__ = [
+    "BaseModel",
+    "ListModel",
+    "BstModel",
+    "SeqlistModel",
+    "StackModel",
+    "HuffmanModel",
+]

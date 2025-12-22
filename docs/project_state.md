@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.28
+version: v0.7.29
 status: Active
 last_updated: 2025-12-24
 ---
@@ -15,6 +15,7 @@ This document captures the active delivery phase, what is complete, current assu
   - ListModel：create/insert/delete_index/delete_all/search/update（index/value 双模式）全链路 L2 微步骤 + 消息提示；sentinel 展示用，ID 使用 allocator；Dev hook 串联全操作，UI 冒烟测试覆盖。
   - SeqlistModel：支持 create/insert/delete_index/delete_all/search/update，矩形节点 + 桶容器（专用 LINEAR 布局），消息+状态 L2 微步骤；命令注册/SceneGraph 路由/控制面板操作可用，模型/UI 测试覆盖。
   - StackModel：create/push/pop/delete_all/search（线性扫描）全链路，栈顶在 index0（top→bottom 顺序），矩形单元 + 桶容器（LINEAR 竖向、容器按节点 bbox 居中）；命令注册/SceneGraph 路由/UI push/pop 可用，模型/布局/UI 测试覆盖。
+  - Huffman（进行中）：新增 HuffmanModel（build/delete_all），小顶堆驱动 L2 微步骤（选两最小→建父→重排队列），TreeLayout 支持 queue_index 双区布局（队列横排 + 子树向下展开）；schema/SceneGraph 注册、UI kind 添加，模型/布局/SceneGraph 测试覆盖，完整 UI/渲染体验待后续验收。
   - BST：支持 create/insert/search/delete_value/delete_all；删除使用后继替换法并处理后继带右子；搜索/插入/删除的节点与边状态有统一恢复；消息锚点基于场景 bbox，靠近结构区域；Dev hook `_play_bst_full_demo` 覆盖命中/未命中搜索与三类删除，动画已通过当前验收（仍需关注后继遍历恢复、消息拆分等细化项）。
   - Layout：SceneGraph 按 kind→策略路由（list→LINEAR，bst→TREE），为每个结构分配 `(dx, dy)` 偏移（按策略分组行累加）注入 LayoutEngine，避免多结构重叠；TreeLayout 注入 SET_POS。
   - SceneGraph/Schema：通过全局 registry 注册命令与 model factory，bst 无需硬编码；校验函数具名且统一抛 CommandError。
@@ -50,7 +51,8 @@ This document captures the active delivery phase, what is complete, current assu
 - 迭代 1：顺序表 Seqlist（v0.1）
   - 实现模型（create/insert/delete/update/search）与命令注册；专用 LINEAR+桶布局，矩形单元渲染；Dev/UI hook 与动画/恢复测试；更新 model/layout/renderer 文档。
 - 迭代 3：Huffman 构建（v0.1）
-  - 构建微步骤（优先队列展示 + 合并），自定义双区布局（队列横排 + 树区渐成），适配渲染；Dev/UI hook 与测试；更新 animation/model/layout 文档。
+  - 构建微步骤（优先队列展示 + 合并），自定义双区布局（队列横排 + 树区渐成），适配渲染；Dev/UI hook 与测试；更新 animation/model/layout 文档。（初版模型/布局已落地，待 UI/渲染体验验收）
+  - 当前 Huffman 构建后的树布局存在节点重叠的情况
 - 迭代 4：Git DAG 基础（v0.1）
   - 完成 init/commit/checkout（分支/commit）、HEAD/branch label 更新；DAG lane 布局与节点/label 渲染；持久化当前状态导出；UI/DSL 入口与冒烟测试。
 - 迭代 5：DSL 文本 & 多结构场景（v0.2 部分）

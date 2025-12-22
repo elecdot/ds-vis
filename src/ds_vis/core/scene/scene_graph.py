@@ -70,6 +70,12 @@ class SceneGraph:
                 "row_spacing": 200.0,
             },
             "git": {"orientation": "vertical", "spacing": 140.0},
+            "huffman": {
+                "queue_spacing": 80.0,
+                "queue_start_y": 0.0,
+                "tree_offset_y": 180.0,
+                "tree_span": 240.0,
+            },
         }
 
     def _register_handlers(self) -> None:

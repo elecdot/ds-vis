@@ -124,7 +124,7 @@ def register_model_factory(kind: str, factory: Callable[[str], "BaseModel"]) -> 
 
 
 def _register_defaults() -> None:
-    from ds_vis.core.models import BstModel, ListModel
+    from ds_vis.core.models import BstModel, HuffmanModel, ListModel
     from ds_vis.core.models.seqlist import SeqlistModel
     from ds_vis.core.models.stack import StackModel
 
@@ -213,6 +213,21 @@ def _register_defaults() -> None:
     )
     register_model_factory(
         "stack", lambda structure_id: StackModel(structure_id=structure_id)
+    )
+    register_command(
+        CommandType.CREATE_STRUCTURE,
+        "huffman",
+        CommandSchema(required={"kind": str}, optional={"values": (list, tuple)}),
+        "build",
+    )
+    register_command(
+        CommandType.DELETE_STRUCTURE,
+        "huffman",
+        CommandSchema(required={"kind": str}),
+        "delete_all",
+    )
+    register_model_factory(
+        "huffman", lambda structure_id: HuffmanModel(structure_id=structure_id)
     )
     register_command(
         CommandType.CREATE_STRUCTURE,

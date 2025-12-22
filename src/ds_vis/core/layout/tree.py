@@ -31,9 +31,14 @@ class TreeLayoutEngine(LayoutEngine):
     _positions: Dict[str, Dict[str, Tuple[float, float]]] = field(default_factory=dict)
     _dirty_structures: set[str] = field(default_factory=set)
     _offsets: Dict[str, Tuple[float, float]] = field(default_factory=dict)
+    _structure_config: Dict[str, Mapping[str, object]] = field(default_factory=dict)
+    _queue_index: Dict[str, Dict[str, int]] = field(default_factory=dict)
 
     def set_offsets(self, offsets: Dict[str, Tuple[float, float]]) -> None:
         self._offsets = offsets
+
+    def set_structure_config(self, config: Dict[str, Mapping[str, object]]) -> None:
+        self._structure_config = config
 
     def apply_layout(self, timeline: Timeline) -> Timeline:
         new_timeline = Timeline()
@@ -53,6 +58,8 @@ class TreeLayoutEngine(LayoutEngine):
         self._positions.clear()
         self._dirty_structures.clear()
         self._offsets.clear()
+        self._structure_config.clear()
+        self._queue_index.clear()
 
     def _apply_structural_ops(self, step: AnimationStep) -> None:
         for op in step.ops:
@@ -62,6 +69,9 @@ class TreeLayoutEngine(LayoutEngine):
             if op.op is OpCode.CREATE_NODE:
                 self._nodes.setdefault(sid, []).append(op.target or "")
                 self._dirty_structures.add(sid)
+                queue_idx = op.data.get("queue_index")
+                if isinstance(queue_idx, int):
+                    self._queue_index.setdefault(sid, {})[op.target or ""] = queue_idx
             elif op.op is OpCode.DELETE_NODE:
                 nodes = self._nodes.get(sid, [])
                 if op.target in nodes:
@@ -73,6 +83,8 @@ class TreeLayoutEngine(LayoutEngine):
                     if child_id_loop == op.target or parent_id == op.target:
                         parent_map.pop(child_id_loop, None)
                 self._dirty_structures.add(sid)
+                q_map = self._queue_index.get(sid, {})
+                q_map.pop(op.target or "", None)
             elif op.op is OpCode.CREATE_EDGE:
                 parent: Optional[str] = op.data.get("from")
                 edge_child: Optional[str] = op.data.get("to")
@@ -89,6 +101,10 @@ class TreeLayoutEngine(LayoutEngine):
                     parent_map = self._parents.get(sid, {})
                     parent_map.pop(edge_child_del, None)
                     self._dirty_structures.add(sid)
+            elif op.op is OpCode.SET_LABEL:
+                queue_idx = op.data.get("queue_index")
+                if isinstance(queue_idx, int):
+                    self._queue_index.setdefault(sid, {})[op.target or ""] = queue_idx
 
     def _inject_positions(self) -> List[AnimationOp]:
         ops: List[AnimationOp] = []
@@ -98,26 +114,31 @@ class TreeLayoutEngine(LayoutEngine):
             roots = [n for n in nodes if n and n not in parent_map]
             positions: Dict[str, Tuple[float, float]] = {}
             offset_x, offset_y = self._offsets.get(sid, (0.0, 0.0))
+            cfg = self._structure_config.get(sid, {})
+            queue_spacing = _as_float(cfg.get("queue_spacing"), self.spacing)
+            queue_start_y = _as_float(cfg.get("queue_start_y"), self.start_y)
+            tree_offset_y = _as_float(cfg.get("tree_offset_y"), self.level_spacing * 2)
+            tree_span = _as_float(cfg.get("tree_span"), self.spacing * 2.0)
 
-            next_x = 0
+            queue_map = self._queue_index.get(sid, {})
+            sorted_roots = sorted(
+                roots, key=lambda nid: queue_map.get(nid, float("inf"))
+            )
 
-            def dfs(node_id: Optional[str], depth: int) -> None:
-                nonlocal next_x
-                if not node_id:
-                    return
-                left: Optional[str] = self._child(parent_map, node_id, "L")
-                right: Optional[str] = self._child(parent_map, node_id, "R")
-                if left:
-                    dfs(left, depth + 1)
-                x = self.start_x + self.offset_x + offset_x + next_x * self.spacing
-                y = self.start_y + self.offset_y + offset_y + depth * self.level_spacing
-                positions[node_id] = (x, y)
-                next_x += 1
-                if right:
-                    dfs(right, depth + 1)
-
-            for root in roots:
-                dfs(root, depth=0)
+            placed: set[str] = set()
+            for idx, root in enumerate(sorted_roots):
+                base_x = self.start_x + self.offset_x + offset_x + idx * queue_spacing
+                base_y = queue_start_y + self.offset_y + offset_y
+                self._layout_subtree(
+                    root,
+                    base_x,
+                    base_y,
+                    tree_span,
+                    positions,
+                    parent_map,
+                    placed,
+                    tree_offset_y,
+                )
 
             prev_pos = self._positions.setdefault(sid, {})
             for node_id, pos in positions.items():
@@ -141,3 +162,50 @@ class TreeLayoutEngine(LayoutEngine):
             if parent == parent_id and dir_label.upper().startswith(direction):
                 return child_id
         return None
+
+    def _layout_subtree(
+        self,
+        node_id: Optional[str],
+        x: float,
+        y: float,
+        span: float,
+        positions: Dict[str, Tuple[float, float]],
+        parent_map: Mapping[str, Tuple[str, str]],
+        placed: set[str],
+        tree_offset_y: float,
+    ) -> None:
+        if not node_id or node_id in placed:
+            return
+        positions[node_id] = (x, y)
+        placed.add(node_id)
+        left = self._child(parent_map, node_id, "L")
+        right = self._child(parent_map, node_id, "R")
+        next_span = max(span / 2.0, self.spacing)
+        if left:
+            self._layout_subtree(
+                left,
+                x - next_span,
+                y + tree_offset_y,
+                next_span,
+                positions,
+                parent_map,
+                placed,
+                tree_offset_y,
+            )
+        if right:
+            self._layout_subtree(
+                right,
+                x + next_span,
+                y + tree_offset_y,
+                next_span,
+                positions,
+                parent_map,
+                placed,
+                tree_offset_y,
+            )
+
+
+def _as_float(value: object | None, default: float) -> float:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return default

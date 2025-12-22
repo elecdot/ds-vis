@@ -31,6 +31,7 @@ def test_model_op_registry_is_configured():
     assert MODEL_OP_REGISTRY[(CommandType.SEARCH, "stack")] == "search"
     assert MODEL_OP_REGISTRY[(CommandType.CREATE_STRUCTURE, "bst")] == "create"
     assert MODEL_OP_REGISTRY[(CommandType.INSERT, "bst")] == "insert"
+    assert MODEL_OP_REGISTRY[(CommandType.CREATE_STRUCTURE, "huffman")] == "build"
 
 
 def test_schema_registry_rejects_extra_fields():

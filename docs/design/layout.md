@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.2
+version: v0.7.3
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -40,13 +40,13 @@ last_updated: 2025-12-24
 
 - **SimpleLayoutEngine (LINEAR)**：stateful 顺序引擎，固定尺寸与左对齐，按结构行堆叠；无 seek/倒播。
 - **TreeLayoutEngine (占位 TREE)**：基于 CREATE_EDGE 的父子关系，中序遍历编号，水平等距、纵向分层；用于树模型冒烟（kind=bst/tree 预留）。
-- SceneGraph 路由与分区：kind→LayoutStrategy（list/seqlist/stack→LINEAR，bst/huffman→TREE，git→DAG），每个结构分配 `(dx, dy)` 偏移（按策略分组、行累加；DAG 具备横向 lane 偏移）注入 LayoutEngine，避免多结构重叠；偏移为占位参数，可后续替换为配置化/分区算法。list 间距 120，seqlist 间距 80（矩形单元），stack 间距 80（竖向）。
-- Per-kind 布局配置：LINEAR 引擎支持按结构注入 orientation/spacing/row_spacing/start_x/start_y（stack 默认 vertical；list/seqlist 默认 horizontal）；桶容器（bucket）通过 SET_POS 单独定位，vertical 时以节点 bbox 纵向居中。
+- SceneGraph 路由与分区：kind→LayoutStrategy（list/seqlist/stack→LINEAR，bst/huffman→TREE，git→DAG），每个结构分配 `(dx, dy)` 偏移（按策略分组、行累加；DAG 具备横向 lane 偏移）注入 LayoutEngine，避免多结构重叠；偏移为占位参数，可后续替换为配置化/分区算法。list 间距 120，seqlist 间距 80（矩形单元），stack 间距 80（竖向），huffman 队列间距默认 80。
+- Per-kind 布局配置：LINEAR 引擎支持按结构注入 orientation/spacing/row_spacing/start_x/start_y（stack 默认 vertical；list/seqlist 默认 horizontal）；桶容器（bucket）通过 SET_POS 单独定位，vertical 时以节点 bbox 纵向居中。TreeLayout 支持 `queue_spacing/queue_start_y/tree_offset_y/tree_span`（Huffman 双区布局：队列根在上方横排，子树沿 `tree_offset_y` 向下展开）。
 
 ## 6. 即将扩展的布局需求（P0.8 计划）
 
 - 顺序表（seqlist）/栈（stack）：已具备桶容器 + 矩形单元定位；后续需支持自动尺寸推导、容器 label/指针等增强。
-- Huffman 构建：双区域布局，占左侧/顶部为优先队列横排区，右侧/下方为逐步生成的树区；合并后需在队列区重新排布剩余节点。
+- Huffman 构建：双区域布局（队列横排 + 树向下展开）已初版支持，队列根节点按 `queue_index` 排序定位，子树从根向下偏移；后续可细化子树水平压缩与动态队列尺寸。
 - Git DAG：纵向 lane 占位布局（多列或单列），节点小圆点+标签，按时间/序号递增偏移；分支/merge 需要横向移位或平行 lane。
 - 多结构分区：SceneGraph 需根据 kind 划分区域并传递 `(dx, dy)`，避免矩形桶与树/DAG 重叠；偏移应配置化而非魔数。
 

@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.8.2
+version: v0.8.3
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -69,7 +69,14 @@ last_updated: 2025-12-24
 - 视觉与布局：矩形单元 + 桶容器，LINEAR 纵向布局（orientation=vertical，spacing≈80），桶位置按节点 bbox 纵向居中。
 - 异常：push/pop 仅接受 index=0 或省略；参数缺失抛 ModelError。
 
-## 10. 新模型开发指北（模板，P0.7）
+## 10. HuffmanModel 实现备注（P0.8）
+- kind=`huffman`；操作：build（输入权值列表）/delete_all。
+- 逻辑：使用小顶堆维护候选队列，每轮取最小两节点生成父节点（权值相加），父节点入堆；最终根为 Huffman 树根。
+- 微步骤：高亮两最小 → 创建父节点与两条边（L/R）→ 按权值重新入队并更新 queue_index → CLEAR_MESSAGE；完成后突出根节点。
+- 视觉与布局：节点默认 circle，利用 `queue_index` 标注队列顺序；TreeLayout 支持 `queue_spacing/queue_start_y/tree_offset_y/tree_span` 将队列根横排、子树向下展开。
+- 异常：权值需为数字；无数据时提示消息。
+
+## 11. 新模型开发指北（模板，P0.7）
 
 - 状态/颜色：优先使用统一状态值（见 animation.md），避免自定义散乱命名。
 - 微步骤拆解模板：遍历/定位（secondary）→ 关键节点/边高亮（highlight）→ 结构变更（CREATE/DELETE/SET_LABEL 等）→ 恢复（normal）。
@@ -79,7 +86,7 @@ last_updated: 2025-12-24
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
 
-## 11. BST 实现备注（P0.7）
+## 12. BST 实现备注（P0.7）
 - 目标：树类模型的首个可交付版本，为 AVL/Huffman 等复用微步骤范式与注册方式。
 - 实现要点：
   - kind=`bst`，支持 create/insert/search/delete_value/delete_all；重复键策略：走右子树。

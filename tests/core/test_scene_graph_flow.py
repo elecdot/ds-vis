@@ -184,6 +184,19 @@ def test_insert_routes_through_scene_graph_and_layout(scene_graph, create_cmd_fa
     assert step_positions["list_insert_node_1"][0] == 50.0 + 120.0 * 2
 
 
+def test_huffman_build_routes_and_positions(scene_graph, create_cmd_factory):
+    cmd = create_cmd_factory(
+        "huff_sg",
+        CommandType.CREATE_STRUCTURE,
+        kind="huffman",
+        values=[1, 2, 3],
+    )
+    timeline = scene_graph.apply_command(cmd)
+    all_ops = [op for step in timeline.steps for op in step.ops]
+    assert any(op.op is OpCode.CREATE_NODE for op in all_ops)
+    assert any(op.op is OpCode.SET_POS for op in all_ops)
+
+
 def test_search_routes_and_emits_message(scene_graph, create_cmd_factory):
     scene_graph.apply_command(
         create_cmd_factory(

@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         form_layout = QVBoxLayout()
         self._structure_id_input = QLineEdit("ui_ds", panel)
         self._kind_combo = QComboBox(panel)
-        self._kind_combo.addItems(["list", "seqlist", "stack", "bst"])
+        self._kind_combo.addItems(["list", "seqlist", "stack", "bst", "huffman"])
         self._values_input = QLineEdit("", panel)
         self._value_input = QLineEdit("", panel)
         self._index_input = QLineEdit("", panel)
@@ -318,6 +318,11 @@ class MainWindow(QMainWindow):
     def _on_insert_clicked(self) -> None:
         sid = self._parse_structure_id()
         kind = self._parse_kind()
+        if kind == "huffman":
+            QMessageBox.information(
+                self, "Not Supported", "Huffman 目前仅支持创建/删除。"
+            )
+            return
         payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
         if kind == "stack":
@@ -334,6 +339,11 @@ class MainWindow(QMainWindow):
     def _on_search_clicked(self) -> None:
         sid = self._parse_structure_id()
         kind = self._parse_kind()
+        if kind == "huffman":
+            QMessageBox.information(
+                self, "Not Supported", "Huffman 目前仅支持创建/删除。"
+            )
+            return
         payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
         if idx is not None:
@@ -348,6 +358,11 @@ class MainWindow(QMainWindow):
         if kind == "stack":
             # 栈出栈始终作用于栈顶，忽略 index
             pass
+        elif kind == "huffman":
+            QMessageBox.information(
+                self, "Not Supported", "Huffman 删除请使用 Delete All。"
+            )
+            return
         else:
             idx = self._parse_index()
             if idx is not None:
