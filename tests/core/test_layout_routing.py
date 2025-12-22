@@ -18,15 +18,17 @@ def test_layout_routing_by_kind():
     list_tl = sg.apply_command(list_cmd)
     bst_tl = sg.apply_command(bst_cmd)
 
-    assert any(
-        op.data.get("y") == 50.0
+    list_y = {
+        op.data.get("y")
         for step in list_tl.steps
         for op in step.ops
         if op.op.name == "SET_POS"
-    )
-    assert any(
-        op.data.get("y") == 50.0
+    }
+    bst_y = {
+        op.data.get("y")
         for step in bst_tl.steps
         for op in step.ops
         if op.op.name == "SET_POS"
-    )
+    }
+    assert list_y and bst_y
+    assert list_y != bst_y  # should be offset to avoid overlap

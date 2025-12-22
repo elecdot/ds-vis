@@ -39,6 +39,8 @@ class SceneGraph:
     _layout_engine: Optional[LayoutEngine] = None
     _tree_layout_engine: Optional[LayoutEngine] = None
     _layout_map: Dict[str, LayoutStrategy] = field(default_factory=dict)
+    _structure_offsets: Dict[str, tuple[float, float]] = field(default_factory=dict)
+    _row_index: Dict[LayoutStrategy, int] = field(default_factory=dict)
     _handlers: Dict[CommandType, Callable[[Command], Tuple[Timeline, str]]] = field(
         default_factory=dict
     )
@@ -169,12 +171,21 @@ class SceneGraph:
 
     def _apply_layout(self, kind: str, timeline: Timeline) -> Timeline:
         strategy = self._layout_map.get(kind, LayoutStrategy.LINEAR)
-        if strategy is LayoutStrategy.TREE and self._tree_layout_engine:
-            return self._tree_layout_engine.apply_layout(timeline)
-        if strategy is LayoutStrategy.LINEAR and self._layout_engine:
-            return self._layout_engine.apply_layout(timeline)
-        if self._layout_engine:
-            return self._layout_engine.apply_layout(timeline)
+        engine: Optional[LayoutEngine] = None
+        if strategy is LayoutStrategy.TREE:
+            engine = self._tree_layout_engine
+        else:
+            engine = self._layout_engine
+
+        if engine:
+            offsets = self._structure_offsets
+            # best-effort: inject offsets if engine exposes offset_* or setter
+            if hasattr(engine, "set_offsets"):
+                engine.set_offsets(offsets)
+            else:
+                # try common attribute names
+                setattr(engine, "offset_map", offsets)
+            return engine.apply_layout(timeline)
         return timeline
 
     # ------------------------------------------------------------------ #
@@ -189,7 +200,27 @@ class SceneGraph:
             return existing
         model = factory(structure_id)
         self._structures[structure_id] = model
+        self._assign_offset(structure_id, kind)
         return model
+
+    def _assign_offset(self, structure_id: str, kind: str) -> None:
+        if structure_id in self._structure_offsets:
+            return
+        strategy = self._layout_map.get(kind, LayoutStrategy.LINEAR)
+        row = self._row_index.get(strategy, 0)
+        # baseline per strategy to reduce cross-kind overlap
+        strategy_base = {
+            LayoutStrategy.LINEAR: 0.0,
+            LayoutStrategy.TREE: 400.0,
+            LayoutStrategy.DAG: 800.0,
+        }
+        base_y = strategy_base.get(strategy, 0.0)
+        if strategy is LayoutStrategy.LINEAR:
+            base_y += row * 200.0
+        elif strategy is LayoutStrategy.TREE:
+            base_y += row * 240.0
+        self._structure_offsets[structure_id] = (0.0, base_y)
+        self._row_index[strategy] = row + 1
 
     def _resolve_schema_and_op(
         self, command: Command

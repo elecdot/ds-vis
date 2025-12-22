@@ -30,6 +30,10 @@ class TreeLayoutEngine(LayoutEngine):
     _parents: Dict[str, Dict[str, Tuple[str, str]]] = field(default_factory=dict)
     _positions: Dict[str, Dict[str, Tuple[float, float]]] = field(default_factory=dict)
     _dirty_structures: set[str] = field(default_factory=set)
+    _offsets: Dict[str, Tuple[float, float]] = field(default_factory=dict)
+
+    def set_offsets(self, offsets: Dict[str, Tuple[float, float]]) -> None:
+        self._offsets = offsets
 
     def apply_layout(self, timeline: Timeline) -> Timeline:
         new_timeline = Timeline()
@@ -48,6 +52,7 @@ class TreeLayoutEngine(LayoutEngine):
         self._parents.clear()
         self._positions.clear()
         self._dirty_structures.clear()
+        self._offsets.clear()
 
     def _apply_structural_ops(self, step: AnimationStep) -> None:
         for op in step.ops:
@@ -92,6 +97,7 @@ class TreeLayoutEngine(LayoutEngine):
             parent_map = self._parents.get(sid, {})
             roots = [n for n in nodes if n and n not in parent_map]
             positions: Dict[str, Tuple[float, float]] = {}
+            offset_x, offset_y = self._offsets.get(sid, (0.0, 0.0))
 
             next_x = 0
 
@@ -103,8 +109,8 @@ class TreeLayoutEngine(LayoutEngine):
                 right: Optional[str] = self._child(parent_map, node_id, "R")
                 if left:
                     dfs(left, depth + 1)
-                x = self.start_x + self.offset_x + next_x * self.spacing
-                y = self.start_y + self.offset_y + depth * self.level_spacing
+                x = self.start_x + self.offset_x + offset_x + next_x * self.spacing
+                y = self.start_y + self.offset_y + offset_y + depth * self.level_spacing
                 positions[node_id] = (x, y)
                 next_x += 1
                 if right:
