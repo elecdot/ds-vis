@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QGraphicsEllipseItem
+from PySide6.QtWidgets import QGraphicsEllipseItem, QInputDialog
 
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode
 from ds_vis.core.scene.command import Command, CommandType
@@ -167,5 +167,32 @@ def test_step_does_not_reschedule_timer(qt_app):
         window._step_once()
         assert not window._timer.isActive()
         assert window._current_step_index == previous_index + 1
+    finally:
+        window.close()
+
+
+def test_dev_run_dsl_input_runs_commands(qt_app, monkeypatch):
+    """
+    DSL/JSON input hook should parse commands and render them.
+    """
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        text = (
+            '[{"structure_id": "dsl_list", "type": "CREATE_STRUCTURE", '
+            '"payload": {"kind": "list", "values": [5, 6]}}]'
+        )
+        monkeypatch.setattr(
+            QInputDialog,
+            "getMultiLineText",
+            staticmethod(lambda *_, **__: (text, True)),
+        )
+        window._run_dsl_input_dev()
+        window._pause()
+        while window._current_step_index < len(window._pending_steps):
+            window._advance_step(schedule_next=False)
+
+        assert len(window._renderer._nodes) == 2
     finally:
         window.close()

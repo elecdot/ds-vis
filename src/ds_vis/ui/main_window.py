@@ -8,15 +8,18 @@ from PySide6.QtWidgets import (
     QApplication,
     QGraphicsScene,
     QGraphicsView,
+    QInputDialog,
     QMainWindow,
     QMenu,
     QMenuBar,
+    QMessageBox,
     QToolBar,
 )
 
 from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
+from ds_vis.dsl.parser import parse_dsl
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer, RendererConfig
 
 # Developer examples (structural timelines only)
@@ -116,6 +119,10 @@ class MainWindow(QMainWindow):
         )
         self._act_list_full.triggered.connect(self._play_list_full_demo)
         dev_menu.addAction(self._act_list_full)
+
+        self._act_run_dsl = QAction("Run DSL/JSON (input)", self)
+        self._act_run_dsl.triggered.connect(self._run_dsl_input_dev)
+        dev_menu.addAction(self._act_run_dsl)
 
     def _init_toolbar(self) -> None:
         """Playback controls toolbar."""
@@ -254,6 +261,33 @@ class MainWindow(QMainWindow):
             Command(sid, CommandType.DELETE_NODE, {"kind": "list", "index": 0}),
             Command(sid, CommandType.DELETE_STRUCTURE, {"kind": "list"}),
         ]
+
+        merged = Timeline()
+        for cmd in commands:
+            tl = self._scene_graph.apply_command(cmd)
+            for step in tl.steps:
+                merged.add_step(step)
+
+        self._play_timeline(merged)
+
+    def _run_dsl_input_dev(self) -> None:
+        """
+        Developer-only hook: paste DSL/JSON text, run through SceneGraph, and render.
+        """
+        text, ok = QInputDialog.getMultiLineText(
+            self,
+            "Run DSL/JSON",
+            "Enter commands (JSON array or DSL placeholder):",
+        )
+        if not ok or not text.strip():
+            return
+
+        self._reset_engine()
+        try:
+            commands = parse_dsl(text)
+        except Exception as exc:  # pragma: no cover - defensive
+            QMessageBox.critical(self, "DSL Error", str(exc))
+            return
 
         merged = Timeline()
         for cmd in commands:
