@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.4
+version: v0.4.1
 status: Draft
 last_updated: 2025-12-22
 ---
@@ -51,6 +51,7 @@ last_updated: 2025-12-22
   - Git DAG：小圆点 + 标签，支持 lane 间横向偏移，可能需要 edge label 或轻量箭头（占位）。
 - 消息锚点：保持全局 bbox 顶部，但需预留按结构 bbox 的锚点以减少遮挡（与 UI 消息区协作）。
 - 配置：通过 RendererConfig 或按 kind 的样式 registry 注入，不得硬编码在模型/SceneGraph。
+- 容器支持：矩形单元与桶（bucket）、lane 标记均通过 CREATE_NODE 的 `shape`/`width`/`height` 渲染；状态变更对桶仅改描边色。
 
 ## 7. 扩展点
 

@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.8
+version: v0.8.1
 status: Draft
 last_updated: 2025-12-22
 ---
