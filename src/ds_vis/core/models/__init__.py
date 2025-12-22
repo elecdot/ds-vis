@@ -14,6 +14,7 @@ Contract:
 from __future__ import annotations
 
 from ds_vis.core.models.base import BaseModel
+from ds_vis.core.models.bst import BstModel
 from ds_vis.core.models.list_model import ListModel
 
-__all__ = ["BaseModel", "ListModel"]
+__all__ = ["BaseModel", "ListModel", "BstModel"]

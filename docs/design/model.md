@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.4
+version: v0.5
 status: Draft
 last_updated: 2025-12-24
 ---
@@ -64,3 +64,15 @@ last_updated: 2025-12-24
 - 测试建议：正/误路径，ID 稳定性，微步骤标签/状态覆盖；若复杂行为未实现可用 xfail 锁定预期。
 
 > 交叉引用：Ops 语义见 `ops_spec.md`，架构边界见 `architecture.md`。
+
+## 9. Tree/BST 骨架（P0.7 起步）
+- 目标：提供 BST 风格的链式基础树骨架，为后续 AVL/Huffman 等复用。当前覆盖 create/insert，旋转/平衡留空。
+- 实现要点：
+  - kind=`tree`，注册 CREATE_STRUCTURE/INSERT/DELETE_STRUCTURE；payload 采用 `value` 插入，create 可批量按顺序 insert。
+  - 结构状态：节点保存 key、左右子指针、parent；ID 使用 allocate_node_id 单调生成；边 key 使用 `edge_id(edge_kind, src, dst)`，edge_kind 为 `left`/`right`。
+  - 微步骤：遍历路径设为 secondary，插入父节点设 highlight，CREATE_NODE/CREATE_EDGE 标记左右（label=L/R），末尾恢复状态 + CLEAR_MESSAGE。无 SET_POS，交由 Layout 注入（当前用线性占位，树形布局待后续）。
+  - 删除：DELETE_STRUCTURE 走 delete_all，先删边再删节点，无 sentinel。
+- 限制/待办：
+  - 未实现 search/delete/旋转；未做平衡与重复键策略（当前重复键落右子树）。
+  - 树形布局为占位（沿用 SimpleLayout 行堆叠），混排多结构时需后续分区/树布局策略。
+  - DSL 仍为 JSON 占位，真实 DSL 语法需同步命令/校验。

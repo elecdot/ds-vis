@@ -1,58 +1,227 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Any, Dict, Mapping, Optional
 
-from ds_vis.core.ops import Timeline
-
-
-@dataclass
-class BstNode:
-    """
-    Logical node for a binary search tree model.
-
-    Domain-only representation; no rendering or layout concerns here.
-    """
-
-    key: int  # Phase 1: keep simple (int keys). Can be generalized later.
-    left: Optional["BstNode"] = None
-    right: Optional["BstNode"] = None
+from ds_vis.core.exceptions import ModelError
+from ds_vis.core.models.base import BaseModel
+from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
 
 
 @dataclass
-class BstModel:
+class _BstNode:
+    key: Any
+    left: Optional[str] = None
+    right: Optional[str] = None
+    parent: Optional[str] = None
+
+
+@dataclass
+class BstModel(BaseModel):
     """
-    Binary Search Tree model.
+    Minimal BST-like树模型骨架，支持 create / insert。
 
-    This class owns the logical structure and exposes operations that
-    return Timelines describing structural and visual-state changes.
-
-    IMPORTANT:
-    - Timelines produced here should NOT contain layout-specific ops (e.g. SET_POS).
-    - Layout is handled by the layout engine based on the structure's shape.
+    设计目标：
+    - 作为后续 BST/AVL/Huffman 的共用起点，优先保证可解释的微步骤与可扩展性。
+    - 不包含布局信息；SET_POS 由 Layout 注入。
+    - ID/边 key 稳定，便于 Renderer/UI 复用。
     """
 
-    root: Optional[BstNode] = None
+    _root_id: Optional[str] = None
+    _nodes: Dict[str, _BstNode] = field(default_factory=dict)
 
-    def insert(self, key: int) -> Timeline:
-        """
-        Insert a key into the BST and return a structural Timeline.
+    @property
+    def kind(self) -> str:
+        return "tree"
 
-        Phase 1: stub only; implementation will be provided in later phases.
-        """
-        return Timeline()
+    @property
+    def node_count(self) -> int:
+        return len(self._nodes)
 
-    def delete(self, key: int) -> Timeline:
-        """
-        Delete a key from the BST and return a structural Timeline.
-        """
-        return Timeline()
+    def apply_operation(self, op: str, payload: Mapping[str, Any]) -> Timeline:
+        if op == "create":
+            return self.create(payload.get("values"))
+        if op == "insert":
+            return self.insert(value=payload.get("value"))
+        if op == "delete_all":
+            return self.delete_all()
+        raise ModelError(f"Unsupported operation: {op}")
 
-    def search(self, key: int) -> Timeline:
+    # ------------------------------------------------------------------ #
+    # Public ops
+    # ------------------------------------------------------------------ #
+    def create(self, values: Optional[Mapping[str, Any]] = None) -> Timeline:
         """
-        Search for a key in the BST and return a structural Timeline.
+        初始化或重建树结构；values（可选）按插入顺序逐个 insert。
+        """
+        timeline = Timeline()
+        # 重建前先清空
+        delete_tl = self.delete_all()
+        for step in delete_tl.steps:
+            timeline.add_step(step)
 
-        Even for 'read-only' operations, we return a Timeline so the caller
-        can animate the traversal path.
-        """
-        return Timeline()
+        values_iter: list[Any] = list(values or [])
+        for value in values_iter:
+            ins_tl = self.insert(value)
+            for step in ins_tl.steps:
+                timeline.add_step(step)
+        # 空树也返回空 timeline（无 sentinel）
+        return timeline
+
+    def insert(self, value: Any) -> Timeline:
+        if value is None:
+            raise ModelError("insert requires value")
+
+        timeline = Timeline()
+        if self._root_id is None:
+            node_id = self._create_node(value, parent=None)
+            ops = [
+                AnimationOp(
+                    op=OpCode.SET_MESSAGE,
+                    target=None,
+                    data={"text": f"Insert {value} as root"},
+                ),
+                self._op_create_node(node_id, value),
+                AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={}),
+            ]
+            timeline.add_step(AnimationStep(ops=ops))
+            return timeline
+
+        # 遍历寻找插入位置
+        traversal_ops = []
+        path = []
+        parent_id = self._root_id
+        direction = "left"
+        while parent_id:
+            path.append(parent_id)
+            parent_node = self._nodes[parent_id]
+            traversal_ops.append(
+                AnimationOp(
+                    op=OpCode.SET_STATE,
+                    target=parent_id,
+                    data={"state": "secondary", "structure_id": self.structure_id},
+                )
+            )
+            if value < parent_node.key:
+                direction = "left"
+                if parent_node.left:
+                    parent_id = parent_node.left
+                    continue
+                break
+            else:
+                direction = "right"
+                if parent_node.right:
+                    parent_id = parent_node.right
+                    continue
+                break
+
+        if traversal_ops:
+            timeline.add_step(AnimationStep(ops=traversal_ops))
+
+        new_id = self._create_node(value, parent=parent_id, direction=direction)
+        connect_ops = [
+            AnimationOp(
+                op=OpCode.SET_MESSAGE,
+                target=None,
+                data={"text": f"Insert {value} to {direction} of {parent_id}"},
+            ),
+            AnimationOp(
+                op=OpCode.SET_STATE,
+                target=parent_id,
+                data={"state": "highlight", "structure_id": self.structure_id},
+            ),
+            self._op_create_node(new_id, value),
+            self._op_create_edge(parent_id, new_id, direction),
+        ]
+        timeline.add_step(AnimationStep(ops=connect_ops))
+
+        # 收尾：恢复状态、清理消息
+        restore_ops = [
+            AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={})
+        ]
+        for node_id in path:
+            restore_ops.append(
+                AnimationOp(
+                    op=OpCode.SET_STATE,
+                    target=node_id,
+                    data={"state": "normal", "structure_id": self.structure_id},
+                )
+            )
+        timeline.add_step(AnimationStep(ops=restore_ops))
+        return timeline
+
+    def delete_all(self) -> Timeline:
+        timeline = Timeline()
+        if not self._nodes:
+            return timeline
+
+        ops: list[AnimationOp] = []
+        # delete edges first
+        for node_id, node in list(self._nodes.items()):
+            if node.left:
+                ops.append(self._op_delete_edge(node_id, node.left))
+            if node.right:
+                ops.append(self._op_delete_edge(node_id, node.right))
+        for node_id in list(self._nodes.keys()):
+            ops.append(
+                AnimationOp(
+                    op=OpCode.DELETE_NODE,
+                    target=node_id,
+                    data={"structure_id": self.structure_id},
+                )
+            )
+        self._nodes.clear()
+        self._root_id = None
+        timeline.add_step(AnimationStep(ops=ops))
+        return timeline
+
+    # ------------------------------------------------------------------ #
+    # Internal helpers
+    # ------------------------------------------------------------------ #
+    def _create_node(
+        self, value: Any, parent: Optional[str], direction: str | None = None
+    ) -> str:
+        node_id = self.allocate_node_id("node")
+        self._nodes[node_id] = _BstNode(key=value, parent=parent)
+        if parent and direction:
+            parent_node = self._nodes[parent]
+            if direction == "left":
+                parent_node.left = node_id
+            else:
+                parent_node.right = node_id
+        if self._root_id is None:
+            self._root_id = node_id
+        return node_id
+
+    def _op_create_node(self, node_id: str, value: Any) -> AnimationOp:
+        return AnimationOp(
+            op=OpCode.CREATE_NODE,
+            target=node_id,
+            data={
+                "structure_id": self.structure_id,
+                "label": str(value),
+            },
+        )
+
+    def _op_create_edge(
+        self, parent_id: str, child_id: str, direction: str
+    ) -> AnimationOp:
+        label = "L" if direction == "left" else "R"
+        return AnimationOp(
+            op=OpCode.CREATE_EDGE,
+            target=self.edge_id(direction, parent_id, child_id),
+            data={
+                "structure_id": self.structure_id,
+                "from": parent_id,
+                "to": child_id,
+                "label": label,
+            },
+        )
+
+    def _op_delete_edge(self, parent_id: str, child_id: str) -> AnimationOp:
+        direction = "left" if self._nodes[parent_id].left == child_id else "right"
+        return AnimationOp(
+            op=OpCode.DELETE_EDGE,
+            target=self.edge_id(direction, parent_id, child_id),
+            data={"structure_id": self.structure_id},
+        )
