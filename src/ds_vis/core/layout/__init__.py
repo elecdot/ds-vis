@@ -49,3 +49,10 @@ class LayoutStrategy(Enum):
     LINEAR = "linear"
     TREE = "tree"
     DAG = "dag"
+
+
+# Kind -> preferred LayoutStrategy
+DEFAULT_LAYOUT_MAP = {
+    "list": LayoutStrategy.LINEAR,
+    "bst": LayoutStrategy.TREE,
+}

@@ -26,6 +26,8 @@ class SimpleLayoutEngine(LayoutEngine):
     row_spacing: float = 120.0
     start_x: float = 50.0
     start_y: float = 50.0
+    offset_x: float = 0.0
+    offset_y: float = 0.0
     _structure_nodes: Dict[str, List[str]] = field(default_factory=dict)
     _structure_rows: Dict[str, int] = field(default_factory=dict)
     _structure_positions: Dict[str, Dict[str, Tuple[float, float]]] = field(
@@ -95,12 +97,12 @@ class SimpleLayoutEngine(LayoutEngine):
         ops: List[AnimationOp] = []
         for structure_id, nodes in self._structure_nodes.items():
             row_index = self._structure_rows[structure_id]
-            y = self.start_y + self.row_spacing * row_index
+            y = self.start_y + self.offset_y + self.row_spacing * row_index
             pos_cache = self._structure_positions.setdefault(structure_id, {})
             force_dirty = structure_id in self._dirty_structures
 
             for idx, node_id in enumerate(nodes):
-                x = self.start_x + self.spacing * idx
+                x = self.start_x + self.offset_x + self.spacing * idx
                 current = (x, y)
                 if force_dirty or pos_cache.get(node_id) != current:
                     ops.append(

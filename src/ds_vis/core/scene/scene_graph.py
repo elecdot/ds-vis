@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 
 from ds_vis.core.exceptions import CommandError
-from ds_vis.core.layout import LayoutEngine
+from ds_vis.core.layout import DEFAULT_LAYOUT_MAP, LayoutEngine, LayoutStrategy
 from ds_vis.core.layout.simple import SimpleLayoutEngine
 from ds_vis.core.layout.tree import TreeLayoutEngine
 from ds_vis.core.models import BaseModel
@@ -38,6 +38,7 @@ class SceneGraph:
     _structures: Dict[str, BaseModel] = field(default_factory=dict)
     _layout_engine: Optional[LayoutEngine] = None
     _tree_layout_engine: Optional[LayoutEngine] = None
+    _layout_map: Dict[str, LayoutStrategy] = field(default_factory=dict)
     _handlers: Dict[CommandType, Callable[[Command], Tuple[Timeline, str]]] = field(
         default_factory=dict
     )
@@ -47,6 +48,8 @@ class SceneGraph:
             self._layout_engine = SimpleLayoutEngine()
         if self._tree_layout_engine is None:
             self._tree_layout_engine = TreeLayoutEngine()
+        if not self._layout_map:
+            self._layout_map = dict(DEFAULT_LAYOUT_MAP)
         self._register_handlers()
         # TODO(P0.8): allow injecting/swapping layout engines/strategies and invoking
         # layout_engine.reset() on scene reset/seek to support non-linear layouts.
@@ -165,8 +168,11 @@ class SceneGraph:
         return merged
 
     def _apply_layout(self, kind: str, timeline: Timeline) -> Timeline:
-        if kind in {"tree", "bst"} and self._tree_layout_engine:
+        strategy = self._layout_map.get(kind, LayoutStrategy.LINEAR)
+        if strategy is LayoutStrategy.TREE and self._tree_layout_engine:
             return self._tree_layout_engine.apply_layout(timeline)
+        if strategy is LayoutStrategy.LINEAR and self._layout_engine:
+            return self._layout_engine.apply_layout(timeline)
         if self._layout_engine:
             return self._layout_engine.apply_layout(timeline)
         return timeline

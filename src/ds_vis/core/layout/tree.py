@@ -22,6 +22,8 @@ class TreeLayoutEngine(LayoutEngine):
     level_spacing: float = 120.0
     start_x: float = 50.0
     start_y: float = 50.0
+    offset_x: float = 0.0
+    offset_y: float = 0.0
     strategy: LayoutStrategy = LayoutStrategy.TREE
 
     _nodes: Dict[str, List[str]] = field(default_factory=dict)
@@ -101,8 +103,8 @@ class TreeLayoutEngine(LayoutEngine):
                 right: Optional[str] = self._child(parent_map, node_id, "R")
                 if left:
                     dfs(left, depth + 1)
-                x = self.start_x + next_x * self.spacing
-                y = self.start_y + depth * self.level_spacing
+                x = self.start_x + self.offset_x + next_x * self.spacing
+                y = self.start_y + self.offset_y + depth * self.level_spacing
                 positions[node_id] = (x, y)
                 next_x += 1
                 if right:
