@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.9
+version: v0.7.10
 status: Active
 last_updated: 2025-12-24
 ---
@@ -51,16 +51,17 @@ This document captures the active delivery phase, what is complete, current assu
 - 范围：仅文档，未改代码行为；保持与现状一致并标注未来项（锚定消息、非阻塞动画）。
 - 测试：无代码改动，延用前次全量通过结果。
 
-## Active Plan: Milestone 4 — SceneGraph/command_schema 可维护性
-- 目标：重构命令校验为可读的命名函数，清理 lambda+生成器抛异常技巧；为新增结构/命令提供注册模板；保持现有行为与测试通过。
-- 范围：`src/ds_vis/core/scene/command_schema.py`、必要的 SceneGraph 适配、相关测试与文档（scene_graph 设计说明、registry）。
-- 验收：命令校验逻辑清晰可读，现有命令/错误消息保持一致；测试/CI 通过；文档同步更新。
-- 注意：不改变 Ops/命令协议行为，避免影响现有 UI/Dev hook；为未来扩展（AVL/DSL/LLM）留出注册/验证锚点。
-- 当前进展：命名校验函数替换匿名 lambda，统一 CommandError；引入 register_command/register_model_factory，SCHEMA/MODEL_OP/MODEL_FACTORY registry 支持默认 list 注册；SceneGraph 使用全局工厂 registry，去除硬编码；相关测试通过，scene_graph 文档/index 同步。
 
 ## Completed Plan: Milestone 4 — SceneGraph/command_schema 可维护性
 - 交付：可读校验函数 + 统一 CommandError；注册 helper（register_command/register_model_factory）与全局 registry；SceneGraph 使用全局模型工厂，无硬编码；文档/registry 同步。
 - 测试：命令校验/SceneGraph 路由测试 + 全量 pytest/ruff/mypy 通过。
+- 当前进展：命名校验函数替换匿名 lambda，统一 CommandError；引入 register_command/register_model_factory，SCHEMA/MODEL_OP/MODEL_FACTORY registry 支持默认 list 注册；SceneGraph 使用全局工厂 registry，去除硬编码；相关测试通过，scene_graph 文档/index 同步。
+
+## Active Plan: Milestone 5 — DSL/LLM 入口 + Persistence
+- 目标：定义最小 JSON Command 协议（导入/导出）作为 persistence 入口；定义 DSL 语法（可编译为 Command 列表）与解析 stub；提供 UI/CLI 钩子；LLM 适配仅留接口。
+- 范围：`src/ds_vis/dsl/**`（新建）、persistence JSON 导入/导出、SceneGraph 调用；文档补充 DSL/JSON 协议与入口说明；registry 更新。
+- 验收：DSL 解析正/误用例；JSON 导入/导出往返测试；UI/CLI 冒烟（可选）；CI 全绿；文档同步。
+- 注意：不改 Ops 协议；LLM 仅定义接口/占位，不接入外部模型；保持现有 UI/Renderer 行为不破坏。
 
 ## Planned Next Phase (Delayed): P0.8 — Renderer/Layout Responsiveness
 - 状态：暂缓启动，等待 P0.7 收口及基线稳定后再排期。
