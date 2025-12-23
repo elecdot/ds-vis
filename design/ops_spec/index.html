@@ -1,0 +1,2041 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../scene_graph/">
+      
+      
+        <link rel="next" href="../animation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Ops Spec - DS-Vis Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ops_spec-animationops" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="DS-Vis Documentation" class="md-header__button md-logo" aria-label="DS-Vis Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DS-Vis Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Ops Spec
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../project_state/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project State
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../requirements/" class="md-tabs__link">
+          
+  
+  
+  Design
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../engineering/environment/" class="md-tabs__link">
+          
+  
+  
+  Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../diagrams/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Diagrams
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DS-Vis Documentation" class="md-nav__button md-logo" aria-label="DS-Vis Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    DS-Vis Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project_state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project State
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Active"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layout
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ops Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ops Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 总体设计思想
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 总体设计思想">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-step-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 基本单位：Step + Ops
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-node-edge-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 对象模型：Node / Edge / Global
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 ID 约定
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Timeline 结构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Timeline 结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 概念结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-step-animationstep-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Step 字段(AnimationStep: 时间粒度 + 一组 Ops)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Step 字段(AnimationStep: 时间粒度 + 一组 Ops)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.1 结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.2 语义说明：
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2.3 约束
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-animationop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. AnimationOp 结构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. AnimationOp 结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        字段说明：
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-op-v01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 标准 Op 集合（v0.1）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 标准 Op 集合（v0.1）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-structural-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 结构类（Structural Ops）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 结构类（Structural Ops）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411-create_node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 CREATE_NODE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-delete_node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.2 DELETE_NODE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-create_edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.3 CREATE_EDGE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414-delete_edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.4 DELETE_EDGE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-layout-position-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 布局与位置（Layout / Position Ops）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 布局与位置（Layout / Position Ops）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421-set_pos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2.1 SET_POS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-state-visual-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 状态与样式（State / Visual Ops）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 状态与样式（State / Visual Ops）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#431-set_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3.1 SET_STATE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#432-set_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3.2 SET_LABEL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-global-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 全局提示（Global Ops）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 全局提示（Global Ops）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#441-set_message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4.1 SET_MESSAGE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#442-clear_message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4.2 CLEAR_MESSAGE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-git-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Git 教学动画中的 Ops 使用约定（示例）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Git 教学动画中的 Ops 使用约定（示例）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-git-commit-m-msg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 git commit -m "msg"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-python-coreops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Python 映射（与 core/ops 对应）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-v02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 演进计划（v0.2+）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../animation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Animation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../renderer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Renderer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dsl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DSL
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../json/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON Schema
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engineering/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engineering/tdd_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TDD Guide
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Active"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engineering/dev_kb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dev Knowledge Base
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Living"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="ops_spec-animationops">OPS_SPEC — AnimationOps 规范</h1>
+<p>本规范定义了本项目中 “动画指令层（AnimationOps）” 的统一协议，<br />
+用于在 <strong>模型 / SceneGraph</strong> 与 <strong>渲染器</strong> 之间传递“应该展示什么动画”。</p>
+<blockquote>
+<p>交叉引用：关于 <code>kind</code> 的语义类型与 Style/Metrics 配置边界，请参见 <code>docs/design/architecture.md</code> 第 6.3 节（Style / Metrics 配置）。</p>
+</blockquote>
+<p>目标：</p>
+<ul>
+<li>与数据结构模型、UI、DSL 解耦。</li>
+<li>与具体渲染技术解耦（PySide6 / Web / CLI）。</li>
+<li>适合序列化为 JSON（方便 DSL、Web、跨进程）。</li>
+</ul>
+<p>这个协议回答了三个问题：</p>
+<ol>
+<li>要动哪些对象？
+    → 哪些 node / edge / label / 全局提示要变化？</li>
+<li>变化成什么状态？
+    → 变成什么位置、文本、状态（normal/active/...）？</li>
+<li>用多长时间完成这一步？
+    → 这一“教学步骤”用多少毫秒播放完？</li>
+</ol>
+<p>所以我们只需要设计三类东西：</p>
+<ul>
+<li>AnimationOp：一个“状态变化指令”（原子操作，没有时间）</li>
+<li>AnimationStep：一组属于同一个“教学微步骤”的 Ops + 时长</li>
+<li>Timeline：若干 Step 的有序列表</li>
+</ul>
+<p>其它（并行/顺序、存储/重放、Undo 等）都是围绕这个核心协议构建的策略，留给后续设计解决。</p>
+<hr />
+<h2 id="1">1. 总体设计思想</h2>
+<h3 id="11-step-ops">1.1 基本单位：Step + Ops</h3>
+<p>动画被抽象为一个 <strong>按顺序播放的 Step 列表</strong>：</p>
+<ul>
+<li>每个 <strong>Step</strong> 有一个统一的 <code>duration_ms</code>（时长）。</li>
+<li>一个 Step 内部包含若干个 <strong>AnimationOp</strong>，它们被认为是<strong>并行发生</strong>的。</li>
+<li>渲染器负责在 <code>duration_ms</code> 时间窗口内，从上一 Step 状态平滑过渡到当前 Step 状态。</li>
+</ul>
+<p>这意味着：</p>
+<ul>
+<li>时间轴只在 Step 这一层出现（不在单个 Op 上控制时间）。</li>
+<li>绝大部分教学动画可以看作 “一系列状态切换 + 每一步的过渡效果”。</li>
+</ul>
+<h3 id="12-node-edge-global">1.2 对象模型：Node / Edge / Global</h3>
+<p>AnimationOps 操作的对象分为三类：</p>
+<ul>
+<li><strong>Node</strong>：可视化中的基本元素（数组格、链表结点、树结点、Git commit 等）。</li>
+<li><strong>Edge</strong>：节点之间的连接（指针、树边、Git 父子关系, 可能有方向）。</li>
+<li><strong>Global</strong>：全局提示文本等，不属于具体节点或边。</li>
+</ul>
+<h3 id="13-id">1.3 ID 约定</h3>
+<ul>
+<li><code>node_id</code> / <code>edge_id</code> / <code>structure_id</code> 等 ID 均为字符串。</li>
+<li>ID 由模型/SceneGraph 负责分配，渲染器只使用，不修改。</li>
+</ul>
+<hr />
+<h2 id="2-timeline">2. Timeline 结构</h2>
+<h3 id="21">2.1 概念结构</h3>
+<p>一个完整动画时间线用以下结构表示：</p>
+<div class="highlight"><pre><span></span><code>{
+  &quot;steps&quot;: [
+    {
+      &quot;duration_ms&quot;: 400,
+      &quot;label&quot;: &quot;BST 插入：查找位置&quot;,
+      &quot;ops&quot;: [
+        { &quot;op&quot;: &quot;SET_STATE&quot;, &quot;target&quot;: &quot;node_5&quot;, &quot;data&quot;: { &quot;state&quot;: &quot;active&quot; } }
+      ]
+    },
+    {
+      &quot;duration_ms&quot;: 400,
+      &quot;label&quot;: &quot;BST 插入：创建新节点&quot;,
+      &quot;ops&quot;: [
+        { &quot;op&quot;: &quot;CREATE_NODE&quot;, &quot;target&quot;: &quot;node_7&quot;, &quot;data&quot;: { &quot;structure_id&quot;: &quot;tree_1&quot;, &quot;kind&quot;: &quot;bst_node&quot;, &quot;label&quot;: &quot;7&quot; } },
+        { &quot;op&quot;: &quot;CREATE_EDGE&quot;, &quot;target&quot;: &quot;edge_5_7&quot;, &quot;data&quot;: { &quot;from&quot;: &quot;node_5&quot;, &quot;to&quot;: &quot;node_7&quot;, &quot;directed&quot;: true } }
+      ]
+    }
+  ]
+}
+</code></pre></div>
+<p>实现建议（Renderer 视角）：</p>
+<ol>
+<li>维护一个内部“可视状态”（当前 node/edge 集合及其属性 + 全局消息）。</li>
+<li>对于每个 Step：</li>
+<li>从上一 Step 结束时的可视状态作为“起点”；</li>
+<li>应用本 Step 的所有 Ops，得到“终态”；</li>
+<li>在 duration_ms 内，把画面从起点插值到终态；</li>
+<li>Step 结束时的状态成为下一个 Step 的起点。</li>
+</ol>
+<h3 id="22-step-animationstep-ops">2.2 Step 字段(AnimationStep: 时间粒度 + 一组 Ops)</h3>
+<h4 id="221">2.2.1 结构</h4>
+<ul>
+<li>
+<p><code>duration_ms: int</code></p>
+</li>
+<li>
+<p>本 Step 的播放时长（毫秒）。</p>
+</li>
+<li>推荐默认值：300–600ms。</li>
+<li>
+<p><code>label: string | null</code></p>
+</li>
+<li>
+<p>可选，人类可读的 Step 名，方便 UI 或调试。</p>
+</li>
+<li>
+<p><code>ops: AnimationOp[]</code></p>
+</li>
+<li>
+<p>本 Step 内要执行的所有动画操作。</p>
+</li>
+</ul>
+<h4 id="222">2.2.2 语义说明：</h4>
+<ul>
+<li>Step 是教学上的原子步骤：UI 的“下一步 / 上一步”就是在 Step 层面跳。</li>
+<li>Step 内的所有 Ops：</li>
+<li>语义上属于同一个时间窗口；</li>
+<li>应在 duration_ms 内全部完成效果；</li>
+<li>允许 Renderer 顺序处理。</li>
+</ul>
+<h4 id="223">2.2.3 约束</h4>
+<ul>
+<li>不允许在同一 Step 内对同一个 target 做自相矛盾操作：</li>
+<li>比如同时 CREATE_NODE 和 DELETE_NODE。</li>
+<li>允许对同一 target 在一 Step 内做多个“兼容操作”：</li>
+<li>如先 SET_POS 再 SET_STATE，Renderer 可以在这段时间内同时移动 + 高亮。</li>
+<li>ops 可以为空：</li>
+<li>代表“纯停顿”，只由 duration_ms 决定这一步等待多久。</li>
+</ul>
+<hr />
+<h2 id="3-animationop">3. AnimationOp 结构</h2>
+<p>统一结构：</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;op&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OP_CODE&quot;</span><span class="p">,</span><span class="w">                       </span><span class="cm">/* 操作类型，例如 CREATE_NODE */</span>
+<span class="w">  </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object_id or null&quot;</span><span class="p">,</span><span class="w">         </span><span class="cm">/* 目标对象 ID（node/edge/特殊 UI 元素），全局操作可为 null */</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* op-specific payload */</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="cm">/* 具体参数，由 op 类型决定 */</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>关键点：</p>
+<ul>
+<li>Op 不带时间概念</li>
+<li>Op 不关心“从哪里动到哪里”，只关心 终态是什么（比如最终坐标、最终状态）</li>
+<li>时间控制统一放在 Step 上</li>
+</ul>
+<h3 id="_1">字段说明：</h3>
+<ul>
+<li>
+<p><code>op: string</code></p>
+</li>
+<li>
+<p>枚举值，指明操作类型，如 <code>CREATE_NODE</code>。</p>
+</li>
+<li>
+<p><code>target: string | null</code></p>
+</li>
+<li>
+<p>主要操作对象 ID（节点、边、或其他）。</p>
+</li>
+<li>若操作是全局性质（如 <code>SET_MESSAGE</code>），可以为 <code>null</code>。</li>
+<li>
+<p><code>data: object</code></p>
+</li>
+<li>
+<p>不同 <code>op</code> 类型的参数载荷，结构在下面逐一定义。</p>
+</li>
+</ul>
+<hr />
+<h2 id="4-op-v01">4. 标准 Op 集合（v0.1）</h2>
+<p>以下是 v0.1 约定的最小、可扩展 AnimationOps 集合，
+它们应足以覆盖：数组、链表、栈、BST、AVL、Huffman、GitGraph 的教学动画需求。</p>
+<blockquote>
+<p>重要：</p>
+<ul>
+<li>结构变化（创建、删除、连边） → 结构类操作</li>
+<li>视觉效果（高亮、淡出、标签变化） → 状态类操作</li>
+<li>全局提示（解释当前步骤） → 全局类操作</li>
+</ul>
+</blockquote>
+<h3 id="41-structural-ops">4.1 结构类（Structural Ops）</h3>
+<h4 id="411-create_node">4.1.1 <code>CREATE_NODE</code></h4>
+<p>在画布中创建一个新的 Node。</p>
+<ul>
+<li><code>target</code>: <code>node_id</code></li>
+<li><code>data</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;structure_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tree_1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;bst_node&quot;</span><span class="p">,</span><span class="w">     </span><span class="c1">// 渲染/布局的语义类型，强烈建议必填；缺失则回退默认样式</span>
+<span class="w">  </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;42&quot;</span><span class="p">,</span><span class="w">          </span><span class="c1">// 显示在节点上的文本</span>
+<span class="w">  </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">             </span><span class="c1">// 可选，布局提示：在当前行的插入位置（用于非追加式插入）</span>
+<span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">               </span><span class="c1">// 可选，模型附带信息</span>
+<span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="412-delete_node">4.1.2 <code>DELETE_NODE</code></h4>
+<p>从画布中删除一个现有 Node。</p>
+<ul>
+<li><code>target</code>: <code>node_id</code></li>
+<li><code>data</code>: <code>{}</code>（空对象）</li>
+</ul>
+<blockquote>
+<p>渲染器可根据当前 Step 的 <code>duration_ms</code> 决定是立即消失还是淡出。</p>
+</blockquote>
+<hr />
+<h4 id="413-create_edge">4.1.3 <code>CREATE_EDGE</code></h4>
+<p>在两个 Node 之间创建一条 Edge。</p>
+<ul>
+<li><code>target</code>: <code>edge_id</code></li>
+<li><code>data</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;structure_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tree_1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_5&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_7&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;directed&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w">        </span><span class="c1">// 如 &quot;left&quot; / &quot;next&quot; / &quot;parent&quot; 等，可选</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="414-delete_edge">4.1.4 <code>DELETE_EDGE</code></h4>
+<p>删除现有边。</p>
+<ul>
+<li><code>target</code>: <code>edge_id</code></li>
+<li><code>data</code>: <code>{}</code></li>
+</ul>
+<hr />
+<h3 id="42-layout-position-ops">4.2 布局与位置（Layout / Position Ops）</h3>
+<p>布局算法通常由 <code>core.layout</code> 决定，
+AnimationOps 用于通知渲染器“某个 Node 应该在新位置”。</p>
+<blockquote>
+<p>SET_POS 由核心 Layout 模块生成，Domain Model 不应直接依赖具体坐标，而是通过结构信息（如层级、序号）驱动 Layout。</p>
+</blockquote>
+<h4 id="421-set_pos">4.2.1 <code>SET_POS</code></h4>
+<p>设置 Node 的显示位置（坐标单位由渲染器解释，通常为像素）。</p>
+<ul>
+<li><code>target</code>: <code>node_id</code></li>
+<li><code>data</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">120.0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">80.0</span>
+<span class="p">}</span>
+</code></pre></div>
+<blockquote>
+<p>渲染器可在 Step 的 <code>duration_ms</code> 时间内插值从上一位置移动到新位置，从而形成平滑移动效果。</p>
+</blockquote>
+<hr />
+<h3 id="43-state-visual-ops">4.3 状态与样式（State / Visual Ops）</h3>
+<p>为保持样式简单但可扩展，我们采用“<strong>逻辑状态标签</strong>”，具体视觉样式由渲染器自行 mapping。</p>
+<h4 id="431-set_state">4.3.1 <code>SET_STATE</code></h4>
+<p>设置 Node 或 Edge 的逻辑状态。</p>
+<ul>
+<li><code>target</code>: <code>node_id</code> 或 <code>edge_id</code></li>
+<li><code>data</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;active&quot;</span><span class="w">   </span><span class="c1">// 例如: &quot;normal&quot;, &quot;active&quot;, &quot;secondary&quot;, &quot;to_delete&quot;, &quot;faded&quot;, &quot;error&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>推荐状态值集合（可扩展）：</p>
+<ul>
+<li><code>normal</code>：默认状态</li>
+<li><code>active</code>：当前操作焦点节点</li>
+<li><code>highlight</code>：短时强调（例如插入/删除的邻接节点）</li>
+<li><code>secondary</code>：辅助高亮（如查找路径中的非当前节点）</li>
+<li><code>to_delete</code>：即将被删除的节点</li>
+<li><code>faded</code>：弱化显示</li>
+<li><code>error</code>：错误提示（如非法操作）</li>
+</ul>
+<h4 id="432-set_label">4.3.2 <code>SET_LABEL</code></h4>
+<p>修改 Node 或 Edge 的文本标签。</p>
+<ul>
+<li><code>target</code>: <code>node_id</code> 或 <code>edge_id</code></li>
+<li><code>data</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>适用于：</p>
+<ul>
+<li>更新数组单元格内容；</li>
+<li>更新树结点 key；</li>
+<li>更新 Git commit 的短 SHA / message 摘要。</li>
+</ul>
+<hr />
+<h3 id="44-global-ops">4.4 全局提示（Global Ops）</h3>
+<h4 id="441-set_message">4.4.1 <code>SET_MESSAGE</code></h4>
+<p>设置当前 Step 的全局提示文本（例如在界面下方显示）。</p>
+<ul>
+<li><code>target</code>: <code>null</code></li>
+<li><code>data</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;当前操作：在结点 5 的右子树插入 7&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>渲染器可以选择：</p>
+<ul>
+<li>在一个固定区域显示该文本；</li>
+<li>或以浮动提示方式呈现。</li>
+</ul>
+<h4 id="442-clear_message">4.4.2 <code>CLEAR_MESSAGE</code></h4>
+<p>清除全局提示。</p>
+<ul>
+<li><code>target</code>: <code>null</code></li>
+<li><code>data</code>: <code>{}</code></li>
+</ul>
+<hr />
+<h2 id="5-git-ops">5. Git 教学动画中的 Ops 使用约定（示例）</h2>
+<p>以虚拟 <code>git commit</code> 动画为例，推荐使用如下 Ops 组合：</p>
+<h3 id="51-git-commit-m-msg">5.1 git commit -m "msg"</h3>
+<p>假设当前 HEAD 在 <code>commit_a</code>，新 commit 是 <code>commit_b</code>，所在结构 ID 为 <code>repo_1</code>。</p>
+<ol>
+<li>高亮当前 HEAD：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;op&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SET_STATE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;commit_a&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;state&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;active&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<ol>
+<li>创建新节点 + 边：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;op&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CREATE_NODE&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;commit_b&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;structure_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repo_1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;git_commit&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;b1c2d3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;msg&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;op&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CREATE_EDGE&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;edge_a_b&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;structure_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repo_1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;commit_a&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;commit_b&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;directed&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<ol>
+<li>设置 HEAD / branch 标签的 POS / STATE（可选）
+   （HEAD / branch label 可以建模为特殊 kind 的 Node,
+    绑定一条边指向特定的branch / git_commit Node）</li>
+</ol>
+<hr />
+<h2 id="6-python-coreops">6. Python 映射（与 core/ops 对应）</h2>
+<p>在 Python 侧，AnimationOps 规范对应如下基础类型（Phase 0–1）：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">OpCode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">CREATE_NODE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">DELETE_NODE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">CREATE_EDGE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">DELETE_EDGE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SET_POS</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SET_STATE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SET_LABEL</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SET_MESSAGE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">CLEAR_MESSAGE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnimationOp</span><span class="p">:</span>
+    <span class="n">op</span><span class="p">:</span> <span class="n">OpCode</span>
+    <span class="n">target</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+<p>时间线层：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnimationStep</span><span class="p">:</span>
+    <span class="n">duration_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ops</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AnimationOp</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Timeline</span><span class="p">:</span>
+    <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AnimationStep</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">AnimationStep</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">AnimationStep</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+</code></pre></div>
+<blockquote>
+<p>注意：</p>
+<ul>
+<li><strong>目前只保证接口定义和语义稳定</strong>；</li>
+<li>具体实现（如何生成这些 ops、如何在 PySide6/Web 上渲染）由后续 Phase 和 Coding Agents 实现。</li>
+</ul>
+</blockquote>
+<hr />
+<h2 id="7-v02">7. 演进计划（v0.2+）</h2>
+<p>未来可能扩展的内容（不在当前课设硬性范围内）：</p>
+<ul>
+<li>增加 <code>GROUP</code>/<code>PARALLEL</code> 等更复杂时间结构。</li>
+<li>增加更细粒度的视觉 control（如颜色通道、线型、节点形状）。</li>
+<li>增加 <code>ATTACH_OVERLAY</code>、<code>HIDE_NODE</code> 等更丰富交互。</li>
+</ul>
+<p>但在当前阶段，<strong>本规范列出的 Op 集合已经足以支持 L2 教学级动画 + Git 教学模块</strong>。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

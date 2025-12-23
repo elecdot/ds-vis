@@ -1,0 +1,1778 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../ops_spec/">
+      
+      
+        <link rel="next" href="../renderer/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Animation - DS-Vis Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#animation_requirements" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="DS-Vis Documentation" class="md-header__button md-logo" aria-label="DS-Vis Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DS-Vis Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Animation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../project_state/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project State
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../requirements/" class="md-tabs__link">
+          
+  
+  
+  Design
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../engineering/environment/" class="md-tabs__link">
+          
+  
+  
+  Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../diagrams/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Diagrams
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DS-Vis Documentation" class="md-nav__button md-logo" aria-label="DS-Vis Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    DS-Vis Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project_state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project State
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Active"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layout
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ops_spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ops Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Animation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Animation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 动画目标
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 动画精细度等级
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-l2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 各数据结构的 L2 动画要求（示例）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 各数据结构的 L2 动画要求（示例）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-arraylist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 顺序表（Array/List）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-linked-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 链表（Linked List）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-push-pop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 栈 push / pop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-bst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 BST 查找与插入
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-bst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 BST 删除（教学化难点）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-avl-model-layout-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 AVL 旋转（重点在 Model -- Layout Engine 的配合）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 哈夫曼树构建
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-git" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 Git 教学操作动画（新增）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.8 Git 教学操作动画（新增）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#git-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#git-commit-m" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git commit -m ""
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#git-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git branch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#git-checkout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git checkout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#git-merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git merge （简化无冲突版本）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 视觉、状态与交互统一规范
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 视觉、状态与交互统一规范">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 状态值与颜色（推荐表）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 动画时间与控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 文本与辅助提示（消息策略）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 节点与边的视觉风格
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-animationops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 与 AnimationOps 的关系
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-p06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 当前实现基线（P0.6）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-p06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 已知缺口（P0.6）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../renderer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Renderer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dsl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DSL
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../json/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON Schema
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engineering/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engineering/tdd_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TDD Guide
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Active"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engineering/dev_kb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dev Knowledge Base
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Living"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="animation_requirements">ANIMATION_REQUIREMENTS — 动画要求与教学规范</h1>
+<h2 id="1">1. 动画目标</h2>
+<p>本项目的动画服务于<strong>教学演示</strong>，目标是：</p>
+<ol>
+<li>让初学者清晰地理解每一步结构变化过程，而不仅是看到结果。</li>
+<li>为教师或学习者提供合适的讲解节奏（自动播放 / 单步 / 回看）。</li>
+<li>在不同数据结构之间保持一致的视觉语言与交互模式。</li>
+</ol>
+<hr />
+<h2 id="2">2. 动画精细度等级</h2>
+<p>定义三个精细度等级：</p>
+<ul>
+<li><strong>L1：结果级动画</strong></li>
+<li>仅在操作前后给出两个状态，使用简单过渡。</li>
+<li><strong>L2：教学级动画（本项目的默认目标）</strong></li>
+<li>将一个操作拆成 3–10 个“微步骤”（micro-steps）。</li>
+<li>每一步有明确的视觉焦点（高亮、移动、标注）。</li>
+<li><strong>L3：深度解剖级动画</strong></li>
+<li>展示内部实现细节（指针字段、平衡因子更新、内存地址等）。</li>
+</ul>
+<p>本项目当前统一采用 <strong>L2 教学级动画</strong> 作为目标。<br />
+L3 作为扩展方向，不纳入当前课程设计必做范围。</p>
+<hr />
+<h2 id="3-l2">3. 各数据结构的 L2 动画要求（示例）</h2>
+<p>以下为 v0.2 示例，后续可根据需要细化/修改</p>
+<h3 id="31-arraylist">3.1 顺序表（Array/List）</h3>
+<ul>
+<li><strong>插入（位置 i）</strong>：</li>
+<li>高亮索引 <code>i</code> 处的格子（目标位置）。</li>
+<li>高亮区间 <code>[i, size-1]</code> 的所有元素（待移动区间）。</li>
+<li><strong>平移</strong>：区间元素整体向右滑动一个单位。</li>
+<li><strong>淡入</strong>：新元素从上方飞入或在空位淡入。</li>
+<li>更新 <code>size</code> 标注。</li>
+<li><strong>删除（位置 i）</strong>：</li>
+<li>高亮索引 <code>i</code> 处的元素。</li>
+<li><strong>淡出</strong>：该元素消失。</li>
+<li>高亮区间 <code>[i+1, size-1]</code>。</li>
+<li><strong>平移</strong>：区间元素整体向左滑动。</li>
+<li>更新 <code>size</code> 标注。</li>
+</ul>
+<h3 id="32-linked-list">3.2 链表（Linked List）</h3>
+<ul>
+<li><strong>插入（节点 p 后）</strong>：</li>
+<li><strong>遍历</strong>：从头节点开始，逐个高亮节点直到 <code>p</code>。</li>
+<li><strong>创建</strong>：在侧边创建新节点 <code>x</code>。</li>
+<li><strong>连线 1</strong>：虚线表示抓取并断开原本的<code>p.next</code>并逐渐绘制<code>x.next</code> 指向 <code>p.next</code>。</li>
+<li><strong>连线 2</strong>：逐渐绘制<code>p.next</code> 指向 <code>x</code>。</li>
+<li><strong>重排</strong>：调用布局引擎，使链表重新对齐。</li>
+</ul>
+<blockquote>
+<p>当前链表插入<strong>重排</strong>一步与<strong>创建</strong>同时完成</p>
+</blockquote>
+<h3 id="33-push-pop">3.3 栈 push / pop</h3>
+<ul>
+<li><strong>入栈</strong>：</li>
+<li>高亮入口位置。</li>
+<li>元素从外部平滑移动到目标位置。</li>
+<li>更新指针（TOP）位置。</li>
+<li><strong>出栈/出队</strong>：</li>
+<li>高亮待出元素。</li>
+<li>元素向外平滑移动并淡出。</li>
+<li>更新指针（TOP）位置。</li>
+</ul>
+<h3 id="34-bst">3.4 BST 查找与插入</h3>
+<ul>
+<li><strong>查找</strong>：</li>
+<li><strong>比较</strong>：高亮当前节点，显示比较气泡（如 <code>42 &gt; 30</code>, 带颜色）。</li>
+<li><strong>决策</strong>：高亮对应的子边（左或右）。</li>
+<li><strong>移动</strong>：焦点移动到子节点。</li>
+<li><strong>插入</strong>：</li>
+<li>执行查找流程直到空位。</li>
+<li>在空位处淡入新节点。</li>
+<li>动画展示: 父节点链接该新节点</li>
+</ul>
+<blockquote>
+<p><strong>当前实现基线（P0.7）</strong>：查找/插入的节点高亮与路径边 secondary 高亮在尾部统一恢复；消息在每步显示，收尾 CLEAR_MESSAGE；可进一步细化“比较气泡”颜色与边恢复粒度。</p>
+</blockquote>
+<h3 id="35-bst">3.5 BST 删除（教学化难点）</h3>
+<ul>
+<li><strong>叶子节点</strong>：直接淡出节点及父边。</li>
+<li><strong>单子树</strong>：</li>
+<li>高亮待删节点 D 及其唯一子节点 C。</li>
+<li><strong>接管</strong>：D的父节点指针（即边）直接指向 C。</li>
+<li>D（及其其连接子节点 C 的边）淡出，C 及其子树平滑移动到 D 的原位置。</li>
+<li><strong>双子树（后继替换法）</strong>：</li>
+<li>高亮待删节点 D。</li>
+<li><strong>寻找后继</strong>：高亮 D 的右子树，并沿左路径逐个找到最小节点 S。</li>
+<li><strong>值复制</strong>：将 S 的值“飞向” D（更新 D 的标签）。</li>
+<li><strong>删除后继</strong>：高亮 S，按“叶子”或“单子树”情况删除 S。</li>
+</ul>
+<blockquote>
+<p><strong>当前实现基线（P0.7）</strong>：已落地后继替换法，支持后继带右子；删除阶段包含边重连/删除与节点删除，统一 Restore 状态；后继遍历的恢复/分步消息仍可细化。</p>
+</blockquote>
+<h3 id="36-avl-model-layout-engine">3.6 AVL 旋转（重点在 Model -- Layout Engine 的配合）</h3>
+<ul>
+<li>显示平衡因子气泡</li>
+<li>显示当前旋转类型</li>
+<li><strong>单旋（LL/RR）</strong>：<ol>
+<li>高亮失衡节点 A、子节点 B。</li>
+<li><strong>重心转换</strong>：B 向上移动，A 向下并向侧边移动。</li>
+<li><strong>子树挂接</strong>：若 B 有内侧子树，动画演示其断开并挂接到 A。</li>
+</ol>
+</li>
+<li><strong>双旋（LR/RL）</strong>：</li>
+<li>分为两次单旋，中间停顿并显示“中间状态”。</li>
+<li>更新平衡因子气泡</li>
+</ul>
+<h3 id="37">3.7 哈夫曼树构建</h3>
+<ol>
+<li>按大小顺序排列所有候选节点</li>
+<li>对每一步合并：</li>
+<li>高亮权值最小的两节点（即前两个）。</li>
+<li>聚焦两个子节点并向上“汇聚”（边动画）到一个淡入的新父节点。</li>
+<li>将父加入（平移至）候选节点排列（以父节点为根的树一同移动）</li>
+<li>哈夫曼树构建完成后全体节点闪烁一次。</li>
+</ol>
+<h3 id="38-git">3.8 Git 教学操作动画（新增）</h3>
+<p>本项目支持展示 Git 内部数据结构在一组虚拟操作下的变化过程，用于教学目的。
+所有动画遵循 L2 教学级要求，将 Git 命令拆解为若干 micro-steps。
+这里只做文字叙述，应在实现是根据当时具体的 Renderer 的实现情况考虑最优
+的实现方案。</p>
+<h4 id="git-init">git init</h4>
+<ol>
+<li>创建一个空 DAG 区域。</li>
+<li>创建 main 分支引用（branch label）。</li>
+<li>HEAD 指向 main。</li>
+</ol>
+<h4 id="git-commit-m">git commit -m "<msg>"</h4>
+<ol>
+<li>高亮 HEAD 指向的 commit（空仓库时的 main 或不高亮）。</li>
+<li>在同一 lane 上方生成新 commit 节点。</li>
+<li>动画绘制从父 commit 到新 commit 的边。</li>
+<li>将 branch label 移动到新 commit。</li>
+<li>将 HEAD 移动到 branch label。</li>
+</ol>
+<h4 id="git-branch">git branch <name></h4>
+<ol>
+<li>高亮 HEAD 所在 commit。</li>
+<li>在该 commit 旁展示新分支 label。</li>
+<li>加入提示文字：“branch <name> 指向当前提交”。</li>
+</ol>
+<h4 id="git-checkout">git checkout <branch></h4>
+<ol>
+<li>高亮当前 HEAD 与目标分支 label。</li>
+<li>将 HEAD label 从原分支移动到目标分支。</li>
+<li>高亮目标 commit。</li>
+<li>若进入 detached 状态：</li>
+<li>直接将 HEAD 指向 commit 节点。</li>
+<li>显示提示：“detached HEAD”。</li>
+</ol>
+<h4 id="git-merge">git merge <branch>（简化无冲突版本）</h4>
+<ol>
+<li>高亮当前分支 HEAD。</li>
+<li>高亮待合并分支 HEAD。</li>
+<li>生成 merge commit 节点（两个 parent edge）。</li>
+<li>当前 branch label 与 HEAD 共同移动到 merge commit。</li>
+<li>加入提示文字：“merge commit（简化版）”。</li>
+</ol>
+<hr />
+<h2 id="4">4. 视觉、状态与交互统一规范</h2>
+<h3 id="41">4.1 状态值与颜色（推荐表）</h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>用途示例</th>
+<th>默认颜色（RendererConfig）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>normal</td>
+<td>默认状态</td>
+<td><code>#6b7280</code></td>
+</tr>
+<tr>
+<td>active</td>
+<td>当前操作焦点</td>
+<td><code>#2563eb</code></td>
+</tr>
+<tr>
+<td>highlight</td>
+<td>关键节点/新边强调</td>
+<td><code>#f59e0b</code></td>
+</tr>
+<tr>
+<td>secondary</td>
+<td>遍历路径、辅助高亮</td>
+<td><code>#059669</code></td>
+</tr>
+<tr>
+<td>to_delete</td>
+<td>将被替换/删除的元素（旧边等）</td>
+<td><code>#dc2626</code></td>
+</tr>
+<tr>
+<td>faded</td>
+<td>弱化/降权显示</td>
+<td><code>#9ca3af</code></td>
+</tr>
+<tr>
+<td>error</td>
+<td>错误提示</td>
+<td><code>#f97316</code></td>
+</tr>
+</tbody>
+</table>
+<p>说明：状态字符串可扩展，RendererConfig 可覆写颜色；新模型应复用上述语义，避免自定义散乱命名。</p>
+<h3 id="42">4.2 动画时间与控制</h3>
+<ul>
+<li>单个 micro-step 动画时长建议在 <strong>300–600 ms</strong>。</li>
+<li>全局速度因子：0.5x / 1x / 2x（当前 PySide6Renderer 同步阻塞插值）。</li>
+<li>播放控制：Play / Pause / Step / 重置；seek/skip/非阻塞为后续方向（占位）。</li>
+<li>max_frames/easing：RendererConfig 提供占位参数（默认 10 帧、线性），行为与旧版一致。</li>
+</ul>
+<h3 id="43">4.3 文本与辅助提示（消息策略）</h3>
+<ul>
+<li>使用 <code>SET_MESSAGE</code> / <code>CLEAR_MESSAGE</code> 显示 HUD 文本；当前 PySide6Renderer 将消息锚定到场景 bbox 顶部居中（避免与结构过远），可根据结构 bbox 再细化。</li>
+<li>RendererConfig <code>show_messages</code> 可禁用消息渲染；锚定节点/富提示为未来扩展。</li>
+<li>推荐：在操作开始/结果时提供简短提示，避免每步频繁刷屏；完成后务必 CLEAR_MESSAGE。</li>
+</ul>
+<h3 id="44">4.4 节点与边的视觉风格</h3>
+<ul>
+<li>顺序表/栈：矩形块；链表：值+next 区域；树节点：圆/圆角矩形；Git 节点：小圆点+标签。</li>
+<li>当前焦点用 active/highlight；待替换/删除用 to_delete。</li>
+<li>形状/尺寸由 RendererConfig 决定，缺省保持现有视觉；与 Layout 的尺寸/间距联动为后续优化。</li>
+</ul>
+<hr />
+<h2 id="5-animationops">5. 与 AnimationOps 的关系</h2>
+<p>本文件描述的是"<strong>动画应该展示什么</strong>"的教学需求层面。
+在实现时：</p>
+<ul>
+<li>Model 与 SceneGraph 应根据这些要求，将一个高层操作拆成若干 AnimationOps 序列，并组织为 Timeline。</li>
+<li>AnimationOps 和 Timeline 的具体类型与字段定义在 <code>ops_spec.md</code> 中。</li>
+<li>Renderer（PySide6/Web）负责：</li>
+<li>接收 Timeline，按 Step 顺序播放</li>
+<li>在每个 Step 的 <code>duration_ms</code> 时间内，从当前可视状态过渡到应用所有 Ops 后的终态</li>
+<li>不重新决定教学粒度与流程，仅负责具体的渲染与动画实现</li>
+</ul>
+<p><strong>如果现有的 AnimationOps 定义不足以支撑目前的动画要求，应该经过谨慎考虑后扩展</strong></p>
+<hr />
+<h2 id="6-p06">6. 当前实现基线（P0.6）</h2>
+<ul>
+<li>播放粒度：仍以 Step 为单位，不支持 seek/倒播/skip。</li>
+<li>动画实现：PySide6 renderer 基于 <code>duration_ms</code> 做同步插值（线性），CREATE/DELETE 淡入淡出，<code>SET_POS</code>/<code>SET_STATE</code> 线性过渡，帧数最多 10 帧；可全局开关、速度倍率（0.5/1/2）。</li>
+<li>限制：动画为阻塞式（使用 qWait），长时长或大量节点可能卡 UI；无自定义缓动、无异步调度。</li>
+<li>UI 控件：Dev 播放控制 Play/Pause/Step/Speed 与动画开关，单场景演示用，不含 seek/多时间线管理。</li>
+</ul>
+<blockquote>
+<p>交叉引用：<code>kind</code> 的语义类型与 Style/Metrics 的注入约束请参见 <code>docs/design/architecture.md</code> 第 6.3 节。</p>
+</blockquote>
+<hr />
+<h2 id="7-p06">7. 已知缺口（P0.6）</h2>
+<ul>
+<li><strong>Model</strong>：链表插入缺少“从头节点遍历到目标位置”的高亮/熄灭循环步骤（需补 L2 traversal）。</li>
+<li><strong>Renderer</strong>：边动画缺失（仅支持边创建与状态色变化）；未实现“逐渐绘制/虚线抓取/删除边”的表现。</li>
+<li><strong>Layout</strong>：节点“侧边悬停/从上方入场”的位置预留未实现。该需求标记为<strong>低优先级</strong>，且应在 Layout 层实现，避免 Renderer 通过私有位移规则引入隐式耦合。</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

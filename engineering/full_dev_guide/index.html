@@ -1,0 +1,1261 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>全流程开发指南（Agent 快速上手） - DS-Vis Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#agent" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="DS-Vis Documentation" class="md-header__button md-logo" aria-label="DS-Vis Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DS-Vis Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              全流程开发指南（Agent 快速上手）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../project_state/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project State
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../design/requirements/" class="md-tabs__link">
+          
+  
+  
+  Design
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../environment/" class="md-tabs__link">
+          
+  
+  
+  Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../diagrams/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Diagrams
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DS-Vis Documentation" class="md-nav__button md-logo" aria-label="DS-Vis Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    DS-Vis Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project_state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project State
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Active"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requirements
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layout
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/scene_graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scene Graph
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/ops_spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ops Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/animation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Animation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/renderer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Renderer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/dsl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DSL
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/json/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON Schema
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Stable"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tdd_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TDD Guide
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Active"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_kb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dev Knowledge Base
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Living"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="agent">全流程开发指南（Agent 快速上手）</h1>
+<p>目标：帮助新 Agent 从需求到交付快速落地一个结构/命令（以 BST/List 经验为模板），覆盖 Model → Layout → SceneGraph → Renderer/UI → 测试 → 文档。</p>
+<h2 id="_1">必读清单与技能</h2>
+<ul>
+<li><strong>必读文档</strong>：<code>AGENTS.md</code>（角色/红线）、<code>project_state.md</code>（当前阶段与限制）、<code>index.md</code>（版本表）、<code>animation.md</code>（状态/微步骤范式）、<code>model.md</code>、<code>layout.md</code>、<code>scene_graph.md</code>、<code>renderer.md</code>、<code>dev_kb.md</code>（已知问题/测试开关）。</li>
+<li><strong>工具技能</strong>：<code>uv</code>（安装/运行）、pytest/ruff/mypy、<code>rg</code>（搜索）、PySide6 offscreen 测试（环境变量 <code>QT_QPA_PLATFORM=offscreen</code> 已在测试中使用）。</li>
+<li><strong>心智模型</strong>：三层分离（Model→Layout→Renderer），跨层只用 Ops；SceneGraph 为唯一入口，命令必须校验。</li>
+</ul>
+<h2 id="_2">快速路径（步骤清单）</h2>
+<p>1) <strong>对齐需求与范式</strong>
+   - 查阅 <code>project_state.md</code>、<code>animation.md</code>、<code>model.md</code>，确认状态/颜色/消息范式与当前限制。
+   - 明确操作集合与微步骤粒度（教学级 L2：比较/决策/移动/重连/恢复）。
+2) <strong>先写测试（TDD）</strong>
+   - 覆盖：正/误输入、ID/边稳定性、状态/消息关键断言、边界案例。
+   - 如果功能未实现，用 <code>xfail</code> 锁定预期。
+3) <strong>注册命令与模型</strong>
+   - 在 <code>command_schema.py</code> 用 <code>register_command</code> 注册 CommandType + kind → schema + model_op。
+   - 若新 kind：用 <code>register_model_factory</code> 注册工厂，避免 SceneGraph 硬编码。
+4) <strong>实现 Model</strong>
+   - <code>kind</code>/<code>apply_operation</code>/ID 与 edge key 稳定；生成结构 Ops（不含 SET_POS）。
+   - 按 <code>animation.md</code> 拆微步骤：路径 secondary，高亮关键节点/边，结束统一 Restore + CLEAR_MESSAGE。
+   - 删除/重连要同步内存拓扑与 Ops（先删旧边，再重连，再删节点）。
+5) <strong>接入 Layout</strong>
+   - 确认 SceneGraph 中 kind→LayoutStrategy 路由（LINEAR/TREE/DAG 占位）和 per-structure <code>(dx, dy)</code> 偏移。
+   - 若需新策略，扩展 LayoutEngine 并更新路由；确保不与现有结构重叠。
+6) <strong>Renderer/UI/Dev Hook</strong>
+   - PySide6Renderer：遵循状态/消息语义；消息当前锚定场景 bbox 顶部。
+   - UI：添加 Dev 菜单冒烟 Hook（create/insert/search/delete 等串联），便于人工验收。
+7) <strong>DSL/JSON/LLM 接口</strong>
+   - JSON：确保 Command schema 往返；dsl/parser 目前接受 JSON 占位。
+   - LLM：接口在 <code>llm/adapter.py</code>，按需扩展 prompt/客户端，但保持可选。
+8) <strong>验证与提交</strong>
+   - 运行 <code>uv run ruff check</code>, <code>uv run mypy src</code>, <code>uv run pytest</code>（必要时设置 <code>UV_CACHE_DIR</code>）。
+   - 更新文档：<code>project_state.md</code>（状态/里程碑）、<code>index.md</code>（版本表）、相关设计文档（animation/model/layout/scene_graph/renderer）、如有新增指南/DSL/JSON/LLM 补充对应文件。
+   - 检查前置元数据（front matter）与 registry 版本一致。</p>
+<h2 id="_3">详细流程（带检查点）</h2>
+<ul>
+<li><strong>需求拆解</strong>：把操作拆成微步骤列表（L2）；标记每步的状态值和消息文案。</li>
+<li><strong>Schema 注册</strong>：新增命令/模型前，先在 <code>command_schema.py</code> 注册 schema 和 factory，跑 <code>tests/core/test_command_validation.py</code>。</li>
+<li><strong>Model 实现</strong>：</li>
+<li>ID/边 key 稳定（用 allocator；边用 <code>edge_id(kind, src, dst)</code>）。</li>
+<li>操作流程：定位路径 → 标记状态/消息 → 结构改动（创建/删除/重连/改 label）→ Restore（节点/边/消息）。</li>
+<li>内存拓扑与 Ops 同步：删边前断指针，重连后写 parent/child，最后删节点。</li>
+<li><strong>Layout 接入</strong>：</li>
+<li>确认 kind 路由与偏移；若新增策略需补 LayoutEngine 并在 SceneGraph 注册。</li>
+<li>避免重叠：同策略多结构要叠加偏移；必要时在文档标注 TODO。</li>
+<li><strong>Renderer/UI</strong>：</li>
+<li>消息锚点当前用场景 bbox 顶部；如需变更请同步 renderer 文档。</li>
+<li>Dev Hook：在 UI Dev 菜单添加串联命令，便于冒烟；保持 duration 适中（关键动画可短）。</li>
+<li><strong>DSL/JSON/LLM</strong>：保持 JSON 协议兼容；DSL 仍是占位，勿混用真实语法；LLM 仅接口。</li>
+<li><strong>文档同步</strong>：代码变更涉及协议/流程时，更新设计文档 + <code>index.md</code> 版本号 + <code>project_state.md</code> 阶段说明。</li>
+</ul>
+<h2 id="_4">常见坑位与防御</h2>
+<ul>
+<li><strong>状态恢复遗留</strong>：查找/删除路径的节点与边需在末尾恢复 normal，消息需 CLEAR。</li>
+<li><strong>拓扑同步</strong>：DELETE/重连需同时更新内存 parent/child 指针与 Ops，避免渲染残留。</li>
+<li><strong>布局混排</strong>：多结构共存时注意偏移/分区，避免 SET_POS 冲突；必要时标注 TODO。</li>
+<li><strong>阻塞动画</strong>：长链/大树会卡 UI，控制 <code>duration_ms</code> / <code>max_frames</code>，关键冒烟测试可减速但保持覆盖。</li>
+<li><strong>文档版本</strong>：忘记同步 <code>index.md</code> / front matter 会导致后续 Agent 误判状态。</li>
+</ul>
+<h2 id="_5">调试与问题定位提示</h2>
+<ul>
+<li><strong>复现最小化</strong>：编写/调整 Dev Hook，把问题缩到 2–3 个命令；或用 JSON/DSL CLI 重放。</li>
+<li><strong>查看 Ops</strong>：在 Model 里暂存/打印（调试时）生成的 Timeline，确认 CREATE/DELETE/SET_STATE/SET_LABEL 顺序正确。</li>
+<li><strong>边/指针问题</strong>：优先检查内存拓扑（parent/child）与 <code>_op_delete_edge</code>/<code>_op_create_edge</code> 调用顺序是否一致。</li>
+<li><strong>消息/状态残留</strong>：确认 Restore 步骤包含所有 visited 节点与 traversed 边，并 CLEAR_MESSAGE。</li>
+<li><strong>Layout 重叠</strong>：检查 SceneGraph 偏移表与 LayoutStrategy 路由；必要时调大 <code>(dx, dy)</code> 或添加 TODO。</li>
+<li><strong>PySide6 测试性能</strong>：参考 <code>dev_kb.md</code> 的动画加速/禁用策略；如卡顿，缩短 <code>duration_ms</code>。</li>
+<li><strong>CI/工具</strong>：<code>uv run ruff check</code>（风格/错误），<code>uv run mypy src</code>（类型），<code>uv run pytest</code>（全量）；遇到 uv 缓存权限可设置 <code>UV_CACHE_DIR=./tmp/uv-cache</code>。</li>
+</ul>
+<h2 id="_6">如何避免漂移</h2>
+<ul>
+<li><strong>先读后改</strong>：修改任何核心路径前再次确认 <code>project_state.md</code> 与 <code>index.md</code>，确保不覆盖他人最新约定。</li>
+<li><strong>小步提交</strong>：每次只改一个主题（如“BST 删除修复”），附带对应测试和文档行。</li>
+<li><strong>显式假设</strong>：新限制/假设写入 <code>project_state.md</code> 或 <code>dev_kb.md</code>，避免隐性知识。</li>
+<li><strong>一致的状态/颜色命名</strong>：复用 <code>animation.md</code> 推荐状态，避免自造状态字符串。</li>
+<li><strong>注册表单一入口</strong>：新增命令/模型只改 <code>command_schema.py</code> 与注册函数，避免散落硬编码。</li>
+</ul>
+<h2 id="_7">资源与查找路径</h2>
+<ul>
+<li><strong>协议/语义</strong>：<code>docs/design/ops_spec.md</code>。</li>
+<li><strong>状态/动画范式</strong>: <code>docs/design/animation.md</code>。</li>
+<li><strong>模型开发模板</strong>：<code>docs/design/model.md</code>。</li>
+<li><strong>SceneGraph 路由/注册</strong>：<code>docs/design/scene_graph.md</code>。</li>
+<li><strong>Layout 偏移与策略</strong>：<code>docs/design/layout.md</code>。</li>
+<li><strong>Renderer 行为/消息锚点</strong>：<code>docs/design/renderer.md</code>。</li>
+<li><strong>问题排查</strong>：<code>docs/engineering/dev_kb.md</code>（测试开关、已知坑）。</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight", "search.suggest", "toc.integrate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
