@@ -1,336 +1,82 @@
-# QUICKSTART — 快速开始指南
-
-## 1. 项目架构概览
-
-本项目采用分层架构设计，从上到下分别为：UI 层、场景管理层、模型层、布局层、动画引擎和渲染器。
-
-```mermaid
-graph TD
-    subgraph UI["UI / DSL / Persistence"]
-        UILayer["UI 界面<br/>DSL 解析<br/>数据持久化"]
-    end
-    
-    subgraph Scene["Scene 层"]
-        SG["SceneGraph<br/>Command 路由"]
-    end
-    
-    subgraph Model["Model 层"]
-        Models["数据结构模型<br/>List / Stack / BST / AVL<br/>GitGraph / Huffman ..."]
-    end
-    
-    subgraph Layout["Layout 层"]
-        LayoutEngine["布局算法<br/>树布局 / 线性布局<br/>DAG 布局"]
-    end
-    
-    subgraph Animation["Animation 层"]
-        AnimOps["AnimationOps<br/>+ Timeline<br/>时间线管理"]
-    end
-    
-    subgraph Renderer["Renderer 层"]
-        PySide6["PySide6 渲染器<br/>QGraphicsScene/View"]
-        WebRender["🔮 Web 渲染器<br/>React + Canvas/WebGL"]
-    end
-    
-    UILayer -->|"发送 Command"| SG
-    SG -->|"调用模型方法<br/>生成结构 Ops"| Models
-    Models -->|"结构拓扑"| LayoutEngine
-    LayoutEngine -->|"注入 SET_POS Ops"| AnimOps
-    AnimOps -->|"Timeline + Ops"| PySide6
-    AnimOps -->|"Timeline + Ops"| WebRender
-    
-    style UI fill:#e1f5ff
-    style Scene fill:#fff3e0
-    style Model fill:#f3e5f5
-    style Layout fill:#e8f5e9
-    style Animation fill:#fce4ec
-    style Renderer fill:#f1f8e9
-```
-
-**核心特点：**
-
-- ✅ **分层清晰**：每层职责明确，单向依赖
-- ✅ **模型独立**：数据结构模型与 UI/Renderer 完全解耦
-- ✅ **动画解耦**：通过 AnimationOps 和 Timeline 统一描述动画
-- ✅ **多渲染器**：支持 PySide6（当前）和未来的 Web 渲染
-
-```mermaid
-flowchart TB
-  %% =========================
-  %% DS-Vis Official Architecture
-  %% =========================
-
-  %% ---- Layer: UI Shell ----
-  subgraph L4["L4 UI Shell"]
-    UI["ui.main_window\n(PySide6 App Shell)"]
-  end
-
-  %% ---- Layer: Renderer Implementation ----
-  subgraph L3["L3 Renderer Implementation"]
-    RQtPkg["renderers.pyside6\n(Qt bindings & glue)"]
-    RQt["renderers.pyside6.renderer\n(Qt Renderer Impl)"]
-    QtLib["PySide6\n(External)"]
-    RQtPkg --> RQt
-    RQt --> QtLib
-  end
-
-  %% ---- Layer: Renderer Abstraction ----
-  subgraph L2["L2 Renderer Abstraction"]
-    RBase["renderers.base\n(Renderer API / Port)"]
-  end
-
-  %% ---- Layer: Core Domain ----
-  subgraph L1["L1 Core Domain"]
-    %% Models
-    subgraph Models["models (Domain Structures)"]
-      MBase["models.base\n(Model interface & invariants)"]
-      MList["models.list_model"]
-      MBST["models.bst"]
-      MDiGraph["models.digraph"]
-      MBase --> MList
-      MBase --> MBST
-      MBase --> MDiGraph
-    end
-
-    %% Layout
-    subgraph Layout["layout (Layout Strategy)"]
-      LCore["layout\n(Layout API)"]
-      LSimple["layout.simple\n(Simple Layout Impl)"]
-      LCore --> LSimple
-    end
-
-    %% Scene pipeline
-    subgraph Scene["scene (Scene Pipeline)"]
-      Cmd["scene.command\n(Command semantics)"]
-      Schema["scene.command_schema\n(Command schema)"]
-      Graph["scene.scene_graph\n(Resolved graph)"]
-      World["scene.scene\n(Scene state / World)"]
-
-      Schema --> Cmd
-      Cmd --> Graph
-      Graph --> World
-    end
-
-    Ex["core.exceptions"]
-  end
-
-  %% ---- Layer: Use-cases / Orchestration ----
-  subgraph L0["L0 Ops / Use-Cases"]
-    Ops["core.ops\n(Application Services / Use-cases)"]
-    TL["core.ops.timeline\n(Deterministic history)"]
-    Ops --> TL
-  end
-
-  %% =========================
-  %% Cross-layer dependencies
-  %% =========================
-
-  %% UI drives renderer + ops (thin shell)
-  UI --> RQt
-  UI --> Ops
-
-  %% Renderer depends on abstraction + core
-  RQt --> RBase
-  RQt --> World
-  RQt --> Graph
-  RQt --> LCore
-  RQt --> MBase
-
-  %% Abstraction depends on core types (ports reference domain)
-  RBase --> World
-  RBase --> Graph
-
-  %% Ops orchestrates core pipeline
-  Ops --> Cmd
-  Ops --> Schema
-  Ops --> Graph
-  Ops --> World
-  Ops --> LCore
-  Ops --> MBase
-  Ops --> Ex
-
-  %% Layout applies to models/scene
-  LCore --> World
-  LCore --> MBase
-
-  %% Exceptions shared across core/ops
-  Ex -.-> Ops
-  Ex -.-> Scene
-  Ex -.-> Models
-```
-
+---
+bound_phase: P0.7
+version: v0.2
+status: Active
+last_updated: 2025-12-24
 ---
 
-## 2. 环境配置与依赖安装
+# Quickstart — 快速上手指南
 
-### 2.1 前置要求
+本指南将帮助你快速搭建环境、运行项目并了解核心交互流程。
 
-- Python 3.11+
-- `uv` 包管理工具（[安装指南](https://github.com/astral-sh/uv)）
+## 1. 环境搭建
 
-### 2.2 安装步骤
+本项目使用 [uv](https://github.com/astral-sh/uv) 进行依赖管理。
 
 ```bash
-# 1. 进入项目根目录
-cd /path/to/ds-vis
+# 1. 克隆仓库
+git clone https://github.com/elecdot/ds-vis.git
+cd ds-vis
 
-# 2. 安装依赖（创建虚拟环境）
+# 2. 同步依赖 (自动创建虚拟环境)
 uv sync
-
-# 3. 验证安装
-uv run python --version  # 应输出 Python 3.11+
 ```
 
-详细环境配置见 [`docs/engineering/environment.md`](./engineering/environment.md)。
+## 2. 运行应用
 
----
-
-## 3. 核心概念
-
-### 3.1 Command（命令）
-
-用户界面或 DSL 通过 `Command` 与 SceneGraph 交互。
-
-**示例：**
-```python
-# 在 BST 中插入值 5
-cmd = Command(
-    type="INSERT",
-    structure_id="bst_1",
-    payload={"value": 5}
-)
-```
-
-### 3.2 AnimationOps 与 Timeline（动画指令）
-
-Model 执行操作后生成一系列 **AnimationOps**，由 **Timeline** 组织播放。
-
-**主要 Ops 类型：**
-
-| Op 类型 | 说明 | 示例 |
-|---------|------|------|
-| `CREATE_NODE` | 创建节点 | `CREATE_NODE(id="n1", label="5")` |
-| `DELETE_NODE` | 删除节点 | `DELETE_NODE(id="n1")` |
-| `SET_POS` | 设置位置 | `SET_POS(id="n1", x=100, y=200)` |
-| `SET_STATE` | 设置状态 | `SET_STATE(id="n1", state="highlight")` |
-| `CREATE_EDGE` | 创建边 | `CREATE_EDGE(id="e1", from="n1", to="n2")` |
-
-详细规范见 [`docs/design/ops_spec.md`](./design/ops_spec.md)。
-
----
-
-## 4. 运行与测试
-
-### 4.1 运行应用
+启动桌面端可视化窗口：
 
 ```bash
-# 启动桌面应用（PySide6）
 uv run python -m ds_vis.ui.main_window
 ```
 
-### 4.2 运行测试
+## 3. 核心交互流程
 
-```bash
-# 运行所有测试
-uv run pytest
+### 3.1 使用 Interactive DSL (推荐)
+在主界面右侧控制面板点击 **"Interactive DSL"** 按钮，你可以直接输入文本指令来操控场景。
 
-# 运行特定文件的测试
-uv run pytest tests/test_skeleton_flow.py -v
+**常用指令示例：**
+```python
+# 创建并初始化
+list L1 = [1, 2, 3]; 
+bst B1 = [10, 5, 15];
 
-# 运行代码检查与类型检查
-uv run ruff check src tests    # Linting
-uv run mypy src                # 类型检查（可选）
+# 结构操作
+insert L1 1 99;    # 在 L1 的索引 1 插入 99
+push S1 10;        # 如果 S1 是栈，执行入栈
+search B1 5;       # 在二叉树中搜索 5
+
+# 注释支持
+# 这是一个注释，会被解析器忽略
 ```
 
----
+### 3.2 场景持久化
+- **导出**：点击菜单栏 \`File -> Export Scene\`，将当前场景的所有结构和操作序列保存为 JSON 文件。
+- **导入**：点击 \`File -> Import Scene\`，加载 JSON 文件以重建整个场景。
 
-## 5. 典型开发流程
+## 4. 开发者工作流 (TDD)
 
-根据你要实现的功能，遵循不同的开发流程：
+如果你想为项目贡献代码（如新增一个数据结构模型），请遵循以下流程：
 
-### 5.1 实现数据结构模型
+1. **定义 Schema**：在 \`src/ds_vis/core/scene/command_schema.py\` 中注册新命令。
+2. **编写测试**：在 \`tests/core/models/\` 下编写针对新模型的单元测试。
+3. **实现模型**：在 \`src/ds_vis/core/models/\` 下实现逻辑，并生成 \`AnimationOps\`。
+4. **运行验证**：
+   \`\`\`bash
+   uv run pytest tests/core/models/test_your_model.py
+   uv run ruff check src
+   uv run mypy src
+   \`\`\`
 
-**目标：** 实现一个新的数据结构（如 AVL 树）
+## 5. 架构简述
 
-1. 在 `src/ds_vis/core/models/` 中创建模型类
-2. 实现数据结构逻辑，生成 AnimationOps Timeline
-3. 编写单元测试 `tests/test_avl.py`
-4. 运行 `uv run pytest tests/test_avl.py` 验证
+DS-Vis 采用严格的**三层分离**架构，确保逻辑与表现解耦：
 
-**示例：** 见 [`src/ds_vis/core/models/bst.py`](../src/ds_vis/core/models/bst.py)
+1. **Model 层** (\`src/ds_vis/core/models/\`)：负责逻辑拓扑，生成抽象的 \`AnimationOps\`（如 \`CREATE_NODE\`, \`SET_LABEL\`）。
+2. **Layout 层** (\`src/ds_vis/core/layout/\`)：负责几何计算，为节点注入 \`SET_POS\` 指令。
+3. **Renderer 层** (\`src/ds_vis/renderers/\`)：消费指令序列，执行具体的绘图与动画插值。
 
-### 5.2 实现布局算法
-
-**目标：** 为数据结构计算节点坐标
-
-1. 在 `src/ds_vis/core/layout/` 中实现布局算法
-2. 接收 Ops 流和拓扑信息，注入 SET_POS Ops
-3. 编写布局测试 `tests/test_layout_*.py`
-4. 运行验证
-
-**约束：** 布局层不应依赖数据结构的业务逻辑，仅基于拓扑结构计算坐标
-
-详见 [`docs/design/architecture.md`](./design/architecture.md#6-layout-层)
-
-### 5.3 实现 Renderer
-
-**目标：** 将 Ops 和 Timeline 渲染成可视化动画
-
-1. 继承 `src/ds_vis/renderers/base.py` 中的 `Renderer` 抽象类
-2. 实现 `render(timeline: Timeline)` 方法
-3. 编写渲染测试 `tests/test_renderer_*.py`
-4. 运行验证
-
-**示例：** 见 [`src/ds_vis/renderers/pyside6/renderer.py`](../src/ds_vis/renderers/pyside6/renderer.py)
-
-### 5.4 实现 UI 功能
-
-**目标：** 添加用户界面，连接 Command 与 SceneGraph
-
-1. 在 `src/ds_vis/ui/` 中实现 UI 组件
-2. 捕获用户交互（点击、输入等）生成 Command
-3. 通过 SceneGraph 执行 Command，获取 Timeline
-4. 将 Timeline 送给 Renderer 播放
-
-详见 [`docs/design/architecture.md`](./design/architecture.md#3-scenegraph-与-command)
+> 更多详细设计请参考 [docs/design/architecture.md](design/architecture.md)。
 
 ---
-
-## 6. 文件导航
-
-| 文件/目录 | 说明 |
-|----------|------|
-| `docs/design/requirements.md` | 需求与用例说明 |
-| `docs/design/architecture.md` | 详细架构与分层设计 |
-| `docs/design/animation.md` | 动画微步骤设计 |
-| `docs/design/ops_spec.md` | AnimationOps 类型与规范 |
-| `docs/engineering/environment.md` | 环境配置与命令 |
-| `docs/engineering/dev_kb.md` | 开发常见问题与最佳实践 |
-| `AGENTS.md` | Agents 权限与工作流 |
-| `src/ds_vis/core/` | 核心引擎（模型、布局、Ops、SceneGraph） |
-| `src/ds_vis/renderers/` | 渲染器实现 |
-| `src/ds_vis/ui/` | UI 界面 |
-| `tests/` | 单元测试 |
-
----
-
-## 7. 常见问题
-
-**Q: 我想添加一个新的数据结构，应该从哪里开始？**
-
-A: 从 `src/ds_vis/core/models/` 开始实现模型，生成 AnimationOps，无需关心 UI 或 Renderer。详见 Section 5.1
-
-**Q: Model 层可以导入 Renderer 吗？**
-
-A: 不可以。这违反了架构规则。所有交互必须通过 SceneGraph 和 Command 进行。详见 [`AGENTS.md`](../AGENTS.md#3-架构红线必须遵守)
-
-**Q: 如何调试 Timeline 生成？**
-
-A: 在 `tests/` 中编写单元测试，直接调用 Model 方法并检查返回的 Timeline 对象。详见 `docs/engineering/dev_kb.md`
-
----
-
-## 8. 下一步
-
-- 阅读 [`docs/design/architecture.md`](./design/architecture.md) 了解详细的分层设计
-- 查看 [`AGENTS.md`](../AGENTS.md) 了解开发权限与工作流
-- 选择一个任务开始贡献：实现模型 / 布局 / Renderer 之一
+**下一站导览：** [项目需求定义](design/requirements.md)

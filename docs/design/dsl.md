@@ -58,3 +58,6 @@ last_updated: 2025-12-24
 - `src/ds_vis/dsl/parser.py`：核心解析器。
 - `src/ds_vis/core/scene/scene_graph.py`：处理 Late-binding 逻辑。
 - `src/ds_vis/ui/main_window.py`：UI 交互实现。
+
+---
+**下一站导览：** [TDD 开发指南](../engineering/tdd_guide.md)

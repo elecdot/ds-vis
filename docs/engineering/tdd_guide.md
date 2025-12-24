@@ -144,3 +144,6 @@ uv run pytest -x
 # 显示详细输出 (包括 print)
 uv run pytest -s
 ```
+
+---
+**下一站导览：** [自动化测试与 CI](testing_ci.md)
