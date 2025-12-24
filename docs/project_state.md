@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.29
+version: v0.7.30
 status: Active
 last_updated: 2025-12-24
 ---
@@ -40,26 +40,20 @@ This document captures the active delivery phase, what is complete, current assu
 - 文档需持续同步：新增树类模型、消息锚点与布局偏移需在设计文档和 registry 中更新；未来 Agent 需要“全流程指南”作为默认入口。
 
 ## Planned Next Phase — v0.1 / v0.2 交付路线（快速迭代）
-- 目标：完成 v0.1 全部必做（顺序表/栈/Huffman/Git DAG 基础/持久化）并推进 v0.2 核心（AVL、DSL 文本、Git 扩展、多结构场景、回放），每轮原子可审查，遵循 PR checklist（ruff/mypy/pytest + 文档/registry 同步）。
-- 迭代 0：基线巩固
-  - BST 删除（含后继带右子）/搜索 miss 的状态恢复与消息拆分回归测试与修复；验证现有 List/BST 链路稳定性。
-- 迭代 U：UI/UX 交付化
-  - 设计并实现可交付 UI：左侧控制面板（结构选择/参数输入/播放控制/导入导出/DSL 输入）、右侧画布多结构偏移区、消息区防遮挡；接入各模型的快速操作入口。
-  - Renderer/布局支持各模型视觉：顺序表/栈的“桶+矩形单元”（栈竖向）、Huffman 构建的队列区+树区、Git DAG 的纵向 lane、小圆节点/label；新增 UI 冒烟测试（offscreen）。
-- 迭代 P：Persistence（v0.1）
-  - 统一结构状态的 JSON 导入/导出（list/stack/bst/huffman/git），按 SCHEMA_REGISTRY 校验；UI 入口已提供 Import/Export 按钮（导入执行命令；导出当前为占位空列表）；persistence/控制面板冒烟测试通过；文件读写错误抛 CommandError。
-- 迭代 1：顺序表 Seqlist（v0.1）
-  - 实现模型（create/insert/delete/update/search）与命令注册；专用 LINEAR+桶布局，矩形单元渲染；Dev/UI hook 与动画/恢复测试；更新 model/layout/renderer 文档。
-- 迭代 3：Huffman 构建（v0.1）
-  - 构建微步骤（优先队列展示 + 合并），自定义双区布局（队列横排 + 树区渐成），适配渲染；Dev/UI hook 与测试；更新 animation/model/layout 文档。（初版模型/布局已落地，待 UI/渲染体验验收）
-  - 当前 Huffman 构建后的树布局存在节点重叠的情况
-- 迭代 4：Git DAG 基础（v0.1）
-  - 完成 init/commit/checkout（分支/commit）、HEAD/branch label 更新；DAG lane 布局与节点/label 渲染；持久化当前状态导出；UI/DSL 入口与冒烟测试。
-- 迭代 5：DSL 文本 & 多结构场景（v0.2 部分）
-  - 设计最小 DSL 文本语法 → Command 序列（覆盖 list/stack/bst/git 操作），CLI/Dev 输入；SceneGraph 多结构偏移校验与测试；文档同步。
-- 迭代 6：v0.2 扩展与回放
-  - AVL 平衡检测与 LL/RR/LR/RL 旋转动画；Git branch/merge（无冲突）+ DSL 脚本回放；持久化动画历史并支持阻塞回放；补充测试与文档。
-- 风险/边界：非阻塞播放、自动分区布局、样式配置化仍不在本轮范围；`.git` 真实仓库解析可用占位/子集导入说明，需保持与现有阻塞渲染兼容。
+- 目标：完成 v0.1 全部必做（顺序表/栈/Huffman/Git DAG 基础/持久化）并推进 v0.2 核心（AVL、DSL 文本、Git 扩展、多结构场景、回放），每轮原子可审查。
+
+### 迭代评估与后续规划
+
+| 迭代编号 | 目标内容 | 执行与交付情况 | 后续迭代问题/待办 |
+| :--- | :--- | :--- | :--- |
+| **迭代 0** | 基线巩固 (BST) | **部分交付**。BST 增删改查逻辑已通，回归测试覆盖了后继带右子场景。 | 1. 消息拆分需更细粒度（教学向）；2. 复杂删除后的状态恢复（高亮残留）需进一步验证。 |
+| **迭代 1** | 顺序表 Seqlist | **已交付**。模型、LINEAR 布局、桶容器渲染、Dev Hook 全链路打通。 | 无（转入维护）。 |
+| **迭代 3** | Huffman 构建 | **部分交付**。模型逻辑与双区布局（队列+树）已落地，SceneGraph 已注册。 | 1. **严重**：树布局存在节点重叠；2. 构建过程的渲染平滑度需优化。 |
+| **迭代 4** | Git DAG 基础 | **部分交付**。`init`/`commit`/`checkout` 逻辑已通，支持基础 DAG 布局。 | 1. Lane 布局算法需优化以支持复杂分支；2. 分支/HEAD 标签的视觉区分度增强。 |
+| **迭代 P** | Persistence | **进行中 (Stub)**。UI 按钮已预留，`json_io.py` 结构已搭建。 | 1. 实现所有已交付模型的序列化/反序列化逻辑；2. 打通 SceneGraph 的全量导入导出。 |
+| **迭代 U** | UI/UX 交付化 | **进行中 (Playground)**。Dev 菜单可用，基础渲染器支持多状态。 | 1. 实现正式左侧控制面板；2. 消息锚点由全局改为按结构局部优化；3. 自动分区布局算法。 |
+| **迭代 5** | DSL 文本 | **待启动**。目前仅为 JSON 占位。 | 1. 设计并实现最小 DSL 语法解析器；2. 接入 UI 输入框。 |
+| **迭代 6** | v0.2 扩展 | **待启动**。 | 1. AVL 旋转动画；2. 动画历史回放功能。 |
 
 ## Invariants
 - project_state.md is the only authority on current phase.
