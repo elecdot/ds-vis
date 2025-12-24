@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 from ds_vis.core.exceptions import ModelError
 from ds_vis.core.models.base import BaseModel
@@ -318,6 +318,10 @@ class BstModel(BaseModel):
         timeline.add_step(AnimationStep(ops=ops))
         return timeline
 
+    def export_state(self) -> Mapping[str, object]:
+        """Export current BST keys in pre-order for persistence replay."""
+        return {"values": list(self._iter_preorder(self._root_id))}
+
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #
@@ -392,6 +396,16 @@ class BstModel(BaseModel):
 
     def _clear_msg(self) -> AnimationOp:
         return AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={})
+
+    def _iter_preorder(self, node_id: Optional[str]) -> Iterable[Any]:
+        if node_id is None:
+            return []
+        node = self._nodes[node_id]
+        yield node.key
+        if node.left:
+            yield from self._iter_preorder(node.left)
+        if node.right:
+            yield from self._iter_preorder(node.right)
 
     def _find_node(self, value: Any) -> tuple[Optional[str], list[AnimationStep]]:
         steps: list[AnimationStep] = []

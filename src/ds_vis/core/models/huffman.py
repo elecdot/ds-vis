@@ -35,6 +35,7 @@ class HuffmanModel(BaseModel):
         super().__init__(structure_id=structure_id, id_allocator=id_allocator)
         self._nodes: dict[str, _QueueNode] = {}
         self._root: Optional[str] = None
+        self._last_values: list[float] = []
 
     @property
     def kind(self) -> str:
@@ -63,6 +64,7 @@ class HuffmanModel(BaseModel):
         timeline = Timeline()
         self._nodes.clear()
         self._root = None
+        self._last_values = []
         if not values:
             timeline.add_step(
                 AnimationStep(ops=[self._msg("Empty weights for Huffman build")])
@@ -71,14 +73,17 @@ class HuffmanModel(BaseModel):
             return timeline
 
         heap: list[_QueueNode] = []
+        normalized_values: list[float] = []
         for i, val in enumerate(values):
             if not isinstance(val, (int, float)):
                 raise ModelError("Huffman weights must be numbers")
             weight = float(val)
+            normalized_values.append(weight)
             node_id = self.allocate_node_id("node")
             node = _QueueNode(weight=weight, order=i, node_id=node_id)
             heapq.heappush(heap, node)
             self._nodes[node_id] = node
+        self._last_values = normalized_values
 
         # 初始创建节点（按权值排序后分配 queue_index）
         initial_queue = sorted(heap)
@@ -164,9 +169,14 @@ class HuffmanModel(BaseModel):
             )
         self._nodes.clear()
         self._root = None
+        self._last_values = []
         timeline.add_step(AnimationStep(ops=ops, label="Delete all"))
         timeline.add_step(AnimationStep(ops=[self._clear_msg()], label="Restore"))
         return timeline
+
+    def export_state(self) -> Mapping[str, object]:
+        """Export last build weights for persistence replay."""
+        return {"values": list(self._last_values)}
 
     # ------------------------------------------------------------------ #
     # Op helpers

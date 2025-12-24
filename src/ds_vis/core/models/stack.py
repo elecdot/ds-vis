@@ -199,6 +199,10 @@ class StackModel(BaseModel):
         )
         return timeline
 
+    def export_state(self) -> Mapping[str, object]:
+        """Export current stack as a push-sequence (bottom -> top)."""
+        return {"values": list(reversed(self.values))}
+
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #

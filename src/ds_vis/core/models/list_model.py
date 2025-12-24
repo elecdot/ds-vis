@@ -355,6 +355,10 @@ class ListModel(BaseModel):
             timeline.add_step(step)
         return timeline
 
+    def export_state(self) -> Mapping[str, object]:
+        """Export logical values for persistence replay."""
+        return {"values": list(self.values)}
+
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #

@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         form_layout = QVBoxLayout()
         self._structure_id_input = QLineEdit("ui_ds", panel)
         self._kind_combo = QComboBox(panel)
-        self._kind_combo.addItems(["list", "seqlist", "stack", "bst", "huffman"])
+        self._kind_combo.addItems(["list", "seqlist", "stack", "bst", "huffman", "git"])
         self._values_input = QLineEdit("", panel)
         self._value_input = QLineEdit("", panel)
         self._index_input = QLineEdit("", panel)
@@ -299,6 +299,10 @@ class MainWindow(QMainWindow):
             self._btn_insert.setText("Push")
             self._btn_delete.setText("Pop")
             self._index_input.setPlaceholderText("Top only (ignored)")
+        elif kind == "git":
+            self._btn_insert.setText("Commit")
+            self._btn_delete.setText("Delete")
+            self._index_input.setPlaceholderText("")
         else:
             self._btn_insert.setText("Insert")
             self._btn_delete.setText("Delete")
@@ -308,10 +312,13 @@ class MainWindow(QMainWindow):
         sid = self._parse_structure_id()
         kind = self._parse_kind()
         values = self._parse_values()
+        payload: Dict[str, object] = {"kind": kind}
+        if values:
+            payload["values"] = values
         cmd = Command(
             sid,
             CommandType.CREATE_STRUCTURE,
-            {"kind": kind, "values": values},
+            payload,
         )
         self._run_commands([cmd])
 
@@ -322,6 +329,14 @@ class MainWindow(QMainWindow):
             QMessageBox.information(
                 self, "Not Supported", "Huffman 目前仅支持创建/删除。"
             )
+            return
+        if kind == "git":
+            payload_git: Dict[str, object] = {
+                "kind": kind,
+                "message": self._parse_value() or "commit",
+            }
+            cmd = Command(sid, CommandType.INSERT, payload_git)
+            self._run_commands([cmd])
             return
         payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
@@ -343,6 +358,20 @@ class MainWindow(QMainWindow):
             QMessageBox.information(
                 self, "Not Supported", "Huffman 目前仅支持创建/删除。"
             )
+            return
+        if kind == "git":
+            target = self._parse_value()
+            if not isinstance(target, str):
+                QMessageBox.warning(
+                    self, "Input Error", "Git checkout 需要目标分支/commit id"
+                )
+                return
+            cmd = Command(
+                sid,
+                CommandType.SEARCH,
+                payload={"kind": kind, "target": target},
+            )
+            self._run_commands([cmd])
             return
         payload: Dict[str, object] = {"kind": kind, "value": self._parse_value()}
         idx = self._parse_index()
@@ -542,14 +571,24 @@ class MainWindow(QMainWindow):
         """
         Developer-only hook: paste DSL/JSON text, run through SceneGraph, and render.
         """
+        example = (
+            "list L1 = [1,2]; insert L1 1 9; "
+            "stack S1 = [3]; push S1 4; "
+            "bst B1 = [5,3,7]; search B1 7; "
+            "git G1 init; commit G1 \"msg\""
+        )
         text, ok = QInputDialog.getMultiLineText(
             self,
             "Run DSL/JSON",
-            "Enter commands (JSON array or DSL placeholder):",
+            "Enter commands (JSON array or DSL text):",
+            example,
         )
         if not ok or not text.strip():
             return
 
+        self._run_dsl_text(text)
+
+    def _run_dsl_text(self, text: str) -> None:
         self._reset_engine()
         try:
             commands = parse_dsl(text)

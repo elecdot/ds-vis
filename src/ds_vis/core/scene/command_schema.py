@@ -124,7 +124,7 @@ def register_model_factory(kind: str, factory: Callable[[str], "BaseModel"]) -> 
 
 
 def _register_defaults() -> None:
-    from ds_vis.core.models import BstModel, HuffmanModel, ListModel
+    from ds_vis.core.models import BstModel, GitGraphModel, HuffmanModel, ListModel
     from ds_vis.core.models.seqlist import SeqlistModel
     from ds_vis.core.models.stack import StackModel
 
@@ -228,6 +228,30 @@ def _register_defaults() -> None:
     )
     register_model_factory(
         "huffman", lambda structure_id: HuffmanModel(structure_id=structure_id)
+    )
+    register_command(
+        CommandType.CREATE_STRUCTURE,
+        "git",
+        CommandSchema(required={"kind": str}),
+        "init",
+    )
+    register_command(
+        CommandType.INSERT,
+        "git",
+        CommandSchema(
+            required={"kind": str},
+            optional={"message": (str,)},
+        ),
+        "commit",
+    )
+    register_command(
+        CommandType.SEARCH,  # reuse slot for checkout (semantic align)
+        "git",
+        CommandSchema(required={"kind": str, "target": str}),
+        "checkout",
+    )
+    register_model_factory(
+        "git", lambda structure_id: GitGraphModel(structure_id=structure_id)
     )
     register_command(
         CommandType.CREATE_STRUCTURE,

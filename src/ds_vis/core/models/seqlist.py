@@ -286,6 +286,10 @@ class SeqlistModel(BaseModel):
         )
         return timeline
 
+    def export_state(self) -> Mapping[str, object]:
+        """Export current values for persistence replay."""
+        return {"values": list(self.values)}
+
     # ------------------------------------------------------------------ #
     # Internal helpers
     # ------------------------------------------------------------------ #

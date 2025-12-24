@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Mapping, Optional, Tuple
 
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.layout import DEFAULT_LAYOUT_MAP, LayoutEngine, LayoutStrategy
+from ds_vis.core.layout.git import GitLayoutEngine
 from ds_vis.core.layout.simple import SimpleLayoutEngine
 from ds_vis.core.layout.tree import TreeLayoutEngine
 from ds_vis.core.models import BaseModel
@@ -38,6 +39,7 @@ class SceneGraph:
     _structures: Dict[str, BaseModel] = field(default_factory=dict)
     _layout_engine: Optional[LayoutEngine] = None
     _tree_layout_engine: Optional[LayoutEngine] = None
+    _dag_layout_engine: Optional[LayoutEngine] = None
     _layout_map: Dict[str, LayoutStrategy] = field(default_factory=dict)
     _structure_offsets: Dict[str, tuple[float, float]] = field(default_factory=dict)
     _structure_layout_config: Dict[str, Mapping[str, object]] = field(
@@ -53,6 +55,7 @@ class SceneGraph:
             self._layout_engine = SimpleLayoutEngine()
         if self._tree_layout_engine is None:
             self._tree_layout_engine = TreeLayoutEngine()
+        self._dag_layout_engine: Optional[LayoutEngine] = GitLayoutEngine()
         if not self._layout_map:
             self._layout_map = dict(DEFAULT_LAYOUT_MAP)
         self._register_handlers()
@@ -140,6 +143,9 @@ class SceneGraph:
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if kind == "git":
+            message = payload.get("message") or payload.get("value")
+            return model.apply_operation(op_name, {"message": message}), kind
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index > model.node_count):
             raise CommandError("INSERT index out of range")
@@ -155,6 +161,9 @@ class SceneGraph:
         model = self._structures.get(command.structure_id)
         if model is None or model.kind != kind:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if kind == "git":
+            target = payload.get("target")
+            return model.apply_operation(op_name, {"target": target}), kind
         if kind == "bst":
             return model.apply_operation(op_name, {"value": payload.get("value")}), kind
         index = payload.get("index")
@@ -199,6 +208,8 @@ class SceneGraph:
         engine: Optional[LayoutEngine] = None
         if strategy is LayoutStrategy.TREE:
             engine = self._tree_layout_engine
+        elif strategy is LayoutStrategy.DAG:
+            engine = self._dag_layout_engine
         else:
             engine = self._layout_engine
 

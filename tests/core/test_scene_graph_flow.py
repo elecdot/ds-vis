@@ -197,6 +197,21 @@ def test_huffman_build_routes_and_positions(scene_graph, create_cmd_factory):
     assert any(op.op is OpCode.SET_POS for op in all_ops)
 
 
+def test_git_init_and_commit_flow(scene_graph, create_cmd_factory):
+    cmd_init = create_cmd_factory(
+        "git_flow", CommandType.CREATE_STRUCTURE, kind="git"
+    )
+    tl_init = scene_graph.apply_command(cmd_init)
+    assert any(op.op is OpCode.CREATE_NODE for step in tl_init.steps for op in step.ops)
+
+    cmd_commit = create_cmd_factory(
+        "git_flow", CommandType.INSERT, kind="git", message="first"
+    )
+    tl_commit = scene_graph.apply_command(cmd_commit)
+    all_ops = [op for step in tl_commit.steps for op in step.ops]
+    assert any(op.op is OpCode.CREATE_NODE for op in all_ops)
+    assert any(op.op is OpCode.CREATE_EDGE for op in all_ops or [])
+
 def test_search_routes_and_emits_message(scene_graph, create_cmd_factory):
     scene_graph.apply_command(
         create_cmd_factory(

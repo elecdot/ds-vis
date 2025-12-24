@@ -121,13 +121,18 @@ class TreeLayoutEngine(LayoutEngine):
             tree_span = _as_float(cfg.get("tree_span"), self.spacing * 2.0)
 
             queue_map = self._queue_index.get(sid, {})
-            sorted_roots = sorted(
-                roots, key=lambda nid: queue_map.get(nid, float("inf"))
-            )
+            if queue_map:
+                sorted_roots = sorted(
+                    roots, key=lambda nid: queue_map.get(nid, float("inf"))
+                )
+            else:
+                sorted_roots = list(roots)
 
             placed: set[str] = set()
             for idx, root in enumerate(sorted_roots):
-                base_x = self.start_x + self.offset_x + offset_x + idx * queue_spacing
+                base_x = (
+                    self.start_x + self.offset_x + offset_x + idx * queue_spacing
+                )
                 base_y = queue_start_y + self.offset_y + offset_y
                 self._layout_subtree(
                     root,

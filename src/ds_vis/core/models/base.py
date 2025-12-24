@@ -44,6 +44,15 @@ class BaseModel(ABC):
         definition.
         """
 
+    @abstractmethod
+    def export_state(self) -> Mapping[str, object]:
+        """
+        Return a JSON-serializable snapshot of the logical state for persistence.
+
+        The snapshot should only include structure-specific fields (e.g., values),
+        not structure_id/kind, which are injected by the caller.
+        """
+
     # ------------------------------------------------------------------ #
     # ID helpers (override or inject allocator for custom schemes)
     # ------------------------------------------------------------------ #

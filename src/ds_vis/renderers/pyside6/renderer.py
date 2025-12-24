@@ -499,6 +499,13 @@ class PySide6Renderer(Renderer):
         node = self._nodes.get(op.target or "")
         if node and node.label:
             node.label.setText(str(op.data.get("text", "")))
+            attach_to = op.data.get("attach_to")
+            if isinstance(attach_to, str):
+                target = self._nodes.get(attach_to)
+                if target:
+                    target_pos = target.item.pos()
+                    # place label slightly above the target node
+                    node.item.setPos(target_pos.x(), target_pos.y() - 30.0)
             return
 
         edge = self._edges.get(op.target or "")

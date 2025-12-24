@@ -99,3 +99,55 @@ def test_control_panel_stack_push_pop(qt_app):
         assert "bucket" in shapes_after_pop
     finally:
         window.close()
+
+
+def test_control_panel_git_commit_checkout(qt_app):
+    """
+    Git commit/checkout routes without crash; HEAD label exists.
+    """
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        window._structure_id_input.setText("ui_git")
+        window._kind_combo.setCurrentText("git")
+        window._on_create_clicked()
+        _drain(window)
+        window._value_input.setText("msg1")
+        window._on_insert_clicked()
+        _drain(window)
+        window._value_input.setText("main")
+        window._on_search_clicked()
+        _drain(window)
+        assert "HEAD" in window._renderer._nodes
+        head_node = window._renderer._nodes["HEAD"].item
+        commits = [
+            n.item
+            for nid, n in window._renderer._nodes.items()
+            if n.shape == "circle"
+        ]
+        assert commits
+        # HEAD 应靠近最新 commit
+        commit_pos = commits[-1].pos()
+        head_pos = head_node.pos()
+        assert abs(head_pos.x() - commit_pos.x()) < 1e-3
+        assert head_pos.y() < commit_pos.y()
+    finally:
+        window.close()
+
+
+def test_control_panel_run_dsl_text_multi_structures(qt_app):
+    """
+    DSL 文本入口应能创建并渲染多个结构。
+    """
+    window = MainWindow()
+    window._toggle_animations(False)
+    window._set_speed(100.0)
+    try:
+        dsl_text = "list L1 = [1,2]; stack S1 = [3]; insert L1 1 9"
+        window._run_dsl_text(dsl_text)
+        _drain(window)
+        # 两个结构至少生成 3 个节点
+        assert len(window._renderer._nodes) >= 3
+    finally:
+        window.close()
