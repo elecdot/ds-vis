@@ -12,7 +12,9 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 KEYWORDS = {"list", "seqlist", "stack", "bst", "git", "huffman"}
 
 
-def parse_dsl(text: str, existing_kinds: Mapping[str, str] | None = None) -> List[Command]:
+def parse_dsl(
+    text: str, existing_kinds: Mapping[str, str] | None = None
+) -> List[Command]:
     """
     Minimal DSL parser (v0.2):
       - Accept JSON array of commands (兼容旧版)
@@ -147,7 +149,7 @@ def _tokenize(stmt: str) -> List[str]:
     """
     Robust tokenizer for DSL:
       - Splits by whitespace.
-      - Treats '=' as a separate token even if attached to other chars (e.g., 'id=[1,2]').
+      - Treats '=' as a separate token even if attached to other chars.
       - Keeps '[...]' as a single token even if it contains spaces.
       - Respects double quotes for strings.
     """

@@ -1,6 +1,6 @@
-import pytest
-from ds_vis.dsl.parser import parse_dsl
 from ds_vis.core.scene.command import CommandType
+from ds_vis.dsl.parser import parse_dsl
+
 
 def test_parse_dsl_with_existing_kinds():
     # Scenario: L1 already exists as a list, S1 as a stack
@@ -18,7 +18,8 @@ def test_parse_dsl_with_existing_kinds():
     assert cmds[0].payload["value"] == 5
     
     assert cmds[1].structure_id == "S1"
-    assert cmds[1].type == CommandType.INSERT # push is mapped to INSERT in parser for stack
+    # push is mapped to INSERT in parser for stack
+    assert cmds[1].type == CommandType.INSERT
     assert cmds[1].payload["kind"] == "stack"
     assert cmds[1].payload["value"] == 10
 
@@ -30,7 +31,8 @@ def test_parse_dsl_mixed_new_and_existing():
     assert len(cmds) == 3
     assert cmds[0].payload["kind"] == "list"
     assert cmds[1].payload["kind"] == "bst"
-    assert cmds[2].payload["kind"] == "bst" # B1 kind should be inferred from previous stmt
+    # B1 kind should be inferred from previous stmt
+    assert cmds[2].payload["kind"] == "bst"
 
 def test_parse_dsl_unknown_kind_omits_kind_for_scenegraph_resolution():
     # New behavior: if kind is unknown to DSL parser, it's omitted
@@ -50,10 +52,4 @@ def test_robust_tokenization():
     cmds2 = parse_dsl(text2)
     assert cmds2[0].structure_id == "L2"
     assert cmds2[0].payload["values"] == [1, 2]
-    
-    text3 = "insert L1=9" # This is a bit weird but let's see
-    # Actually insert usually expects 'insert id index value' or 'insert id value'
-    # If we split on '=', 'insert L1=9' becomes ['insert', 'L1', '=', '9']
-    # Our _parse_insert expects tokens[1] as id.
-    # Let's see how _parse_insert handles it.
 
