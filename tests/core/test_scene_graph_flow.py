@@ -210,7 +210,16 @@ def test_git_init_and_commit_flow(scene_graph, create_cmd_factory):
     tl_commit = scene_graph.apply_command(cmd_commit)
     all_ops = [op for step in tl_commit.steps for op in step.ops]
     assert any(op.op is OpCode.CREATE_NODE for op in all_ops)
-    assert any(op.op is OpCode.CREATE_EDGE for op in all_ops or [])
+    # First commit has no parent, so no edge
+    assert not any(op.op is OpCode.CREATE_EDGE for op in all_ops)
+
+    cmd_commit2 = create_cmd_factory(
+        "git_flow", CommandType.INSERT, kind="git", message="second"
+    )
+    tl_commit2 = scene_graph.apply_command(cmd_commit2)
+    all_ops2 = [op for step in tl_commit2.steps for op in step.ops]
+    assert any(op.op is OpCode.CREATE_NODE for op in all_ops2)
+    assert any(op.op is OpCode.CREATE_EDGE for op in all_ops2)
 
 def test_search_routes_and_emits_message(scene_graph, create_cmd_factory):
     scene_graph.apply_command(

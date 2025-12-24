@@ -137,11 +137,16 @@ class GitLayoutEngine(LayoutEngine):
             for target, label_ids in labels_by_target.items():
                 base_pos = new_positions.get(target)
                 if base_pos is None:
-                    base_pos = (start_x + offset_x, start_y + offset_y - self.label_offset)
+                    base_pos = (
+                        start_x + offset_x,
+                        start_y + offset_y - self.label_offset,
+                    )
                 for stack_idx, label_id in enumerate(label_ids):
                     pos = (
                         base_pos[0],
-                        base_pos[1] - self.label_offset - stack_idx * self.label_stack_gap,
+                        base_pos[1]
+                        - self.label_offset
+                        - stack_idx * self.label_stack_gap,
                     )
                     new_positions[label_id] = pos
 

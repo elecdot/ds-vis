@@ -131,17 +131,6 @@ class GitGraphModel(BaseModel):
         timeline.add_step(AnimationStep(ops=[self._clear_msg()], label="Restore"))
         return timeline
 
-    def export_state(self) -> Mapping[str, object]:
-        """
-        Export commit messages (in creation order), branch tips, and HEAD target.
-        """
-        commits = [self.commits[cid].message for cid in self._commit_order]
-        return {
-            "commits": commits,
-            "branches": dict(self.branches),
-            "head": self.head,
-        }
-
     def _current_commit_id(self) -> Optional[str]:
         if self.head is None:
             return None

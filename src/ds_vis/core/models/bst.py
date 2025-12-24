@@ -399,7 +399,7 @@ class BstModel(BaseModel):
 
     def _iter_preorder(self, node_id: Optional[str]) -> Iterable[Any]:
         if node_id is None:
-            return []
+            return
         node = self._nodes[node_id]
         yield node.key
         if node.left:
