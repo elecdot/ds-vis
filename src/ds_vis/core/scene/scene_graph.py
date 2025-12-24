@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Mapping, Optional, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 
 from ds_vis.core.exceptions import CommandError
 from ds_vis.core.layout import DEFAULT_LAYOUT_MAP, LayoutEngine, LayoutStrategy
@@ -9,7 +9,7 @@ from ds_vis.core.layout.git import GitLayoutEngine
 from ds_vis.core.layout.simple import SimpleLayoutEngine
 from ds_vis.core.layout.tree import TreeLayoutEngine
 from ds_vis.core.models import BaseModel
-from ds_vis.core.ops import Timeline
+from ds_vis.core.ops import AnimationOp, AnimationStep, Timeline
 
 from .command import Command, CommandType
 from .command_schema import (
@@ -55,7 +55,8 @@ class SceneGraph:
             self._layout_engine = SimpleLayoutEngine()
         if self._tree_layout_engine is None:
             self._tree_layout_engine = TreeLayoutEngine()
-        self._dag_layout_engine: Optional[LayoutEngine] = GitLayoutEngine()
+        if self._dag_layout_engine is None:
+            self._dag_layout_engine = GitLayoutEngine()
         if not self._layout_map:
             self._layout_map = dict(DEFAULT_LAYOUT_MAP)
         self._register_handlers()
@@ -73,6 +74,7 @@ class SceneGraph:
                 "row_spacing": 200.0,
             },
             "git": {"orientation": "vertical", "spacing": 140.0},
+            "bst": {"spacing": 120.0, "level_spacing": 100.0},
             "huffman": {
                 "queue_spacing": 80.0,
                 "queue_start_y": 0.0,
@@ -195,6 +197,158 @@ class SceneGraph:
             ),
             kind,
         )
+
+    def export_scene(self) -> Mapping[str, object]:
+        """
+        Export the entire scene state (all structures, offsets, and configs).
+        """
+        structures = []
+        for sid, model in self._structures.items():
+            structures.append(
+                {
+                    "id": sid,
+                    "kind": model.kind,
+                    "state": model.export_state(),
+                    "offset": self._structure_offsets.get(sid),
+                    "config": self._structure_layout_config.get(sid),
+                }
+            )
+        return {"version": "1.0", "structures": structures}
+
+    def import_scene(self, data: Mapping[str, object]) -> Timeline:
+        """
+        Clear the current scene and restore from a snapshot.
+        Robustness: validates all structures before modifying current state.
+        """
+        if not isinstance(data, Mapping) or data.get("version") != "1.0":
+            raise CommandError("Invalid scene data version")
+
+        structures_data = data.get("structures")
+        if not isinstance(structures_data, list):
+            raise CommandError("Invalid scene data: structures must be a list")
+
+        # 1. Dry run: validate and prepare new state
+        new_structures: Dict[str, BaseModel] = {}
+        new_offsets: Dict[str, Tuple[float, float]] = {}
+        new_configs: Dict[str, Mapping[str, object]] = {}
+        create_timelines: List[Timeline] = []
+
+        for s_data in structures_data:
+            if not isinstance(s_data, Mapping):
+                continue
+            sid = s_data.get("id")
+            kind = s_data.get("kind")
+            state = s_data.get("state")
+            offset = s_data.get("offset")
+            config = s_data.get("config")
+
+            if not isinstance(sid, str) or not isinstance(kind, str):
+                raise CommandError(
+                    "Invalid structure data: id and kind must be strings"
+                )
+
+            factory = MODEL_FACTORY_REGISTRY.get(kind)
+            if factory is None:
+                raise CommandError(f"No model registered for kind: {kind!r}")
+
+            model = factory(sid)
+            try:
+                tl = model.apply_operation("create", state or {})
+                create_timelines.append(tl)
+            except Exception as e:
+                raise CommandError(
+                    f"Failed to restore state for {sid} ({kind}): {e}"
+                ) from e
+
+            new_structures[sid] = model
+            if isinstance(offset, (list, tuple)) and len(offset) == 2:
+                new_offsets[sid] = (float(offset[0]), float(offset[1]))
+
+            if isinstance(config, Mapping):
+                new_configs[sid] = config
+
+        # 2. Commit: generate delete ops for old state and swap
+        delete_ops: List[AnimationOp] = []
+        for sid, model in self._structures.items():
+            tl = model.apply_operation("delete_all", {})
+            for step in tl.steps:
+                delete_ops.extend(step.ops)
+
+        self._structures = new_structures
+        self._structure_offsets = new_offsets
+        self._structure_layout_config = new_configs
+        self._row_index.clear()
+
+        # Re-assign offsets for those that didn't have them
+        for sid, model in self._structures.items():
+            if sid not in self._structure_offsets:
+                self._assign_offset(sid, model.kind)
+
+        # 3. Return merged timeline
+        timeline = Timeline()
+        if delete_ops:
+            timeline.add_step(AnimationStep(ops=delete_ops, label="Clear scene"))
+
+        for tl in create_timelines:
+            for step in tl.steps:
+                timeline.add_step(step)
+
+        return self._apply_layout_to_import(timeline)
+
+    def _apply_layout_to_import(self, timeline: Timeline) -> Timeline:
+        """
+        Apply all layout engines to a mixed-structure timeline.
+        """
+        tl = timeline
+
+        # Filter SIDs by strategy to avoid interference
+        linear_sids = {
+            sid
+            for sid, m in self._structures.items()
+            if self._layout_map.get(m.kind) == LayoutStrategy.LINEAR
+        }
+        tree_sids = {
+            sid
+            for sid, m in self._structures.items()
+            if self._layout_map.get(m.kind) == LayoutStrategy.TREE
+        }
+        dag_sids = {
+            sid
+            for sid, m in self._structures.items()
+            if self._layout_map.get(m.kind) == LayoutStrategy.DAG
+        }
+
+        # Run engines sequentially; later engines (Tree/DAG) override earlier ones
+        if self._layout_engine:
+            self._layout_engine.reset()
+            if hasattr(self._layout_engine, "set_filter"):
+                self._layout_engine.set_filter(linear_sids)
+            if hasattr(self._layout_engine, "set_offsets"):
+                self._layout_engine.set_offsets(self._structure_offsets)
+            if hasattr(self._layout_engine, "set_structure_config"):
+                self._layout_engine.set_structure_config(self._structure_layout_config)
+            tl = self._layout_engine.apply_layout(tl)
+
+        if self._tree_layout_engine:
+            self._tree_layout_engine.reset()
+            if hasattr(self._tree_layout_engine, "set_filter"):
+                self._tree_layout_engine.set_filter(tree_sids)
+            if hasattr(self._tree_layout_engine, "set_offsets"):
+                self._tree_layout_engine.set_offsets(self._structure_offsets)
+            if hasattr(self._tree_layout_engine, "set_structure_config"):
+                self._tree_layout_engine.set_structure_config(
+                    self._structure_layout_config
+                )
+            tl = self._tree_layout_engine.apply_layout(tl)
+
+        if self._dag_layout_engine:
+            self._dag_layout_engine.reset()
+            if hasattr(self._dag_layout_engine, "set_filter"):
+                self._dag_layout_engine.set_filter(dag_sids)
+            if hasattr(self._dag_layout_engine, "set_offsets"):
+                self._dag_layout_engine.set_offsets(self._structure_offsets)
+            tl = self._dag_layout_engine.apply_layout(tl)
+        return tl
 
     def _merge_timelines(self, *timelines: Timeline) -> Timeline:
         merged = Timeline()

@@ -42,6 +42,13 @@ class LayoutEngine(Protocol):
         # pragma: no cover - protocol
         ...
 
+    def set_filter(self, sids: set[str]) -> None:
+        """
+        Optional: restrict the engine to only process specific structure IDs.
+        """
+        # pragma: no cover - protocol
+        ...
+
 
 class LayoutStrategy(Enum):
     """Well-known layout strategy categories."""

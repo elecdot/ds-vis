@@ -51,7 +51,7 @@ This document captures the active delivery phase, what is complete, current assu
 | **迭代 1** | 顺序表 Seqlist | **已交付**。模型、LINEAR 布局、桶容器渲染、Dev Hook 全链路打通。 | 无（转入维护）。 |
 | **迭代 3** | Huffman 构建 | **部分交付**。模型逻辑与双区布局（队列+树）已落地，SceneGraph 已注册。 | 1. **严重**：树布局存在节点重叠；2. 构建过程的渲染平滑度需优化。 |
 | **迭代 4** | Git DAG 基础 | **部分交付**。`init`/`commit`/`checkout` 逻辑已通，支持基础 DAG 布局。 | 1. Lane 布局算法需优化以支持复杂分支；2. 分支/HEAD 标签的视觉区分度增强。 |
-| **迭代 P** | Persistence | **进行中 (Stub)**。UI 按钮已预留，`json_io.py` 结构已搭建。 | 1. 实现所有已交付模型的序列化/反序列化逻辑；2. 打通 SceneGraph 的全量导入导出。 |
+| **迭代 P** | **Persistence** | **已交付**。支持 SceneGraph 全量场景导出/导入，具备“Dry Run”校验机制，支持 List/Git/Huffman 等结构的逻辑状态恢复。 | 1. 增加更多复杂结构的恢复逻辑（如 BST）；2. UI 导出/导入对话框集成。 |
 | **迭代 U** | UI/UX 交付化 | **进行中 (Playground)**。Dev 菜单可用，基础渲染器支持多状态。 | 1. 实现正式左侧控制面板；2. 消息锚点由全局改为按结构局部优化；3. 自动分区布局算法。 |
 | **迭代 5** | DSL 文本 | **待启动**。目前仅为 JSON 占位。 | 1. 设计并实现最小 DSL 语法解析器；2. 接入 UI 输入框。 |
 | **迭代 6** | v0.2 扩展 | **待启动**。 | 1. AVL 旋转动画；2. 动画历史回放功能。 |

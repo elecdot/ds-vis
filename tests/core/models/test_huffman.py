@@ -10,7 +10,7 @@ def _ops_by_code(timeline, code: OpCode):
 
 def test_huffman_build_generates_parents_and_edges():
     model = HuffmanModel(structure_id="huff1")
-    tl = model.build([3, 1, 2])
+    tl = model.create([3, 1, 2])
     creates = _ops_by_code(tl, OpCode.CREATE_NODE)
     edges = _ops_by_code(tl, OpCode.CREATE_EDGE)
     # 3 leaves + 2 parents
@@ -28,7 +28,7 @@ def test_huffman_build_generates_parents_and_edges():
 
 def test_huffman_delete_all_clears_nodes():
     model = HuffmanModel(structure_id="huff_del")
-    model.build([1, 2])
+    model.create([1, 2])
     tl = model.delete_all()
     deletes = _ops_by_code(tl, OpCode.DELETE_NODE)
     assert len(deletes) == 3  # 2 leaves + 1 parent

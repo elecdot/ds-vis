@@ -33,6 +33,10 @@ class TreeLayoutEngine(LayoutEngine):
     _offsets: Dict[str, Tuple[float, float]] = field(default_factory=dict)
     _structure_config: Dict[str, Mapping[str, object]] = field(default_factory=dict)
     _queue_index: Dict[str, Dict[str, int]] = field(default_factory=dict)
+    _filter: Optional[set[str]] = field(default=None, init=False)
+
+    def set_filter(self, sids: set[str]) -> None:
+        self._filter = sids
 
     def set_offsets(self, offsets: Dict[str, Tuple[float, float]]) -> None:
         self._offsets = offsets
@@ -64,7 +68,7 @@ class TreeLayoutEngine(LayoutEngine):
     def _apply_structural_ops(self, step: AnimationStep) -> None:
         for op in step.ops:
             sid = op.data.get("structure_id")
-            if not sid:
+            if not sid or (self._filter is not None and sid not in self._filter):
                 continue
             if op.op is OpCode.CREATE_NODE:
                 self._nodes.setdefault(sid, []).append(op.target or "")

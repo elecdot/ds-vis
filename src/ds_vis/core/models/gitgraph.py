@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Mapping, Optional, Set
+from typing import Any, Dict, List, Mapping, Optional, Set
 
 from ds_vis.core.exceptions import ModelError
 from ds_vis.core.models.base import BaseModel, IdAllocator
@@ -44,8 +44,8 @@ class GitGraphModel(BaseModel):
         return len(self.commits)
 
     def apply_operation(self, op: str, payload: Mapping[str, object]) -> Timeline:
-        if op == "init":
-            return self.git_init()
+        if op == "create":
+            return self.create(payload)
         if op == "commit":
             raw = payload.get("message")
             message = str(raw) if raw is not None else "commit"
@@ -55,11 +55,21 @@ class GitGraphModel(BaseModel):
             if not isinstance(target, str):
                 raise ModelError("checkout requires target branch or commit id")
             return self.checkout(target)
+        if op == "delete_all":
+            return self.delete_all()
         raise ModelError(f"Unsupported git operation: {op}")
 
     # ------------------------------------------------------------------ #
     # Ops
     # ------------------------------------------------------------------ #
+    def create(self, payload: Mapping[str, Any]) -> Timeline:
+        """
+        Initialize or restore git state.
+        """
+        if "commits" in payload or "branches" in payload:
+            return self.restore(payload)
+        return self.git_init()
+
     def git_init(self) -> Timeline:
         timeline = Timeline()
         self.commits.clear()
@@ -131,6 +141,30 @@ class GitGraphModel(BaseModel):
         timeline.add_step(AnimationStep(ops=[self._clear_msg()], label="Restore"))
         return timeline
 
+    def delete_all(self) -> Timeline:
+        """Delete all commits and labels."""
+        timeline = Timeline()
+        ops: List[AnimationOp] = [self._msg("Deleting all git structures")]
+
+        # Delete labels (HEAD and branches)
+        ops.append(self._delete_node_op("HEAD"))
+        for bname in self.branches:
+            ops.append(self._delete_node_op(f"branch_{bname}"))
+
+        # Delete commits
+        for cid in self.commits:
+            ops.append(self._delete_node_op(cid))
+
+        self.commits.clear()
+        self.branches.clear()
+        self.head = None
+        self._branch_set.clear()
+        self._commit_order.clear()
+
+        timeline.add_step(AnimationStep(ops=ops, label="Delete all"))
+        timeline.add_step(AnimationStep(ops=[self._clear_msg()], label="Restore"))
+        return timeline
+
     def _current_commit_id(self) -> Optional[str]:
         if self.head is None:
             return None
@@ -164,6 +198,13 @@ class GitGraphModel(BaseModel):
                 "shape": "circle",
                 "kind": "commit",
             },
+        )
+
+    def _delete_node_op(self, node_id: str) -> AnimationOp:
+        return AnimationOp(
+            op=OpCode.DELETE_NODE,
+            target=node_id,
+            data={"structure_id": self.structure_id},
         )
 
     def _create_edge_op(self, parent: str, child: str) -> AnimationOp:
@@ -215,6 +256,58 @@ class GitGraphModel(BaseModel):
 
     def _clear_msg(self) -> AnimationOp:
         return AnimationOp(op=OpCode.CLEAR_MESSAGE, target=None, data={})
+
+    def restore(self, state: Mapping[str, Any]) -> Timeline:
+        """
+        Restore git state from a snapshot.
+        """
+        timeline = Timeline()
+        self.commits.clear()
+        self.branches.clear()
+        self._commit_order.clear()
+        self._branch_set.clear()
+
+        commits_data = state.get("commits", [])
+        branches_data = state.get("branches", {})
+        head_data = state.get("head")
+
+        ops = [self._msg("Restoring git state")]
+
+        # 1. Restore commits
+        for c_data in commits_data:
+            cid = c_data["id"]
+            msg = c_data["message"]
+            parents = c_data["parents"]
+            branch = c_data.get("branch")
+            commit = GitCommit(
+                commit_id=cid, message=msg, parents=parents, branch=branch
+            )
+            self.commits[cid] = commit
+            self._commit_order.append(cid)
+            ops.append(self._create_node_op(cid, msg))
+            for p in parents:
+                ops.append(self._create_edge_op(p, cid))
+
+        # 2. Restore branches
+        for bname, cid in branches_data.items():
+            self.branches[bname] = cid
+            self._branch_set.add(bname)
+            ops.append(self._create_label_op(f"branch_{bname}", bname))
+            ops.append(self._move_label(f"branch_{bname}", cid, bname))
+
+        # 3. Restore HEAD
+        self.head = head_data
+        ops.append(self._create_label_op("HEAD", "HEAD"))
+        if head_data:
+            if head_data in self.branches:
+                target_cid = self.branches[head_data]
+                ops.append(self._move_label("HEAD", target_cid, "HEAD"))
+            elif head_data in self.commits:
+                ops.append(self._move_label("HEAD", head_data, "HEAD"))
+
+        timeline.add_step(AnimationStep(ops=ops, label="Restore"))
+        timeline.add_step(AnimationStep(ops=[self._clear_msg()], label="Restore end"))
+        return timeline
 
     # ------------------------------------------------------------------ #
     # Persistence

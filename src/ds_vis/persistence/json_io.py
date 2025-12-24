@@ -95,3 +95,47 @@ def _validate_command_payload(
     if schema is None:
         raise CommandError(f"Unsupported command/kind combination: {kind!r}")
     schema.validate(payload)
+
+
+# ------------------------------------------------------------------ #
+# Scene Persistence (Snapshot-based)
+# ------------------------------------------------------------------ #
+def scene_to_json(scene_data: Mapping[str, object]) -> str:
+    """
+    Serialize scene state to JSON.
+    """
+    return json.dumps(scene_data, indent=2)
+
+
+def save_scene_to_file(scene_data: Mapping[str, object], path: str | Path) -> None:
+    """
+    Save scene state to a JSON file.
+    """
+    try:
+        Path(path).write_text(scene_to_json(scene_data), encoding="utf-8")
+    except OSError as exc:  # pragma: no cover
+        raise CommandError(f"Failed to write scene to file: {exc}") from exc
+
+
+def scene_from_json(text: str) -> Mapping[str, object]:
+    """
+    Deserialize scene state from JSON.
+    """
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise CommandError(f"Invalid JSON: {exc}") from exc
+    if not isinstance(data, Mapping):
+        raise CommandError("Scene JSON must be a mapping")
+    return data
+
+
+def load_scene_from_file(path: str | Path) -> Mapping[str, object]:
+    """
+    Load scene state from a JSON file.
+    """
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError as exc:  # pragma: no cover
+        raise CommandError(f"Failed to read scene file: {exc}") from exc
+    return scene_from_json(text)

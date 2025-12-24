@@ -41,7 +41,11 @@ class SimpleLayoutEngine(LayoutEngine):
     _container_size: Dict[str, Tuple[float, float]] = field(default_factory=dict)
     _row_order: List[str] = field(default_factory=list)
     _dirty_structures: set[str] = field(default_factory=set)
+    _filter: Optional[set[str]] = field(default=None, init=False)
     strategy: LayoutStrategy = LayoutStrategy.LINEAR
+
+    def set_filter(self, sids: set[str]) -> None:
+        self._filter = sids
 
     def set_offsets(self, offsets: Dict[str, tuple[float, float]]) -> None:
         self._structure_offsets = offsets
@@ -90,6 +94,8 @@ class SimpleLayoutEngine(LayoutEngine):
     def _apply_structural_ops(self, step: AnimationStep) -> None:
         for op in step.ops:
             structure_id = op.data.get("structure_id")
+            if self._filter is not None and structure_id not in self._filter:
+                continue
             node_id = op.target
             if op.op is OpCode.CREATE_NODE and structure_id and node_id:
                 if op.data.get("shape") == "bucket":

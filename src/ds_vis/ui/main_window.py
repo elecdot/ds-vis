@@ -31,7 +31,10 @@ from ds_vis.core.ops import AnimationStep, Timeline
 from ds_vis.core.scene import SceneGraph
 from ds_vis.core.scene.command import Command, CommandType
 from ds_vis.dsl.parser import parse_dsl
-from ds_vis.persistence.json_io import load_commands_from_file, save_commands_to_file
+from ds_vis.persistence.json_io import (
+    load_scene_from_file,
+    save_scene_to_file,
+)
 from ds_vis.renderers.pyside6.renderer import PySide6Renderer, RendererConfig
 
 # Developer examples (structural timelines only)
@@ -429,36 +432,43 @@ class MainWindow(QMainWindow):
 
     def _on_import_clicked(self) -> None:
         filename, _ = QFileDialog.getOpenFileName(
-            self, "Import Commands JSON", "", "JSON Files (*.json);;All Files (*)"
+            self, "Import Scene JSON", "", "JSON Files (*.json);;All Files (*)"
         )
         if not filename:
             return
         try:
-            commands = load_commands_from_file(filename)
+            scene_data = load_scene_from_file(filename)
+            timeline = self._scene_graph.import_scene(scene_data)
+            self._play_timeline(timeline)
         except CommandError as exc:
             QMessageBox.critical(self, "Import Error", str(exc))
             return
-        self._run_commands(commands)
+        except Exception as exc:
+            QMessageBox.critical(self, "Error", str(exc))
+            return
 
     def _on_export_clicked(self) -> None:
-        if not self._pending_steps:
+        # Check if there are any structures to export
+        if not self._scene_graph._structures:
             QMessageBox.information(
-                self, "Export", "No commands to export in this session."
+                self, "Export", "No structures in the scene to export."
             )
             return
         filename, _ = QFileDialog.getSaveFileName(
-            self, "Export Commands JSON", "", "JSON Files (*.json);;All Files (*)"
+            self, "Export Scene JSON", "", "JSON Files (*.json);;All Files (*)"
         )
         if not filename:
             return
-        # NOTE: MVP 导出：暂未重建命令序列，先导出空列表占位。
         try:
-            save_commands_to_file([], filename)
+            scene_data = self._scene_graph.export_scene()
+            save_scene_to_file(scene_data, filename)
             QMessageBox.information(
-                self, "Export", f"Exported empty command list to {filename}"
+                self, "Export", f"Exported scene state to {filename}"
             )
         except CommandError as exc:
             QMessageBox.critical(self, "Export Error", str(exc))
+        except Exception as exc:
+            QMessageBox.critical(self, "Error", str(exc))
 
 
     def _run_bst_example(self) -> None:

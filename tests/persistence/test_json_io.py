@@ -32,3 +32,17 @@ def test_missing_kind_raises():
     bad = '[{"structure_id": "s", "type": "CREATE_STRUCTURE", "payload": {}}]'
     with pytest.raises(CommandError, match="payload.kind"):
         commands_from_json(bad)
+
+
+def test_scene_persistence_roundtrip(tmp_path):
+    from ds_vis.persistence.json_io import load_scene_from_file, save_scene_to_file
+
+    scene_data = {
+        "version": "1.0",
+        "structures": [{"id": "l1", "kind": "list", "state": {"values": [1, 2]}}],
+    }
+    file_path = tmp_path / "scene.json"
+    save_scene_to_file(scene_data, file_path)
+
+    loaded_data = load_scene_from_file(file_path)
+    assert loaded_data == scene_data

@@ -46,13 +46,13 @@ class HuffmanModel(BaseModel):
         return len(self._nodes)
 
     def apply_operation(self, op: str, payload: Mapping[str, object]) -> Timeline:
-        if op == "build":
+        if op == "create":
             values = payload.get("values")
             if values is None:
-                raise ModelError("build requires values")
+                raise ModelError("create requires values")
             if not isinstance(values, (list, tuple)):
                 raise ModelError("values must be list/tuple")
-            return self.build(list(values))
+            return self.create(list(values))
         if op == "delete_all":
             return self.delete_all()
         raise ModelError(f"Unsupported operation: {op}")
@@ -60,7 +60,7 @@ class HuffmanModel(BaseModel):
     # ------------------------------------------------------------------ #
     # Public ops
     # ------------------------------------------------------------------ #
-    def build(self, values: List[object]) -> Timeline:
+    def create(self, values: List[object]) -> Timeline:
         timeline = Timeline()
         self._nodes.clear()
         self._root = None

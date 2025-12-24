@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Mapping, Tuple
+from typing import Dict, List, Mapping, Optional, Tuple
 
 from ds_vis.core.layout import LayoutEngine, LayoutStrategy
 from ds_vis.core.ops import AnimationOp, AnimationStep, OpCode, Timeline
@@ -32,6 +32,10 @@ class GitLayoutEngine(LayoutEngine):
     _attachments: Dict[str, Dict[str, str]] = field(default_factory=dict)
     _positions: Dict[str, Dict[str, Tuple[float, float]]] = field(default_factory=dict)
     _dirty_structures: set[str] = field(default_factory=set)
+    _filter: Optional[set[str]] = field(default=None, init=False)
+
+    def set_filter(self, sids: set[str]) -> None:
+        self._filter = sids
 
     def set_offsets(self, offsets: Dict[str, Tuple[float, float]]) -> None:
         self._offsets = offsets
@@ -66,7 +70,7 @@ class GitLayoutEngine(LayoutEngine):
     def _apply_structural_ops(self, step: AnimationStep) -> None:
         for op in step.ops:
             sid = op.data.get("structure_id")
-            if not sid:
+            if not sid or (self._filter is not None and sid not in self._filter):
                 continue
             if op.op is OpCode.CREATE_NODE:
                 target = op.target or ""

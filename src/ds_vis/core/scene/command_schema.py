@@ -218,7 +218,7 @@ def _register_defaults() -> None:
         CommandType.CREATE_STRUCTURE,
         "huffman",
         CommandSchema(required={"kind": str}, optional={"values": (list, tuple)}),
-        "build",
+        "create",
     )
     register_command(
         CommandType.DELETE_STRUCTURE,
@@ -232,8 +232,8 @@ def _register_defaults() -> None:
     register_command(
         CommandType.CREATE_STRUCTURE,
         "git",
-        CommandSchema(required={"kind": str}),
-        "init",
+        CommandSchema(required={"kind": str}, allow_extra=True),
+        "create",
     )
     register_command(
         CommandType.INSERT,
