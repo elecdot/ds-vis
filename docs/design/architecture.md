@@ -345,3 +345,6 @@ UI / DSL / Persistence
 2. `core.scene` 中 `Command` 与 `SceneGraph` 的接口定义（可先为空实现）。
 3. `core.ops` 中 AnimationOps 类型骨架与 Timeline 接口。
 4. 一个最小的 PySide6 Renderer 与空窗口 UI（用于验证环境与依赖无误）。
+
+---
+**下一站导览：** [场景图与指令分发](scene_graph.md)

@@ -463,3 +463,6 @@ class Timeline:
 * 增加 `ATTACH_OVERLAY`、`HIDE_NODE` 等更丰富交互。
 
 但在当前阶段，**本规范列出的 Op 集合已经足以支持 L2 教学级动画 + Git 教学模块**。
+
+---
+**下一站导览：** [DSL 语法与交互](dsl.md)

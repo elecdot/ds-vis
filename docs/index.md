@@ -19,6 +19,8 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | [index.md](./index.md) | v1.0 | Stable | P0.7 | Documentation Registry System | 2025-12-24 |
 | [project_state.md](./project_state.md) | v0.7.33 | Active | P0.7 | Project phase SSOT | 2025-12-24 |
+| [README.md](../README.md) | v1.0 | Active | P0.7 | Project Overview & Quickstart | 2025-12-24 |
+| [quickstart.md](./quickstart.md) | v0.2 | Active | P0.7 | Getting Started Guide | 2025-12-24 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.5 | Stable | P0.6 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
 | [scene_graph.md](./design/scene_graph.md) | v0.6.1 | Active | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |
@@ -33,6 +35,7 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | [llm.md](./design/llm.md) | v0.1 | Draft | P0.7 | `src/ds_vis/llm/` | 2025-12-24 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
+| [testing_ci.md](./engineering/testing_ci.md) | v0.1 | Active | P0.7 | CI/CD & Testing Strategy | 2025-12-24 |
 | [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.6 | N/A | 2025-12-21 |
 | [dsl/parser.py](../src/ds_vis/dsl/parser.py) | v0.2 | Active | P0.7 | DSL parsing (Interactive support) | 2025-12-24 |
 | [dsl/cli.py](../src/ds_vis/dsl/cli.py) | v0.1 | Stub | P0.7 | CLI DSL/JSON runner | 2025-12-24 |
