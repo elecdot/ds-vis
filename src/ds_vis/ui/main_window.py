@@ -137,7 +137,8 @@ class MainWindow(QMainWindow):
         btn_search = QPushButton("Search", panel)
         btn_delete = QPushButton("Delete", panel)
         btn_delete_all = QPushButton("Delete All", panel)
-        btn_dsl = QPushButton("Run DSL/JSON", panel)
+        btn_dsl = QPushButton("Run DSL/JSON (Reset)", panel)
+        btn_interactive_dsl = QPushButton("Interactive DSL", panel)
         btn_import = QPushButton("Import JSON", panel)
         btn_export = QPushButton("Export JSON", panel)
 
@@ -148,6 +149,7 @@ class MainWindow(QMainWindow):
             btn_delete,
             btn_delete_all,
             btn_dsl,
+            btn_interactive_dsl,
             btn_import,
             btn_export,
         ]:
@@ -161,6 +163,7 @@ class MainWindow(QMainWindow):
         self._btn_delete = btn_delete
         self._btn_delete_all = btn_delete_all
         self._btn_dsl = btn_dsl
+        self._btn_interactive_dsl = btn_interactive_dsl
         self._btn_import = btn_import
         self._btn_export = btn_export
         self._kind_combo.currentTextChanged.connect(self._update_controls_for_kind)
@@ -258,6 +261,7 @@ class MainWindow(QMainWindow):
         self._btn_delete.clicked.connect(self._on_delete_clicked)
         self._btn_delete_all.clicked.connect(self._on_delete_all_clicked)
         self._btn_dsl.clicked.connect(self._run_dsl_input_dev)
+        self._btn_interactive_dsl.clicked.connect(self._run_interactive_dsl_input)
         self._btn_import.clicked.connect(self._on_import_clicked)
         self._btn_export.clicked.connect(self._on_export_clicked)
         self._update_controls_for_kind()
@@ -580,37 +584,78 @@ class MainWindow(QMainWindow):
     def _run_dsl_input_dev(self) -> None:
         """
         Developer-only hook: paste DSL/JSON text, run through SceneGraph, and render.
+        This version resets the engine first.
         """
         example = (
-            "list L1 = [1,2]; insert L1 1 9; "
-            "stack S1 = [3]; push S1 4; "
-            "bst B1 = [5,3,7]; search B1 7; "
-            "git G1 init; commit G1 \"msg\""
+            "# Create structures\n"
+            "list L1 = [1,2];\n"
+            "stack S1 = [3];\n"
+            "bst B1 = [5,3,7];\n"
+            "git G1 init;\n\n"
+            "# Operations\n"
+            "insert L1 1 9;\n"
+            "push S1 4;\n"
+            "search B1 7;\n"
+            "commit G1 \"msg\""
         )
         text, ok = QInputDialog.getMultiLineText(
             self,
-            "Run DSL/JSON",
+            "Run DSL/JSON (Reset)",
             "Enter commands (JSON array or DSL text):",
             example,
         )
         if not ok or not text.strip():
             return
 
-        self._run_dsl_text(text)
+        self._run_dsl_text(text, reset=True)
 
-    def _run_dsl_text(self, text: str) -> None:
-        self._reset_engine()
+    def _run_interactive_dsl_input(self) -> None:
+        """
+        Run DSL commands on the existing scene without resetting.
+        """
+        example = (
+            "# Inject into existing structures\n"
+            "insert L1 1 9;  # if L1 exists\n"
+            "push S1 5;      # if S1 exists\n"
+            "commit G1 \"new commit\";\n"
+            "search B1 5;"
+        )
+        text, ok = QInputDialog.getMultiLineText(
+            self,
+            "Interactive DSL",
+            "Enter commands to inject into existing structures:",
+            example,
+        )
+        if not ok or not text.strip():
+            return
+
+        self._run_dsl_text(text, reset=False)
+
+    def _run_dsl_text(self, text: str, reset: bool = True) -> None:
+        if reset:
+            self._reset_engine()
+        
+        existing_kinds = {
+            sid: model.kind for sid, model in self._scene_graph._structures.items()
+        }
+        
         try:
-            commands = parse_dsl(text)
+            commands = parse_dsl(text, existing_kinds=existing_kinds)
         except Exception as exc:  # pragma: no cover - defensive
             QMessageBox.critical(self, "DSL Error", str(exc))
             return
 
         merged = Timeline()
         for cmd in commands:
-            tl = self._scene_graph.apply_command(cmd)
-            for step in tl.steps:
-                merged.add_step(step)
+            try:
+                tl = self._scene_graph.apply_command(cmd)
+                for step in tl.steps:
+                    merged.add_step(step)
+            except CommandError as exc:
+                QMessageBox.critical(self, "Command Error", str(exc))
+                # Continue with other commands or stop? 
+                # For DSL, usually we want to stop on first error.
+                break
 
         self._play_timeline(merged)
 

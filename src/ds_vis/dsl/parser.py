@@ -12,22 +12,12 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 KEYWORDS = {"list", "seqlist", "stack", "bst", "git", "huffman"}
 
 
-def parse_dsl(text: str) -> List[Command]:
+def parse_dsl(text: str, existing_kinds: Mapping[str, str] | None = None) -> List[Command]:
     """
     Minimal DSL parser (v0.2):
       - Accept JSON array of commands (兼容旧版)
       - Accept simple文本语法，语句以 ';' 分隔，格式：
         <kind> <id> [= [values...]] | <op> <id> [args...]
-      - 支持操作：
-         create: `list L1 = [1,2,3]` 或 `bst B1 = [5,3,7]`
-         insert: `insert L1 1 5`
-         delete: `delete L1 0` (index) / `delete B1 val=5`
-         search: `search L1 val=5` / `search B1 7`
-         update: `update L1 1 9`
-         push/pop: `push S1 3`, `pop S1`
-         commit: `commit G1 "msg"`
-         checkout: `checkout G1 main`
-         init git: `git G1 init`
     """
     text = text.strip()
     if not text:
@@ -41,14 +31,58 @@ def parse_dsl(text: str) -> List[Command]:
             raise CommandError(f"Failed to parse DSL input: {exc}") from exc
 
     commands: List[Command] = []
-    ctx: dict[str, str] = {}  # structure_id -> kind
-    for raw_stmt in text.split(";"):
-        stmt = raw_stmt.strip()
-        if not stmt:
-            continue
+    # Normalize existing_kinds to lowercase keys for robust lookup
+    ctx: dict[str, str] = {k.lower(): v for k, v in (existing_kinds or {}).items()}
+    
+    # 1. Strip comments
+    processed_lines = []
+    for line in text.splitlines():
+        comment_idx = -1
+        in_q = False
+        for idx, char in enumerate(line):
+            if char == '"':
+                in_q = not in_q
+            elif char == '#' and not in_q:
+                comment_idx = idx
+                break
+        if comment_idx != -1:
+            line = line[:comment_idx]
+        processed_lines.append(line)
+    text = "\n".join(processed_lines)
+
+    # 2. Split into statements by ';' or newline (respecting brackets)
+    raw_statements: List[str] = []
+    current: List[str] = []
+    in_bracket = False
+    in_quote = False
+    for char in text:
+        if char == '"':
+            in_quote = not in_quote
+            current.append(char)
+        elif in_quote:
+            current.append(char)
+        elif char == '[':
+            in_bracket = True
+            current.append(char)
+        elif char == ']':
+            in_bracket = False
+            current.append(char)
+        elif (char == ';' or char == '\n') and not in_bracket:
+            stmt = "".join(current).strip()
+            if stmt:
+                raw_statements.append(stmt)
+            current = []
+        else:
+            current.append(char)
+    
+    final_stmt = "".join(current).strip()
+    if final_stmt:
+        raw_statements.append(final_stmt)
+
+    for stmt in raw_statements:
         cmd, kind = _parse_statement(stmt, ctx)
         if kind:
-            ctx[cmd.structure_id] = kind
+            ctx[cmd.structure_id.lower()] = kind
         commands.append(cmd)
     return commands
 
@@ -80,11 +114,12 @@ def _parse_statement(stmt: str, ctx: Mapping[str, str]) -> tuple[Command, str | 
         raise CommandError("Empty statement")
 
     # create with assignment: kind id = [1,2,3]
-    if tokens[0] in KEYWORDS and len(tokens) >= 2:
+    first_token_lower = tokens[0].lower()
+    if first_token_lower in KEYWORDS and len(tokens) >= 2:
         cmd = _parse_create(tokens)
-        return cmd, tokens[0]
+        return cmd, first_token_lower
 
-    op = tokens[0].lower()
+    op = first_token_lower
     if op == "insert":
         return _parse_insert(tokens, ctx), None
     if op == "delete":
@@ -109,20 +144,46 @@ def _parse_statement(stmt: str, ctx: Mapping[str, str]) -> tuple[Command, str | 
 
 
 def _tokenize(stmt: str) -> List[str]:
-    # simple split respecting quoted strings
+    """
+    Robust tokenizer for DSL:
+      - Splits by whitespace.
+      - Treats '=' as a separate token even if attached to other chars (e.g., 'id=[1,2]').
+      - Keeps '[...]' as a single token even if it contains spaces.
+      - Respects double quotes for strings.
+    """
     tokens: List[str] = []
     current: List[str] = []
     in_quote = False
-    for ch in stmt:
+    in_bracket = False
+    
+    i = 0
+    while i < len(stmt):
+        ch = stmt[i]
+        
         if ch == '"':
             in_quote = not in_quote
+            i += 1
             continue
-        if ch.isspace() and not in_quote:
+            
+        if in_quote:
+            current.append(ch)
+            i += 1
+            continue
+            
+        if ch == '[':
+            in_bracket = True
+            current.append(ch)
+        elif ch == ']':
+            in_bracket = False
+            current.append(ch)
+        elif ch.isspace() and not in_bracket:
             if current:
                 tokens.append("".join(current))
                 current = []
         else:
             current.append(ch)
+        i += 1
+        
     if current:
         tokens.append("".join(current))
     return tokens
@@ -152,10 +213,22 @@ def _coerce_value(raw: str) -> object:
 
 def _parse_create(tokens: List[str]) -> Command:
     kind = tokens[0]
-    structure_id = tokens[1]
-    values: List[object] = []
-    if len(tokens) >= 4 and tokens[2] == "=":
-        values = _parse_values_literal(tokens[3])
+    # Handle 'id=[1,2]' or 'id = [1,2]' or 'id=[1, 2]'
+    if "=" in tokens[1]:
+        structure_id, val_part = tokens[1].split("=", 1)
+        if not val_part and len(tokens) >= 3:
+            val_part = tokens[2]
+        values = _parse_values_literal(val_part)
+    else:
+        structure_id = tokens[1]
+        values = []
+        if len(tokens) >= 3:
+            if tokens[2] == "=":
+                if len(tokens) >= 4:
+                    values = _parse_values_literal(tokens[3])
+            elif tokens[2].startswith("="):
+                values = _parse_values_literal(tokens[2][1:])
+    
     payload: Mapping[str, object] = {"kind": kind}
     if values:
         payload = {"kind": kind, "values": values}
@@ -167,10 +240,10 @@ def _parse_insert(tokens: List[str], ctx: Mapping[str, str]) -> Command:
         raise CommandError("insert requires id and value")
     structure_id = tokens[1]
     value = _coerce_value(tokens[-1])
-    payload: dict[str, object] = {
-        "kind": _kind_from_ctx(structure_id, ctx),
-        "value": value,
-    }
+    kind = _kind_from_ctx(structure_id, ctx)
+    payload: dict[str, object] = {"value": value}
+    if kind:
+        payload["kind"] = kind
     if len(tokens) == 4:
         payload["index"] = _coerce_value(tokens[2])
     return Command(structure_id, CommandType.INSERT, payload)
@@ -181,7 +254,9 @@ def _parse_delete(tokens: List[str], ctx: Mapping[str, str]) -> Command:
         raise CommandError("delete requires id")
     structure_id = tokens[1]
     kind = _kind_from_ctx(structure_id, ctx)
-    payload: dict[str, object] = {"kind": kind}
+    payload: dict[str, object] = {}
+    if kind:
+        payload["kind"] = kind
     if len(tokens) >= 3:
         if tokens[2].startswith("val="):
             payload["value"] = _coerce_value(tokens[2].split("=", 1)[1])
@@ -198,7 +273,9 @@ def _parse_search(tokens: List[str], ctx: Mapping[str, str]) -> Command:
         raise CommandError("search requires id")
     structure_id = tokens[1]
     kind = _kind_from_ctx(structure_id, ctx)
-    payload: dict[str, object] = {"kind": kind}
+    payload: dict[str, object] = {}
+    if kind:
+        payload["kind"] = kind
     if len(tokens) >= 3:
         if tokens[2].startswith("val="):
             payload["value"] = _coerce_value(tokens[2].split("=", 1)[1])
@@ -215,10 +292,10 @@ def _parse_update(tokens: List[str], ctx: Mapping[str, str]) -> Command:
         raise CommandError("update requires id, index/value, new_value")
     structure_id = tokens[1]
     new_value = _coerce_value(tokens[-1])
-    payload: dict[str, object] = {
-        "kind": _kind_from_ctx(structure_id, ctx),
-        "new_value": new_value,
-    }
+    kind = _kind_from_ctx(structure_id, ctx)
+    payload: dict[str, object] = {"new_value": new_value}
+    if kind:
+        payload["kind"] = kind
     if tokens[2].startswith("val="):
         payload["value"] = _coerce_value(tokens[2].split("=", 1)[1])
     else:
@@ -304,5 +381,6 @@ def _parse_git(tokens: List[str]) -> tuple[Command, str | None]:
     raise CommandError(f"Unsupported git subcommand: {sub}")
 
 
-def _kind_from_ctx(structure_id: str, ctx: Mapping[str, str]) -> str:
-    return ctx.get(structure_id, "list")
+def _kind_from_ctx(structure_id: str, ctx: Mapping[str, str]) -> str | None:
+    # ctx keys are already normalized to lowercase in parse_dsl
+    return ctx.get(structure_id.lower())

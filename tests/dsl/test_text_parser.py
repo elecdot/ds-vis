@@ -42,3 +42,29 @@ def test_bst_search_uses_value():
     assert cmds[1].payload["kind"] == "bst"
     assert "value" in cmds[1].payload
     assert "index" not in cmds[1].payload
+
+
+def test_dsl_with_comments():
+    dsl = """
+    list L1; # This is a comment
+    insert L1 1; # Another comment
+    """
+    commands = parse_dsl(dsl)
+    assert len(commands) == 2
+    assert commands[0].structure_id == "L1"
+    assert commands[1].type == CommandType.INSERT
+
+
+def test_dsl_multiline_brackets():
+    dsl = """
+    list L1 = [
+        1,
+        2
+    ];
+    insert L1 1 3
+    """
+    commands = parse_dsl(dsl)
+    assert len(commands) == 2
+    assert commands[0].structure_id == "L1"
+    assert len(commands[0].payload["values"]) == 2
+    assert commands[1].type == CommandType.INSERT

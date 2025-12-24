@@ -123,15 +123,25 @@ class SceneGraph:
     def _handle_delete_structure(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
-        if model is None or model.kind != kind:
+        if model is None:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if model.kind != kind:
+            raise CommandError(
+                f"Kind mismatch for {command.structure_id!r}: "
+                f"expected {kind}, found {model.kind}"
+            )
         return model.apply_operation(op_name, payload), kind
 
     def _handle_delete_node(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
-        if model is None or model.kind != kind:
+        if model is None:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if model.kind != kind:
+            raise CommandError(
+                f"Kind mismatch for {command.structure_id!r}: "
+                f"expected {kind}, found {model.kind}"
+            )
         if kind == "bst":
             value = payload.get("value")
             return model.apply_operation(op_name, {"value": value}), kind
@@ -143,8 +153,13 @@ class SceneGraph:
     def _handle_insert(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
-        if model is None or model.kind != kind:
+        if model is None:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if model.kind != kind:
+            raise CommandError(
+                f"Kind mismatch for {command.structure_id!r}: "
+                f"expected {kind}, found {model.kind}"
+            )
         if kind == "git":
             message = payload.get("message") or payload.get("value")
             return model.apply_operation(op_name, {"message": message}), kind
@@ -161,8 +176,13 @@ class SceneGraph:
     def _handle_search(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
-        if model is None or model.kind != kind:
+        if model is None:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if model.kind != kind:
+            raise CommandError(
+                f"Kind mismatch for {command.structure_id!r}: "
+                f"expected {kind}, found {model.kind}"
+            )
         if kind == "git":
             target = payload.get("target")
             return model.apply_operation(op_name, {"target": target}), kind
@@ -181,8 +201,13 @@ class SceneGraph:
     def _handle_update(self, command: Command) -> Tuple[Timeline, str]:
         kind, op_name, payload = self._resolve_schema_and_op(command)
         model = self._structures.get(command.structure_id)
-        if model is None or model.kind != kind:
+        if model is None:
             raise CommandError(f"Structure not found: {command.structure_id!r}")
+        if model.kind != kind:
+            raise CommandError(
+                f"Kind mismatch for {command.structure_id!r}: "
+                f"expected {kind}, found {model.kind}"
+            )
         index = payload.get("index")
         if isinstance(index, int) and (index < 0 or index >= model.node_count):
             raise CommandError("UPDATE index out of range")
@@ -431,10 +456,27 @@ class SceneGraph:
     def _resolve_schema_and_op(
         self, command: Command
     ) -> Tuple[str, str, Mapping[str, Any]]:
-        payload = command.payload
-        if not isinstance(payload, Mapping):
+        if not isinstance(command.payload, Mapping):
             raise CommandError("Command payload must be a mapping")
+        
+        payload = dict(command.payload)
         kind = payload.get("kind")
+
+        if kind is None:
+            # Try to resolve kind from existing structure
+            model = self._structures.get(command.structure_id)
+            if model:
+                kind = model.kind
+                payload["kind"] = kind
+            elif command.type == CommandType.CREATE_STRUCTURE:
+                # For CREATE_STRUCTURE, kind is mandatory if not existing
+                raise CommandError("CREATE_STRUCTURE requires payload.kind")
+            else:
+                # Fallback to list for other commands if structure not found
+                # (it will fail later with "Structure not found" anyway)
+                kind = "list"
+                payload["kind"] = kind
+
         if not isinstance(kind, str):
             raise CommandError("Command requires payload.kind as string")
 

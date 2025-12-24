@@ -18,25 +18,25 @@ Project state SSOT: see [project_state.md](./project_state.md) for the active ph
 | Document | Version | Status | Bound Phase | Bound Code Paths | Last Updated |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | [index.md](./index.md) | v1.0 | Stable | P0.7 | Documentation Registry System | 2025-12-24 |
-| [project_state.md](./project_state.md) | v0.7.32 | Active | P0.7 | Project phase SSOT | 2025-12-24 |
+| [project_state.md](./project_state.md) | v0.7.33 | Active | P0.7 | Project phase SSOT | 2025-12-24 |
 | [requirements.md](./design/requirements.md) | v0.1 | Stable | P0.2 | N/A | 2025-12-14 |
 | [architecture.md](./design/architecture.md) | v0.5 | Stable | P0.6 | `src/ds_vis/` (Global Structure) | 2025-12-15 |
-| [scene_graph.md](./design/scene_graph.md) | v0.6 | Draft | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |
+| [scene_graph.md](./design/scene_graph.md) | v0.6.1 | Draft | P0.7 | `src/ds_vis/core/scene/` | 2025-12-24 |
 | [renderer.md](./design/renderer.md) | v0.4.2 | Draft | P0.7 | `src/ds_vis/renderers/` | 2025-12-24 |
 | [model.md](./design/model.md) | v0.8.4 | Draft | P0.7 | `src/ds_vis/core/models/` | 2025-12-24 |
 | [layout.md](./design/layout.md) | v0.7.4 | Draft | P0.7 | `src/ds_vis/core/layout/` | 2025-12-24 |
 | [layout_v2.md](./design/layout_v2.md) | v2.0 | Draft | P0.8 | Layout Architecture Overhaul | 2025-12-24 |
 | [ops_spec.md](./design/ops_spec.md) | v1.3 | Stable | P0.6 | `src/ds_vis/core/ops/` | 2025-12-20 |
 | [animation.md](./design/animation.md) | v0.8 | Draft | P0.7 | `src/ds_vis/core/models/`, `layout/`, `renderers/` | 2025-12-24 |
-| [dsl.md](./design/dsl.md) | v0.1 | Draft | P0.7 | `src/ds_vis/dsl/`, `src/ds_vis/ui/main_window.py` (Dev DSL hook), `src/ds_vis/dsl/cli.py` | 2025-12-24 |
-| [json.md](./design/json.md) | v0.3 | Draft | P0.7 | `src/ds_vis/persistence/json_io.py` | 2025-12-24 |
+| [dsl.md](./design/dsl.md) | v0.2 | Draft | P0.7 | `src/ds_vis/dsl/`, `src/ds_vis/ui/main_window.py` (Interactive DSL), `src/ds_vis/dsl/cli.py` | 2025-12-24 |
+| [json.md](./design/json.md) | v0.4 | Draft | P0.7 | `src/ds_vis/persistence/json_io.py` | 2025-12-24 |
 | [llm.md](./design/llm.md) | v0.1 | Draft | P0.7 | `src/ds_vis/llm/` | 2025-12-24 |
 | [environment.md](./engineering/environment.md) | v0.2 | Stable | P0.2 | `pyproject.toml`, `.github/` | 2025-12-14 |
 | [tdd_guide.md](./engineering/tdd_guide.md) | v1.1 | Active | P0.3 | `tests/` (TDD workflow) | 2025-12-15 |
 | [dev_kb.md](./engineering/dev_kb.md) | rolling | Living | P0.6 | N/A | 2025-12-21 |
-| [dsl/parser.py](../src/ds_vis/dsl/parser.py) | v0.1 | Stub | P0.7 | DSL parsing (JSON shortcut) | 2025-12-24 |
+| [dsl/parser.py](../src/ds_vis/dsl/parser.py) | v0.2 | Active | P0.7 | DSL parsing (Interactive support) | 2025-12-24 |
 | [dsl/cli.py](../src/ds_vis/dsl/cli.py) | v0.1 | Stub | P0.7 | CLI DSL/JSON runner | 2025-12-24 |
-| [persistence/json_io.py](../src/ds_vis/persistence/json_io.py) | v0.2 | Active | P0.7 | Scene-level JSON import/export | 2025-12-24 |
+| [persistence/json_io.py](../src/ds_vis/persistence/json_io.py) | v0.3 | Active | P0.7 | Scene-level JSON import/export | 2025-12-24 |
 | [PLAN.md](./PLAN.md) | v0.1 | Draft | P0.7 | Iteration roadmap | 2025-12-24 |
 | [full_dev_guide.md](./engineering/full_dev_guide.md) | v0.1 | Draft | P0.7 | Full delivery workflow guide | 2025-12-24 |
 

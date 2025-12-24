@@ -1,6 +1,6 @@
 ---
 bound_phase: P0.7
-version: v0.7.31
+version: v0.7.32
 status: Active
 last_updated: 2025-12-24
 ---
@@ -19,6 +19,8 @@ This document captures the active delivery phase, what is complete, current assu
   - BST：支持 create/insert/search/delete_value/delete_all；删除使用后继替换法并处理后继带右子；搜索/插入/删除的节点与边状态有统一恢复；消息锚点基于场景 bbox，靠近结构区域；Dev hook `_play_bst_full_demo` 覆盖命中/未命中搜索与三类删除，动画已通过当前验收（仍需关注后继遍历恢复、消息拆分等细化项）。
   - Layout：SceneGraph 按 kind→策略路由（list→LINEAR，bst→TREE），为每个结构分配 `(dx, dy)` 偏移（按策略分组行累加）注入 LayoutEngine，避免多结构重叠；TreeLayout 注入 SET_POS。
   - SceneGraph/Schema：通过全局 registry 注册命令与 model factory，bst 无需硬编码；校验函数具名且统一抛 CommandError。
+  - Persistence (JSON)：实现场景级 JSON 导入导出，支持多结构状态持久化；解决 Git/Huffman 布局干扰问题（通过过滤机制）；UI 菜单集成导入导出功能。
+  - DSL (Interactive)：实现文本 DSL 解析器，支持 `list L1=[1,2]` 等自然语法；UI 集成“Interactive DSL”按钮，支持在当前场景注入命令；SceneGraph 支持 late-binding kind resolution，允许 DSL 操作 UI 创建的结构。
   - Tests：全量 `uv run pytest`、ruff/mypy 通过（授权访问 uv 缓存）；新增“后继带右子”回归用例覆盖重连逻辑。
 - Active assumptions/limitations:
   - 动画仍为同步阻塞插值，未支持 seek/skip/倒播；后继遍历的恢复仍可细化，但不影响拓扑正确性。
