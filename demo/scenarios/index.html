@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../llm/">
+        <link rel="prev" href="../../PLAN/">
       
       
-        <link rel="next" href="../../engineering/environment/">
+        <link rel="next" href="../../design/requirements/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>JSON Schema - DS-Vis Documentation</title>
+        <title>Scenarios - DS-Vis Documentation</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#json" class="md-skip">
+        <a href="#demo-scenarios" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              JSON Schema
+              Scenarios
             
           </span>
         </div>
@@ -268,11 +268,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../demo/scenarios/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -288,13 +290,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../requirements/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../design/requirements/" class="md-tabs__link">
           
   
   
@@ -573,24 +573,29 @@
       
   
   
+    
   
   
+  
     
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -608,7 +613,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -623,10 +628,44 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../demo/scenarios/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scenarios
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -649,6 +688,109 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-system-pipelinecommand-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. System Pipeline（Command → Timeline）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-interactive-dsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Interactive DSL（推荐入口）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Interactive DSL（推荐入口）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-list-seqlist-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 List / Seqlist / Stack（线性结构）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-bst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 BST（插入 / 查找 / 三类删除）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-huffman" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Huffman（构建）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-git-dag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Git DAG（基础操作）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-scene-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Scene JSON（导出/导入验收点）
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -665,29 +807,24 @@
       
   
   
-    
   
   
-  
     
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
   
@@ -705,7 +842,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -723,7 +860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../requirements/" class="md-nav__link">
+      <a href="../../design/requirements/" class="md-nav__link">
         
   
   
@@ -758,7 +895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+      <a href="../../design/architecture/" class="md-nav__link">
         
   
   
@@ -793,7 +930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../model/" class="md-nav__link">
+      <a href="../../design/model/" class="md-nav__link">
         
   
   
@@ -828,7 +965,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../layout/" class="md-nav__link">
+      <a href="../../design/layout/" class="md-nav__link">
         
   
   
@@ -863,7 +1000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../layout_v2/" class="md-nav__link">
+      <a href="../../design/layout_v2/" class="md-nav__link">
         
   
   
@@ -898,7 +1035,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../scene_graph/" class="md-nav__link">
+      <a href="../../design/scene_graph/" class="md-nav__link">
         
   
   
@@ -933,7 +1070,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ops_spec/" class="md-nav__link">
+      <a href="../../design/ops_spec/" class="md-nav__link">
         
   
   
@@ -968,7 +1105,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../animation/" class="md-nav__link">
+      <a href="../../design/animation/" class="md-nav__link">
         
   
   
@@ -1003,7 +1140,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../renderer/" class="md-nav__link">
+      <a href="../../design/renderer/" class="md-nav__link">
         
   
   
@@ -1038,7 +1175,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dsl/" class="md-nav__link">
+      <a href="../../design/dsl/" class="md-nav__link">
         
   
   
@@ -1073,7 +1210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../llm/" class="md-nav__link">
+      <a href="../../design/llm/" class="md-nav__link">
         
   
   
@@ -1105,44 +1242,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    JSON Schema
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--Active"></span>
-  
-
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../design/json/" class="md-nav__link">
         
   
   
@@ -1165,92 +1268,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-v04" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. 场景级持久化 (v0.4)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 数据格式
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 布局隔离与过滤
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 校验规则
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. UI 集成
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 关联文件
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1608,56 +1625,78 @@
 
 
 
-<h1 id="json">JSON 持久化协议</h1>
-<p>本文件说明当前阶段的场景级 JSON 序列化协议、验证规则与布局处理。</p>
-<h2 id="1-v04">1. 场景级持久化 (v0.4)</h2>
-<p>不同于早期的单条命令序列化，现在的持久化关注<strong>场景状态</strong>。
-- <strong>导出</strong>：将当前场景中所有结构的创建指令及后续操作序列化为 JSON。
-- <strong>导入</strong>：清空当前场景，并按 JSON 中的指令序列重建所有结构。</p>
-<h2 id="2">2. 数据格式</h2>
-<p>外层为 JSON 数组，每个元素表示一条 <code>Command</code>。
-<div class="highlight"><pre><span></span><code><span class="p">[</span>
-<span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;structure_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;L1&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CREATE_STRUCTURE&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;list&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;structure_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;L1&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;INSERT&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;list&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">]</span>
-</code></pre></div></p>
-<h2 id="3">3. 布局隔离与过滤</h2>
-<p>在导入导出过程中，系统会自动处理不同结构间的布局干扰：
-- <strong>过滤机制</strong>：导出时会根据结构类型（如 Git、Huffman）过滤掉不属于该结构的布局指令，确保重新加载后布局依然正确。
-- <strong>坐标恢复</strong>：<code>CREATE_STRUCTURE</code> 负载中可包含初始状态，后续通过 <code>SET_POS</code> 等 Ops 恢复视觉位置。</p>
-<h2 id="4">4. 校验规则</h2>
-<ul>
-<li>解析由 <code>persistence/json_io.commands_from_json</code> 完成。</li>
-<li>验证：</li>
-<li><code>structure_id</code>/<code>type</code>/<code>payload</code> 必填。</li>
-<li><code>SCHEMA_REGISTRY</code> 根据 <code>(CommandType, kind)</code> 执行字段校验。</li>
-<li>导入时如果缺少 <code>kind</code> 且结构尚未创建，会抛出 <code>CommandError</code>。</li>
-</ul>
-<h2 id="5-ui">5. UI 集成</h2>
-<ul>
-<li><strong>File -&gt; Import Scene</strong>：从文件加载 JSON 并重建场景。</li>
-<li><strong>File -&gt; Export Scene</strong>：将当前场景状态保存为 JSON 文件。</li>
-</ul>
-<h2 id="6">6. 关联文件</h2>
-<ul>
-<li><code>src/ds_vis/persistence/json_io.py</code> — 核心实现。</li>
-<li><code>src/ds_vis/ui/main_window.py</code> — UI 菜单绑定。</li>
-</ul>
+<h1 id="demo-scenarios">Demo Scenarios — 可展示脚本集</h1>
+<p>本页提供“可直接复制”的演示脚本，用于课程展示与人工验收（UI + Interactive DSL + JSON 持久化）。</p>
+<h2 id="1-system-pipelinecommand-timeline">1. System Pipeline（Command → Timeline）</h2>
+<pre class="mermaid"><code>sequenceDiagram
+  autonumber
+  participant User as User/UI
+  participant SG as SceneGraph
+  participant M as Model
+  participant L as Layout
+  participant R as Renderer
+
+  User-&gt;&gt;SG: Command(kind, structure_id, payload)
+  SG-&gt;&gt;SG: validate + late-binding kind (optional)
+  SG-&gt;&gt;M: apply_operation(op, payload)
+  M--&gt;&gt;SG: Timeline(steps: [ops...])
+  SG-&gt;&gt;L: inject SET_POS
+  L--&gt;&gt;SG: Timeline(with SET_POS)
+  SG-&gt;&gt;R: play(timeline)
+  R--&gt;&gt;User: visual animation (step-by-step)</code></pre>
+<h2 id="2-interactive-dsl">2. Interactive DSL（推荐入口）</h2>
+<p>在 UI 点击 <strong>Interactive DSL</strong>，粘贴以下脚本即可。</p>
+<h3 id="21-list-seqlist-stack">2.1 List / Seqlist / Stack（线性结构）</h3>
+<div class="highlight"><pre><span></span><code># Linked list
+list L1 = [1, 2, 3];
+insert L1 1 99;
+search L1 2;
+update L1 0 42;
+delete_index L1 2;
+
+# Seqlist (array)
+seqlist A1 = [10, 20, 30];
+insert A1 1 15;
+search A1 30;
+delete_index A1 0;
+
+# Stack
+stack S1 = [1, 2, 3];   # last is top (visualized)
+push S1 10;
+search S1 2;
+pop S1;
+</code></pre></div>
+<h3 id="22-bst">2.2 BST（插入 / 查找 / 三类删除）</h3>
+<div class="highlight"><pre><span></span><code>bst B1 = [5, 3, 7, 2, 4, 6, 8];
+search B1 4;
+insert B1 1;
+
+# Delete cases
+delete_value B1 1;  # leaf
+delete_value B1 7;  # two children (successor replace)
+delete_value B1 3;  # one child or two (depends on current tree)
+</code></pre></div>
+<h3 id="23-huffman">2.3 Huffman（构建）</h3>
+<div class="highlight"><pre><span></span><code>huffman H1 = [5, 9, 12, 13, 16, 45];
+</code></pre></div>
+<h3 id="24-git-dag">2.4 Git DAG（基础操作）</h3>
+<div class="highlight"><pre><span></span><code>git G1;
+commit G1 &quot;init&quot;;
+commit G1 &quot;feat: A&quot;;
+branch G1 dev;
+checkout G1 dev;
+commit G1 &quot;feat: dev-1&quot;;
+checkout G1 main;
+merge G1 dev;
+</code></pre></div>
+<blockquote>
+<p>说明：Git/Huffman 仍可能受布局与渲染细节影响（见 <code>docs/project_state.md</code> 的 limitations）。</p>
+</blockquote>
+<h2 id="3-scene-json">3. Scene JSON（导出/导入验收点）</h2>
+<p>验收建议：
+1. 运行上述任意脚本，创建多结构场景。
+2. <code>File -&gt; Export Scene</code> 导出 JSON。
+3. 重启应用后 <code>File -&gt; Import Scene</code> 导入并核对结构数量、节点/边与消息行为。</p>
 
 
 
